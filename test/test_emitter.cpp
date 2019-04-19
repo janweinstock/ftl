@@ -24,8 +24,9 @@ TEST(emitter, mov) {
     ftl::cache code(1 * MiB);
     ftl::emitter emitter(code);
 
-    emitter.movi(ftl::REG_R15, 0xffffffffeeeeeeee);
-    emitter.movi(ftl::REG_RAX, 42);
+    emitter.movi(ftl::REG_RAX, 0);
+    emitter.movi(ftl::REG_R15, 42);
+    emitter.mov(ftl::REG_RAX, ftl::REG_R15);
     emitter.ret();
 
     typedef int (entry_func)(void);

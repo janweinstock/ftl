@@ -33,6 +33,8 @@ namespace ftl {
         cache& m_code;
 
         size_t rex(bool is64, bool rexr, bool rexx, bool rexb);
+        size_t modrm(int mod, int reg, int rm);
+        size_t sib(int scale, int index, int base);
 
         // disabled
         emitter();
@@ -45,6 +47,7 @@ namespace ftl {
         size_t ret();
 
         size_t movi(reg r, u64 imm);
+        size_t mov(reg to, reg from);
     };
 
 }

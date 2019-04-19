@@ -24,6 +24,7 @@ namespace ftl {
         FTL_OPCODE_RET  = 0xc3,
 
         FTL_OPCODE_MOVI = 0xb8,
+        FTL_OPCODE_MOV  = 0x89,
     };
 
     emitter::emitter(cache& code):
@@ -48,6 +49,16 @@ namespace ftl {
         return m_code.write(rex);
     }
 
+    size_t emitter::modrm(int mod, int reg, int rm) {
+        u8 modrm = ((mod & 3) << 6) | ((reg & 7) << 3) | (rm & 7);
+        return m_code.write(modrm);
+    }
+
+    size_t emitter::sib(int scale, int index, int base) {
+        u8 sib = ((scale & 3) << 6) | ((index & 7) << 3) | (base & 7);
+        return m_code.write(sib);
+    }
+
     size_t emitter::ret() {
         m_code.write<u8>(FTL_OPCODE_RET);
         return sizeof(u8);
@@ -59,6 +70,16 @@ namespace ftl {
         len += rex(true, false, false, r >= REG_R8);
         len += m_code.write<u8>(FTL_OPCODE_MOVI + (r & 0x7));
         len += m_code.write(imm);
+
+        return len;
+    }
+
+    size_t emitter::mov(reg to, reg from) {
+        size_t len = 0;
+
+        len += rex(true, from >= REG_R8, false, to >= REG_R8);
+        len += m_code.write<u8>(FTL_OPCODE_MOV);
+        len += modrm(0b11, from & 7, to & 7);
 
         return len;
     }
