@@ -31,6 +31,9 @@ set(sources
     "${src}/ftl/cache.cpp")
 
 add_library(ftl ${sources})
+
+target_include_directories(ftl PUBLIC ${inc})
+
 install(TARGETS ftl DESTINATION lib)
 install(DIRECTORY ${inc}/ DESTINATION include)
 
