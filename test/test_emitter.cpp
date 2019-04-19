@@ -20,21 +20,20 @@
 
 #include "ftl.h"
 
-typedef void (entry_func)(void);
-
-TEST(emitter, simple) {
+TEST(emitter, mov) {
     ftl::cache code(1 * MiB);
     ftl::emitter emitter(code);
 
+    emitter.movi(ftl::REG_R15, 0xffffffffeeeeeeee);
+    emitter.movi(ftl::REG_RAX, 42);
     emitter.ret();
 
+    typedef int (entry_func)(void);
     entry_func* fn = (entry_func*)code.get_code_entry();
-    fn();
+    EXPECT_EQ(fn(), 42);
 }
 
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
-
-

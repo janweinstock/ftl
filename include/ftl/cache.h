@@ -33,7 +33,7 @@ namespace ftl {
         u8* m_code_ptr;
         u8* m_code_end;
 
-        void write(const void* ptr, size_t sz);
+        size_t write(const void* ptr, size_t sz);
 
         // disabled
         cache();
@@ -49,18 +49,19 @@ namespace ftl {
         virtual ~cache();
 
         template <typename T>
-        void write(const T& val);
+        size_t write(const T& val);
     };
 
-    inline void cache::write(const void* ptr, size_t sz) {
+    inline size_t cache::write(const void* ptr, size_t sz) {
         FTL_ERROR_ON(m_code_ptr + sz > m_code_end, "out of code memory");
         memcpy(m_code_ptr, ptr, sz);
         m_code_ptr += sz;
+        return sz;
     }
 
     template <typename T>
-    inline void cache::write(const T& val) {
-        write(&val, sizeof(T));
+    inline size_t cache::write(const T& val) {
+        return write(&val, sizeof(T));
     }
 
 }

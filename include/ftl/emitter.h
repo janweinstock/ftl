@@ -32,6 +32,8 @@ namespace ftl {
     private:
         cache& m_code;
 
+        size_t rex(bool is64, bool rexr, bool rexx, bool rexb);
+
         // disabled
         emitter();
         emitter(const emitter&);
@@ -41,6 +43,8 @@ namespace ftl {
         virtual ~emitter();
 
         size_t ret();
+
+        size_t movi(reg r, u64 imm);
     };
 
 }
