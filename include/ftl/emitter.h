@@ -16,14 +16,33 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#ifndef FTL_EMITTER_H
+#define FTL_EMITTER_H
 
 #include "ftl/common.h"
 #include "ftl/error.h"
 
 #include "ftl/reg.h"
 #include "ftl/cache.h"
-#include "ftl/emitter.h"
+
+namespace ftl {
+
+    class emitter
+    {
+    private:
+        cache& m_code;
+
+        // disabled
+        emitter();
+        emitter(const emitter&);
+
+    public:
+        emitter(cache& code_cache);
+        virtual ~emitter();
+
+        size_t ret();
+    };
+
+}
 
 #endif

@@ -16,14 +16,21 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
-
-#include "ftl/common.h"
-#include "ftl/error.h"
-
 #include "ftl/reg.h"
-#include "ftl/cache.h"
-#include "ftl/emitter.h"
 
-#endif
+namespace ftl {
+
+    const char* reg_name(reg r) {
+        if (r > FTL_REG_R15)
+            return "invalid";
+        static const char* names[] = {
+                "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
+                 "r8",  "r9", "r10", "r11", "r12", "r13", "r14", "r15"
+        };
+
+        return names[r];
+    }
+
+}
+
+

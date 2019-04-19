@@ -16,14 +16,25 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#include <gtest/gtest.h>
 
-#include "ftl/common.h"
-#include "ftl/error.h"
+#include "ftl.h"
 
-#include "ftl/reg.h"
-#include "ftl/cache.h"
-#include "ftl/emitter.h"
+typedef void (entry_func)(void);
 
-#endif
+TEST(emitter, simple) {
+    ftl::cache code(1 * MiB);
+    ftl::emitter emitter(code);
+
+    emitter.ret();
+
+    entry_func* fn = (entry_func*)code.get_code_entry();
+    fn();
+}
+
+extern "C" int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
+

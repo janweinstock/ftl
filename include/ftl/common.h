@@ -27,6 +27,15 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#define KiB (1024)
+#define MiB (1024 * KiB)
+#define GiB (1024 * MiB)
+#define TiB (1024 * GiB)
+
+#define FTL_PAGE_SIZE        (4096)
+#define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
+#define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
+
 namespace ftl {
 
     typedef int8_t  i8;

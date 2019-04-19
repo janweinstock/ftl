@@ -1,6 +1,6 @@
  ##############################################################################
  #                                                                            #
- # Copyright 2019 Jan Henrik Weinstock                                        #
+ # Copyright 2018 Jan Henrik Weinstock                                        #
  #                                                                            #
  # Licensed under the Apache License, Version 2.0 (the "License");            #
  # you may not use this file except in compliance with the License.           #
@@ -16,32 +16,16 @@
  #                                                                            #
  ##############################################################################
 
-project(ftl)
-cmake_minimum_required(VERSION 3.5)
+find_package(GTest "1.8.0" REQUIRED)
+find_package(GMock "1.8.0" REQUIRED)
+include_directories(SYSTEM ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
-option(BUILD_TESTS "Build unit tests, requires GTest and GMock >= 1.8.0" ON)
+set(tests test_hello test_emitter)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
-set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-set(sources
-    "${src}/ftl/reg.cpp"
-    "${src}/ftl/cache.cpp"
-    "${src}/ftl/emitter.cpp")
-
-add_library(ftl ${sources})
-
-target_include_directories(ftl PUBLIC ${inc})
-
-install(TARGETS ftl DESTINATION lib)
-install(DIRECTORY ${inc}/ DESTINATION include)
-
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(test)
-endif()
+foreach(test ${tests})
+    add_executable(${test} ${test}.cpp)
+    add_dependencies(${test} ftl)
+    target_link_libraries(${test} ftl ${GMOCK_LIBRARIES} -pthread)
+    add_test(NAME ${test} COMMAND ${test} ${CMAKE_CURRENT_SOURCE_DIR})
+    set_tests_properties(${test} PROPERTIES TIMEOUT 30)
+endforeach()

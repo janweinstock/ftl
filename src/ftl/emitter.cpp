@@ -16,14 +16,25 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
-
-#include "ftl/common.h"
-#include "ftl/error.h"
-
-#include "ftl/reg.h"
-#include "ftl/cache.h"
 #include "ftl/emitter.h"
 
-#endif
+namespace ftl {
+
+    enum opcode {
+        FTL_OPCODE_RET = 0xc3,
+    };
+
+    emitter::emitter(cache& code):
+        m_code(code) {
+    }
+
+    emitter::~emitter() {
+        // nothing to do
+    }
+
+    size_t emitter::ret() {
+        m_code.write<u8>(FTL_OPCODE_RET);
+        return sizeof(u8);
+    }
+
+}

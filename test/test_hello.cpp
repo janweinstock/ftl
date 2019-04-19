@@ -16,14 +16,21 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#include <gtest/gtest.h>
 
-#include "ftl/common.h"
-#include "ftl/error.h"
+int fortytwo() {
+    return 42;
+}
 
-#include "ftl/reg.h"
-#include "ftl/cache.h"
-#include "ftl/emitter.h"
+TEST(hello, fortytwo) {
+    EXPECT_EQ(42, fortytwo());
+    EXPECT_EQ(50, fortytwo() + 8);
+    EXPECT_GT(99, fortytwo());
+}
 
-#endif
+extern "C" int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
+
