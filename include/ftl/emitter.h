@@ -21,6 +21,7 @@
 
 #include "ftl/common.h"
 #include "ftl/error.h"
+#include "ftl/bitops.h"
 
 #include "ftl/reg.h"
 #include "ftl/cache.h"
@@ -46,8 +47,13 @@ namespace ftl {
 
         size_t ret();
 
-        size_t movi(reg r, u64 imm);
-        size_t mov(reg to, reg from);
+        size_t movi(reg dest, u64 imm); // dest = imm
+        size_t mov(reg dest, reg from); // dest = from
+        size_t mov(reg dest, reg base, size_t offset); // dest = [base+offset]
+        size_t mov(reg base, size_t offset, reg src);  // [base+offset] = src
+
+        size_t push(reg src);
+        size_t pop(reg dest);
     };
 
 }

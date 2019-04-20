@@ -16,38 +16,27 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_COMMON_H
-#define FTL_COMMON_H
+#ifndef FTL_BITOPS_H
+#define FTL_BITOPS_H
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
-#include <stdio.h>
-
-#include <unistd.h>
-#include <sys/mman.h>
-
-#define KiB (1024)
-#define MiB (1024 * KiB)
-#define GiB (1024 * MiB)
-#define TiB (1024 * GiB)
-
-#define FTL_PAGE_SIZE        (4096)
-#define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
-#define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
+#include "ftl/common.h"
 
 namespace ftl {
 
-    typedef int8_t  i8;
-    typedef int16_t i16;
-    typedef int32_t i32;
-    typedef int64_t i64;
+    template <typename T1, typename T2>
+    static inline bool fits(const T1& val) {
+        return val == (T1)((T2)val);
+    }
 
-    typedef uint8_t  u8;
-    typedef uint16_t u16;
-    typedef uint32_t u32;
-    typedef uint64_t u64;
+    template <typename T>
+    static inline bool fits_i8(const T& val) {
+        return fits<T, i8>(val);
+    }
+
+    template <typename T>
+    static inline bool fits_i32(const T& val) {
+        return fits<T, i32>(val);
+    }
 
 }
 

@@ -21,6 +21,7 @@
 
 #include "ftl/common.h"
 #include "ftl/error.h"
+#include "ftl/bitops.h"
 
 #include "ftl/reg.h"
 #include "ftl/cache.h"

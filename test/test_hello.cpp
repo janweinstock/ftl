@@ -18,6 +18,8 @@
 
 #include <gtest/gtest.h>
 
+#include "ftl.h"
+
 int fortytwo() {
     return 42;
 }

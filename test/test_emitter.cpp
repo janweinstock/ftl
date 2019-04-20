@@ -20,8 +20,17 @@
 
 #include "ftl.h"
 
+typedef int (entry_func)(void);
+
+struct dummy {
+    ftl::u64 a;
+    ftl::u64 b;
+    ftl::u64 c;
+    ftl::u64 d;
+};
+
 TEST(emitter, mov) {
-    ftl::cache code(1 * MiB);
+    ftl::cache code(1 * KiB);
     ftl::emitter emitter(code);
 
     emitter.movi(ftl::REG_RAX, 0);
@@ -29,9 +38,96 @@ TEST(emitter, mov) {
     emitter.mov(ftl::REG_RAX, ftl::REG_R15);
     emitter.ret();
 
-    typedef int (entry_func)(void);
     entry_func* fn = (entry_func*)code.get_code_entry();
     EXPECT_EQ(fn(), 42);
+}
+
+TEST(emitter, load) {
+    ftl::cache code(1 * KiB);
+    ftl::emitter emitter(code);
+
+    dummy data = { 42, 43, 44, 45 };
+
+    entry_func* fn1 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_R8, (ftl::u64)&data);
+    emitter.mov(ftl::REG_RAX, ftl::REG_R8, offsetof(dummy, a));
+    emitter.ret();
+    EXPECT_EQ(fn1(), data.a);
+
+    entry_func* fn2 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_R8, (ftl::u64)&data);
+    emitter.mov(ftl::REG_RAX, ftl::REG_R8, offsetof(dummy, b));
+    emitter.ret();
+    EXPECT_EQ(fn2(), data.b);
+
+    entry_func* fn3 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_R11, (ftl::u64)&data);
+    emitter.mov(ftl::REG_RAX, ftl::REG_R11, offsetof(dummy, c));
+    emitter.ret();
+    EXPECT_EQ(fn3(), data.c);
+
+    entry_func* fn4 = (entry_func*)code.get_code_ptr();
+    emitter.mov(ftl::REG_RCX, ftl::REG_RSP);
+    emitter.movi(ftl::REG_RSP, (ftl::u64)&data);
+    emitter.mov(ftl::REG_RAX, ftl::REG_RSP, offsetof(dummy, d));
+    emitter.mov(ftl::REG_RSP, ftl::REG_RCX);
+    emitter.ret();
+    EXPECT_EQ(fn4(), data.d);
+}
+
+TEST(emitter, store) {
+    ftl::cache code(1 * KiB);
+    ftl::emitter emitter(code);
+
+    dummy src = { 42, 43, 44, 45 };
+    volatile dummy data = { 0, 0, 0, 0 };
+
+    entry_func* fn1 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_RAX, src.a);
+    emitter.movi(ftl::REG_RCX, (ftl::i64)&(data.a));
+    emitter.mov(ftl::REG_RCX, offsetof(dummy, a), ftl::REG_RAX);
+    emitter.ret();
+
+    entry_func* fn2 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_RAX, src.b);
+    emitter.movi(ftl::REG_RDX, (ftl::i64)&(data.a));
+    emitter.mov(ftl::REG_RDX, offsetof(dummy, b), ftl::REG_RAX);
+    emitter.ret();
+
+    entry_func* fn3 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_RAX, src.c);
+    emitter.movi(ftl::REG_R9, (ftl::i64)&(data.a));
+    emitter.mov(ftl::REG_R9, offsetof(dummy, c), ftl::REG_RAX);
+    emitter.ret();
+
+    entry_func* fn4 = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_RAX, src.d);
+    emitter.movi(ftl::REG_R10, (ftl::i64)&(data.a));
+    emitter.mov(ftl::REG_R10, offsetof(dummy, d), ftl::REG_RAX);
+    emitter.ret();
+
+    EXPECT_EQ(fn1(), src.a);
+    EXPECT_EQ(fn2(), src.b);
+    EXPECT_EQ(fn3(), src.c);
+    EXPECT_EQ(fn4(), src.d);
+
+    EXPECT_EQ(data.a, src.a);
+    EXPECT_EQ(data.b, src.b);
+    EXPECT_EQ(data.c, src.c);
+    EXPECT_EQ(data.d, src.d);
+}
+
+TEST(emitter, pushpop) {
+    ftl::cache code(1 * KiB);
+    ftl::emitter emitter(code);
+
+    entry_func* fn = (entry_func*)code.get_code_ptr();
+    emitter.movi(ftl::REG_R10, 99);
+    emitter.push(ftl::REG_R10);
+    emitter.pop(ftl::REG_RAX);
+    emitter.ret();
+
+    EXPECT_EQ(fn(), 99);
 }
 
 extern "C" int main(int argc, char** argv) {

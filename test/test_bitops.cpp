@@ -16,39 +16,28 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_COMMON_H
-#define FTL_COMMON_H
+#include <gtest/gtest.h>
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
-#include <stdio.h>
+#include "ftl.h"
 
-#include <unistd.h>
-#include <sys/mman.h>
+TEST(bitops, fits) {
+    size_t val0 = 0;
+    EXPECT_TRUE(ftl::fits_i8(val0));
 
-#define KiB (1024)
-#define MiB (1024 * KiB)
-#define GiB (1024 * MiB)
-#define TiB (1024 * GiB)
+    size_t val1 = 127;
+    EXPECT_TRUE(ftl::fits_i8(val1));
 
-#define FTL_PAGE_SIZE        (4096)
-#define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
-#define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
+    size_t val2 = 128;
+    EXPECT_FALSE(ftl::fits_i8(val2));
 
-namespace ftl {
+    size_t val3 = -128;
+    EXPECT_TRUE(ftl::fits_i8(val3));
 
-    typedef int8_t  i8;
-    typedef int16_t i16;
-    typedef int32_t i32;
-    typedef int64_t i64;
-
-    typedef uint8_t  u8;
-    typedef uint16_t u16;
-    typedef uint32_t u32;
-    typedef uint64_t u64;
-
+    size_t val4 = -128;
+    EXPECT_TRUE(ftl::fits_i8(val4));
 }
 
-#endif
+extern "C" int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
