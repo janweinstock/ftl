@@ -30,7 +30,7 @@ struct dummy {
 };
 
 TEST(emitter, mov) {
-    ftl::cache code(1 * KiB);
+    ftl::cache code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     emitter.movi(ftl::REG_RAX, 0);
@@ -43,7 +43,7 @@ TEST(emitter, mov) {
 }
 
 TEST(emitter, load) {
-    ftl::cache code(1 * KiB);
+    ftl::cache code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     dummy data = { 42, 43, 44, 45 };
@@ -76,7 +76,7 @@ TEST(emitter, load) {
 }
 
 TEST(emitter, store) {
-    ftl::cache code(1 * KiB);
+    ftl::cache code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     dummy src = { 42, 43, 44, 45 };
@@ -118,7 +118,7 @@ TEST(emitter, store) {
 }
 
 TEST(emitter, pushpop) {
-    ftl::cache code(1 * KiB);
+    ftl::cache code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     entry_func* fn = (entry_func*)code.get_code_ptr();

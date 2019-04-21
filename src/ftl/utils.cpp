@@ -16,50 +16,33 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_ERROR_H
-#define FTL_ERROR_H
-
-#include "ftl/common.h"
 #include "ftl/utils.h"
 
 namespace ftl {
 
-    class error: public std::exception
-    {
-    private:
-        string m_desc;
-        string m_file;
-        int    m_line;
-        string m_what;
+    string mkstr(const char* format, ...) {
+        va_list args;
+        va_start(args, format);
+        string str = vmkstr(format, args);
+        va_end(args);
+        return str;
+    }
 
-        // disabled
-        error();
+    string vmkstr(const char* format, va_list args) {
+        va_list args2;
+        va_copy(args2, args);
 
-    public:
-        const char* desc() const { return m_desc.c_str(); }
-        const char* file() const { return m_file.c_str(); }
-        int         line() const { return m_line; }
+        int size = vsnprintf(NULL, 0, format, args) + 1;
+        if (size <= 0)
+            return "";
 
-        error(const string& desc, const char* file, int line);
-        error(const error& e);
-        virtual ~error() throw();
+        char* buffer = new char [size];
+        vsnprintf(buffer, size, format, args2);
+        va_end(args2);
 
-        virtual const char* what() const throw();
-    };
+        string s(buffer);
+        delete [] buffer;
+        return s;
+    }
 
 }
-
-std::ostream& operator << (std::ostream& os, const ftl::error& err);
-
-#define FTL_ERROR(...)                                                        \
-    throw ::ftl::error(::ftl::mkstr(__VA_ARGS__), __FILE__, __LINE__)
-
-#define FTL_ERROR_ON(cond, ...)                                               \
-    do {                                                                      \
-        if (cond) {                                                           \
-            FTL_ERROR(__VA_ARGS__);                                           \
-        }                                                                     \
-    } while (0)
-
-
-#endif

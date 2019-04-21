@@ -22,16 +22,17 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
 
+#include <string>
+#include <vector>
+#include <sstream>
+#include <iostream>
+
 #include <unistd.h>
 #include <sys/mman.h>
-
-#define KiB (1024)
-#define MiB (1024 * KiB)
-#define GiB (1024 * MiB)
-#define TiB (1024 * GiB)
 
 #define FTL_PAGE_SIZE        (4096)
 #define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
@@ -48,6 +49,18 @@ namespace ftl {
     typedef uint16_t u16;
     typedef uint32_t u32;
     typedef uint64_t u64;
+
+    const size_t KiB = 1024;
+    const size_t MiB = 1024 * KiB;
+    const size_t GiB = 1024 * MiB;
+    const size_t TiB = 1024 * GiB;
+
+    using std::min;
+    using std::max;
+
+    using std::string;
+    using std::vector;
+    using std::stringstream;
 
 }
 

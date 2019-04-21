@@ -34,8 +34,27 @@ namespace ftl {
     }
 
     template <typename T>
+    static inline bool fits_i16(const T& val) {
+        return fits<T, i16>(val);
+    }
+
+    template <typename T>
     static inline bool fits_i32(const T& val) {
         return fits<T, i32>(val);
+    }
+
+    template <typename T>
+    static inline bool fits_i64(const T& val) {
+        return fits<T, i64>(val);
+    }
+
+    template <typename T>
+    static int encode_size(const T& val) {
+        if (fits_i8(val))  return 8;
+        if (fits_i16(val)) return 16;
+        if (fits_i32(val)) return 32;
+        if (fits_i64(val)) return 64;
+        return sizeof(T);
     }
 
 }

@@ -30,6 +30,8 @@ set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 set(sources
+    "${src}/ftl/utils.cpp"
+    "${src}/ftl/error.cpp"
     "${src}/ftl/reg.cpp"
     "${src}/ftl/cache.cpp"
     "${src}/ftl/emitter.cpp")
