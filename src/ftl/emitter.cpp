@@ -95,7 +95,7 @@ namespace ftl {
         return m_code.write(sib);
     }
 
-    size_t emitter::immop(int bits, reg dest, int imm, int op) {
+    size_t emitter::immop(int bits, reg dest, i32 imm, int op) {
         size_t len = 0;
 
         if (bits == 16)
@@ -157,6 +157,9 @@ namespace ftl {
     }
 
     size_t emitter::mov(reg dest, reg from) {
+        if (dest == from)
+            return 0;
+
         size_t len = 0;
         len += rex(true, from >= REG_R8, false, dest >= REG_R8);
         len += m_code.write<u8>(OPCODE_MOVR);
@@ -202,39 +205,39 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::addi(int bits, reg dest, int imm) {
+    size_t emitter::addi(int bits, reg dest, i32 imm) {
         if (imm == 0)
             return 0;
         return immop(bits, dest, imm, 0);
     }
 
-    size_t emitter::ori(int bits, reg dest, int imm) {
+    size_t emitter::ori(int bits, reg dest, i32 imm) {
         if(imm == 0)
             return 0;
         return immop(bits, dest, imm, 1);
     }
 
-    size_t emitter::adci(int bits, reg dest, int imm) {
+    size_t emitter::adci(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 2);
     }
 
-    size_t emitter::sbbi(int bits, reg dest, int imm) {
+    size_t emitter::sbbi(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 3);
     }
 
-    size_t emitter::andi(int bits, reg dest, int imm) {
+    size_t emitter::andi(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 4);
     }
 
-    size_t emitter::subi(int bits, reg dest, int imm) {
+    size_t emitter::subi(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 5);
     }
 
-    size_t emitter::xori(int bits, reg dest, int imm) {
+    size_t emitter::xori(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 6);
     }
 
-    size_t emitter::cmpi(int bits, reg dest, int imm) {
+    size_t emitter::cmpi(int bits, reg dest, i32 imm) {
         return immop(bits, dest, imm, 7);
     }
 
