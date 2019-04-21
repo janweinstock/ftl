@@ -50,17 +50,6 @@ namespace ftl {
         MODRM_DIRECT = 3,
     };
 
-    static modrm_bits find_best_mode(size_t offset) {
-        if (offset == 0)
-            return MODRM_INDIRECT;
-        if (fits_i8(offset))
-            return MODRM_DISP8;
-        if (fits_i32(offset))
-            return MODRM_DISP32;
-        FTL_ERROR("address offset exceeds limit");
-        return MODRM_DIRECT;
-    }
-
     enum scale {
         SCALE1 = 0,
         SCALE2 = 1,
@@ -101,8 +90,17 @@ namespace ftl {
 
     size_t emitter::regmem(int r1, int base, size_t offset) {
         size_t len = 0;
+        modrm_bits mode;
 
-        modrm_bits mode = find_best_mode(offset);
+        if (offset == 0)
+            mode = MODRM_INDIRECT;
+        else if (fits_i8(offset))
+            mode = MODRM_DISP8;
+        else if (fits_i32(offset))
+            mode = MODRM_DISP32;
+        else
+            FTL_ERROR("offset 0x%zx too big to encode", offset);
+
         len += modrm(mode, r1 & 7, base & 7);
 
         if ((base & 7) == 4) // rsp or r12
