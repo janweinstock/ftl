@@ -33,6 +33,67 @@ namespace ftl {
         OPCODE_IMM8   = 0x80, // r/m8  += imm8
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
         OPCODE_IMM32S = 0x83, // r/m32 += imm8
+
+        OPCODE_ADD_RM8  = 0x00, // r/m8 += r8
+        OPCODE_ADD_RM64 = 0x01, // r/m64 += r64
+        OPCODE_ADD_R8   = 0x02, // r8 += r/m8
+        OPCODE_ADD_R64  = 0x03, // r64 += r/m64
+
+        OPCODE_OR_RM8   = 0x08, // r/m8 |= r8
+        OPCODE_OR_RM64  = 0x09, // r/m64 |= r64
+        OPCODE_OR_R8    = 0x0a, // r8 |= r/m8
+        OPCODE_OR_R64   = 0x0b, // r64 |= r/m64
+
+        OPCODE_ADC_RM8  = 0x10, // r/m8 += r8 + carry
+        OPCODE_ADC_RM64 = 0x11, // r/m64 += r64 + carry
+        OPCODE_ADC_R8   = 0x12, // r8 += r/m8 + carry
+        OPCODE_ADC_R64  = 0x13, // r64 += r/m64 + carry
+
+        OPCODE_SBB_RM8  = 0x18, // r/m8 -= (r8 + 1)
+        OPCODE_SBB_RM64 = 0x19, // r/m64 -= (r64 + 1)
+        OPCODE_SBB_R8   = 0x1a, // r8 -= (r/m8 + 1)
+        OPCODE_SBB_R64  = 0x1b, // r64 -= (r/m64 + 1)
+
+        OPCODE_AND_RM8  = 0x20, // r/m8 &= r8
+        OPCODE_AND_RM64 = 0x21, // r/m64 &= r64
+        OPCODE_AND_R8   = 0x22, // r8 &= r/m8
+        OPCODE_AND_R64  = 0x23, // r64 &= r/m64
+
+        OPCODE_SUB_RM8  = 0x28, // r/m8 -= r8
+        OPCODE_SUB_RM64 = 0x29, // r/m64 -= r64
+        OPCODE_SUB_R8   = 0x2a, // r8 -= r/m8
+        OPCODE_SUB_R64  = 0x2b, // r64 -= r/m64
+
+        OPCODE_XOR_RM8  = 0x30, // r/m8 ^= r8
+        OPCODE_XOR_RM64 = 0x31, // r/m64 ^= r64
+        OPCODE_XOR_R8   = 0x32, // r8 ^= r/m8
+        OPCODE_XOR_R64  = 0x33, // r64 ^= r/m64
+
+        OPCODE_CMP_RM8  = 0x38, // r/m8 == r8
+        OPCODE_CMP_RM64 = 0x39, // r/m64 == r64
+        OPCODE_CMP_R8   = 0x3a, // r8 == r/m8
+        OPCODE_CMP_R64  = 0x3b, // r64 == r/m64
+    };
+
+    enum aluop {
+        ALUOP_ADD = 0,
+        ALUOP_OR  = 1,
+        ALUOP_ADC = 2,
+        ALUOP_SBB = 3,
+        ALUOP_AND = 4,
+        ALUOP_SUB = 5,
+        ALUOP_XOR = 6,
+        ALUOP_CMP = 7
+    };
+    static const u8 alu_opcodes[8][4] = {
+        { OPCODE_ADD_RM8, OPCODE_ADD_RM64, OPCODE_ADD_R8, OPCODE_ADD_R64 },
+        { OPCODE_OR_RM8,  OPCODE_OR_RM64,  OPCODE_OR_R8,  OPCODE_OR_R64  },
+        { OPCODE_ADC_RM8, OPCODE_ADC_RM64, OPCODE_ADC_R8, OPCODE_ADC_R64 },
+        { OPCODE_SBB_RM8, OPCODE_SBB_RM64, OPCODE_SBB_R8, OPCODE_SBB_R64 },
+        { OPCODE_AND_RM8, OPCODE_AND_RM64, OPCODE_AND_R8, OPCODE_AND_R64 },
+        { OPCODE_SUB_RM8, OPCODE_SUB_RM64, OPCODE_SUB_R8, OPCODE_SUB_R64 },
+        { OPCODE_XOR_RM8, OPCODE_XOR_RM64, OPCODE_XOR_R8, OPCODE_XOR_R64 },
+        { OPCODE_CMP_RM8, OPCODE_CMP_RM64, OPCODE_CMP_R8, OPCODE_CMP_R64 },
     };
 
     enum rex_bits {
@@ -178,6 +239,21 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::aluop(int op, int bits, reg dest, reg src) {
+        size_t len = 0;
+
+         if (bits == 16)
+             len += m_code.write<u8>(0x66);
+         if (bits == 64 || dest >= REG_R8 || src >= REG_R8)
+             len += rex(bits == 64, dest >= REG_R8, false, src >= REG_R8);
+
+         u8 opcode = alu_opcodes[op][bits == 8 ? 2 : 3];
+         len += m_code.write(opcode);
+         len += regreg(dest, src);
+
+         return len;
+    }
+
     size_t emitter::ret() {
         m_code.write<u8>(OPCODE_RET);
         return sizeof(u8);
@@ -237,69 +313,109 @@ namespace ftl {
     size_t emitter::addi(int bits, reg dest, i32 imm) {
         if (imm == 0)
             return 0;
-        return immop(0, bits, dest, imm);
+        return immop(ALUOP_ADD, bits, dest, imm);
     }
 
     size_t emitter::ori(int bits, reg dest, i32 imm) {
         if(imm == 0)
             return 0;
-        return immop(1, bits, dest, imm);
+        return immop(ALUOP_OR, bits, dest, imm);
     }
 
     size_t emitter::adci(int bits, reg dest, i32 imm) {
-        return immop(2, bits, dest, imm);
+        return immop(ALUOP_ADC, bits, dest, imm);
     }
 
     size_t emitter::sbbi(int bits, reg dest, i32 imm) {
-        return immop(3, bits, dest, imm);
+        return immop(ALUOP_SBB, bits, dest, imm);
     }
 
     size_t emitter::andi(int bits, reg dest, i32 imm) {
-        return immop(4, bits, dest, imm);
+        return immop(ALUOP_AND, bits, dest, imm);
     }
 
     size_t emitter::subi(int bits, reg dest, i32 imm) {
-        return immop(5, bits, dest, imm);
+        if (imm == 0)
+            return 0;
+        return immop(ALUOP_SUB, bits, dest, imm);
     }
 
     size_t emitter::xori(int bits, reg dest, i32 imm) {
-        return immop(6, bits, dest, imm);
+        return immop(ALUOP_XOR, bits, dest, imm);
     }
 
     size_t emitter::cmpi(int bits, reg dest, i32 imm) {
-        return immop(7, bits, dest, imm);
+        return immop(ALUOP_CMP, bits, dest, imm);
     }
 
     size_t emitter::addi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(0, bits, base, offset, imm);
+        if (imm == 0)
+            return 0;
+        return immop(ALUOP_ADD, bits, base, offset, imm);
     }
 
     size_t emitter::ori(int bits, reg base, size_t offset, i32 imm) {
-        return immop(1, bits, base, offset, imm);
+        if (imm == 0)
+            return 0;
+        return immop(ALUOP_OR, bits, base, offset, imm);
     }
 
     size_t emitter::adci(int bits, reg base, size_t offset, i32 imm) {
-        return immop(2, bits, base, offset, imm);
+        return immop(ALUOP_ADC, bits, base, offset, imm);
     }
 
     size_t emitter::sbbi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(3, bits, base, offset, imm);
+        return immop(ALUOP_SBB, bits, base, offset, imm);
     }
 
     size_t emitter::andi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(4, bits, base, offset, imm);
+        return immop(ALUOP_AND, bits, base, offset, imm);
     }
 
     size_t emitter::subi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(5, bits, base, offset, imm);
+        if (imm == 0)
+            return 0;
+        return immop(ALUOP_SUB, bits, base, offset, imm);
     }
 
     size_t emitter::xori(int bits, reg base, size_t offset, i32 imm) {
-        return immop(6, bits, base, offset, imm);
+        return immop(ALUOP_XOR, bits, base, offset, imm);
     }
 
     size_t emitter::cmpi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(7, bits, base, offset, imm);
+        return immop(ALUOP_CMP, bits, base, offset, imm);
+    }
+
+    size_t emitter::addr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_ADD, bits, dest, src);
+    }
+
+    size_t emitter::orr (int bits, reg dest, reg src) {
+        return aluop(ALUOP_OR, bits, dest, src);
+    }
+
+    size_t emitter::adcr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_ADC, bits, dest, src);
+    }
+
+    size_t emitter::sbbr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_SBB, bits, dest, src);
+    }
+
+    size_t emitter::andr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_AND, bits, dest, src);
+    }
+
+    size_t emitter::subr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_SUB, bits, dest, src);
+    }
+
+    size_t emitter::xorr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_XOR, bits, dest, src);
+    }
+
+    size_t emitter::cmpr(int bits, reg dest, reg src) {
+        return aluop(ALUOP_CMP, bits, dest, src);
     }
 
 }

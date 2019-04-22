@@ -43,6 +43,8 @@ namespace ftl {
         size_t immop(int op, int bits, reg dest, i32 imm);
         size_t immop(int op, int bits, reg base, size_t offset, i32 imm);
 
+        size_t aluop(int op, int bits, reg dest, reg src);
+
         // disabled
         emitter();
         emitter(const emitter&);
@@ -78,6 +80,15 @@ namespace ftl {
         size_t subi(int bits, reg base, size_t offset, i32 imm);
         size_t xori(int bits, reg base, size_t offset, i32 imm);
         size_t cmpi(int bits, reg base, size_t offset, i32 imm);
+
+        size_t addr(int bits, reg dest, reg src); // dest = dest + src
+        size_t orr (int bits, reg dest, reg src); // dest = dest | src
+        size_t adcr(int bits, reg dest, reg src); // dest = dest + src + carry
+        size_t sbbr(int bits, reg dest, reg src); // dest = dest - src - carry
+        size_t andr(int bits, reg dest, reg src); // dest = dest & src
+        size_t subr(int bits, reg dest, reg src); // dest = dest - src
+        size_t xorr(int bits, reg dest, reg src); // dest = dest ^ src
+        size_t cmpr(int bits, reg dest, reg src); // flags = dest == src
     };
 
 }
