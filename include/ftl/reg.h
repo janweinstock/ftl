@@ -45,23 +45,29 @@ namespace ftl {
 
     const char* reg_name(reg r);
 
-    struct reg_or_mem {
-        bool is_mem;
-        reg  r;
-        i32  offset;
+    struct rm {
+        const bool is_mem;
+        const reg  r;
+        const i32  offset;
+
+        rm(reg _r): is_mem(false), r(_r), offset(0) {}
+        rm(reg base, i32 off): is_mem(true), r(base), offset(off) {}
+
+    private:
+        rm(); // disabled
     };
 
-    static inline reg_or_mem regop(reg r) {
-        return { false, r, 0 };
+    static inline rm regop(reg r) {
+        return rm(r);
     }
 
-    static inline reg_or_mem memop(reg base, i32 offset) {
-        return { true, base, offset };
+    static inline rm memop(reg base, i32 offset) {
+        return rm(base, offset);
     }
 
 }
 
 std::ostream& operator << (std::ostream& os, const ftl::reg& r);
-std::ostream& operator << (std::ostream& os, const ftl::reg_or_mem& rm);
+std::ostream& operator << (std::ostream& os, const ftl::rm& rm);
 
 #endif

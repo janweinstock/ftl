@@ -37,13 +37,11 @@ namespace ftl {
         size_t modrm(int mod, int reg, int rm);
         size_t sib(int scale, int index, int base);
 
-        size_t regreg(int r1, int r2);
-        size_t regmem(int r1, int base, size_t offset);
+        size_t prefix(int bits, reg r, const rm& rm);
+        size_t modrm(reg r, const rm& rm);
 
-        size_t immop(int op, int bits, reg dest, i32 imm);
-        size_t immop(int op, int bits, reg base, size_t offset, i32 imm);
-
-        size_t aluop(int op, int bits, reg dest, reg src);
+        size_t immop(int op, int bits, const rm& dest, i32 imm);
+        size_t aluop(int op, int bits, const rm& dest, const rm& src);
 
         // disabled
         emitter();
@@ -63,32 +61,23 @@ namespace ftl {
         size_t mov(reg dest, reg base, size_t offset); // dest = [base+offset]
         size_t mov(reg base, size_t offset, reg src);  // [base+offset] = src
 
-        size_t addi(int bits, reg dest, i32 imm); // dest = dest + imm
-        size_t ori (int bits, reg dest, i32 imm); // dest = dest | imm
-        size_t adci(int bits, reg dest, i32 imm); // dest = dest + imm + carry
-        size_t sbbi(int bits, reg dest, i32 imm); // dest = dest - imm - carry
-        size_t andi(int bits, reg dest, i32 imm); // dest = dest & imm
-        size_t subi(int bits, reg dest, i32 imm); // dest = dest - imm
-        size_t xori(int bits, reg dest, i32 imm); // dest = dest ^ imm
-        size_t cmpi(int bits, reg dest, i32 imm); // flags = dest == imm
+        size_t addi(int bits, const rm& dest, i32 imm);
+        size_t ori (int bits, const rm& dest, i32 imm);
+        size_t adci(int bits, const rm& dest, i32 imm);
+        size_t sbbi(int bits, const rm& dest, i32 imm);
+        size_t andi(int bits, const rm& dest, i32 imm);
+        size_t subi(int bits, const rm& dest, i32 imm);
+        size_t xori(int bits, const rm& dest, i32 imm);
+        size_t cmpi(int bits, const rm& dest, i32 imm);
 
-        size_t addi(int bits, reg base, size_t offset, i32 imm);
-        size_t ori (int bits, reg base, size_t offset, i32 imm);
-        size_t adci(int bits, reg base, size_t offset, i32 imm);
-        size_t sbbi(int bits, reg base, size_t offset, i32 imm);
-        size_t andi(int bits, reg base, size_t offset, i32 imm);
-        size_t subi(int bits, reg base, size_t offset, i32 imm);
-        size_t xori(int bits, reg base, size_t offset, i32 imm);
-        size_t cmpi(int bits, reg base, size_t offset, i32 imm);
-
-        size_t addr(int bits, reg dest, reg src); // dest = dest + src
-        size_t orr (int bits, reg dest, reg src); // dest = dest | src
-        size_t adcr(int bits, reg dest, reg src); // dest = dest + src + carry
-        size_t sbbr(int bits, reg dest, reg src); // dest = dest - src - carry
-        size_t andr(int bits, reg dest, reg src); // dest = dest & src
-        size_t subr(int bits, reg dest, reg src); // dest = dest - src
-        size_t xorr(int bits, reg dest, reg src); // dest = dest ^ src
-        size_t cmpr(int bits, reg dest, reg src); // flags = dest == src
+        size_t addr(int bits, const rm& dest, const rm& src);
+        size_t orr (int bits, const rm& dest, const rm& src);
+        size_t adcr(int bits, const rm& dest, const rm& src);
+        size_t sbbr(int bits, const rm& dest, const rm& src);
+        size_t andr(int bits, const rm& dest, const rm& src);
+        size_t subr(int bits, const rm& dest, const rm& src);
+        size_t xorr(int bits, const rm& dest, const rm& src);
+        size_t cmpr(int bits, const rm& dest, const rm& src);
     };
 
 }

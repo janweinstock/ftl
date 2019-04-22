@@ -32,7 +32,7 @@ typedef int (entry_func)(void);
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
         emitter.movi(ftl::reg, addr);                                         \
-        emitter.op(bits, ftl::reg, offset, val2);                             \
+        emitter.op(bits, ftl::memop(ftl::reg, offset), val2);                 \
         emitter.ret();                                                        \
         fn();                                                                 \
         ftl::i##bits ref = (ftl::i##bits)(orig cop val2);                     \

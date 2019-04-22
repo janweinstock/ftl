@@ -34,66 +34,25 @@ namespace ftl {
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
         OPCODE_IMM32S = 0x83, // r/m32 += imm8
 
-        OPCODE_ADD_RM8  = 0x00, // r/m8 += r8
-        OPCODE_ADD_RM64 = 0x01, // r/m64 += r64
-        OPCODE_ADD_R8   = 0x02, // r8 += r/m8
-        OPCODE_ADD_R64  = 0x03, // r64 += r/m64
-
-        OPCODE_OR_RM8   = 0x08, // r/m8 |= r8
-        OPCODE_OR_RM64  = 0x09, // r/m64 |= r64
-        OPCODE_OR_R8    = 0x0a, // r8 |= r/m8
-        OPCODE_OR_R64   = 0x0b, // r64 |= r/m64
-
-        OPCODE_ADC_RM8  = 0x10, // r/m8 += r8 + carry
-        OPCODE_ADC_RM64 = 0x11, // r/m64 += r64 + carry
-        OPCODE_ADC_R8   = 0x12, // r8 += r/m8 + carry
-        OPCODE_ADC_R64  = 0x13, // r64 += r/m64 + carry
-
-        OPCODE_SBB_RM8  = 0x18, // r/m8 -= (r8 + 1)
-        OPCODE_SBB_RM64 = 0x19, // r/m64 -= (r64 + 1)
-        OPCODE_SBB_R8   = 0x1a, // r8 -= (r/m8 + 1)
-        OPCODE_SBB_R64  = 0x1b, // r64 -= (r/m64 + 1)
-
-        OPCODE_AND_RM8  = 0x20, // r/m8 &= r8
-        OPCODE_AND_RM64 = 0x21, // r/m64 &= r64
-        OPCODE_AND_R8   = 0x22, // r8 &= r/m8
-        OPCODE_AND_R64  = 0x23, // r64 &= r/m64
-
-        OPCODE_SUB_RM8  = 0x28, // r/m8 -= r8
-        OPCODE_SUB_RM64 = 0x29, // r/m64 -= r64
-        OPCODE_SUB_R8   = 0x2a, // r8 -= r/m8
-        OPCODE_SUB_R64  = 0x2b, // r64 -= r/m64
-
-        OPCODE_XOR_RM8  = 0x30, // r/m8 ^= r8
-        OPCODE_XOR_RM64 = 0x31, // r/m64 ^= r64
-        OPCODE_XOR_R8   = 0x32, // r8 ^= r/m8
-        OPCODE_XOR_R64  = 0x33, // r64 ^= r/m64
-
-        OPCODE_CMP_RM8  = 0x38, // r/m8 == r8
-        OPCODE_CMP_RM64 = 0x39, // r/m64 == r64
-        OPCODE_CMP_R8   = 0x3a, // r8 == r/m8
-        OPCODE_CMP_R64  = 0x3b, // r64 == r/m64
+        OPCODE_ADD = 0x00,
+        OPCODE_OR  = 0x08,
+        OPCODE_ADC = 0x10,
+        OPCODE_SBB = 0x18,
+        OPCODE_AND = 0x20,
+        OPCODE_SUB = 0x28,
+        OPCODE_XOR = 0x30,
+        OPCODE_CMP = 0x38,
     };
 
-    enum aluop {
-        ALUOP_ADD = 0,
-        ALUOP_OR  = 1,
-        ALUOP_ADC = 2,
-        ALUOP_SBB = 3,
-        ALUOP_AND = 4,
-        ALUOP_SUB = 5,
-        ALUOP_XOR = 6,
-        ALUOP_CMP = 7
-    };
-    static const u8 alu_opcodes[8][4] = {
-        { OPCODE_ADD_RM8, OPCODE_ADD_RM64, OPCODE_ADD_R8, OPCODE_ADD_R64 },
-        { OPCODE_OR_RM8,  OPCODE_OR_RM64,  OPCODE_OR_R8,  OPCODE_OR_R64  },
-        { OPCODE_ADC_RM8, OPCODE_ADC_RM64, OPCODE_ADC_R8, OPCODE_ADC_R64 },
-        { OPCODE_SBB_RM8, OPCODE_SBB_RM64, OPCODE_SBB_R8, OPCODE_SBB_R64 },
-        { OPCODE_AND_RM8, OPCODE_AND_RM64, OPCODE_AND_R8, OPCODE_AND_R64 },
-        { OPCODE_SUB_RM8, OPCODE_SUB_RM64, OPCODE_SUB_R8, OPCODE_SUB_R64 },
-        { OPCODE_XOR_RM8, OPCODE_XOR_RM64, OPCODE_XOR_R8, OPCODE_XOR_R64 },
-        { OPCODE_CMP_RM8, OPCODE_CMP_RM64, OPCODE_CMP_R8, OPCODE_CMP_R64 },
+    enum opcode_imm {
+        OPCODE_IMM_ADD = 0,
+        OPCODE_IMM_OR  = 1,
+        OPCODE_IMM_ADC = 2,
+        OPCODE_IMM_SBB = 3,
+        OPCODE_IMM_AND = 4,
+        OPCODE_IMM_SUB = 5,
+        OPCODE_IMM_XOR = 6,
+        OPCODE_IMM_CMP = 7,
     };
 
     enum rex_bits {
@@ -145,46 +104,44 @@ namespace ftl {
         return m_code.write(sib);
     }
 
-    size_t emitter::regreg(int r1, int r2) {
-        return modrm(MODRM_DIRECT, r1 & 7, r2 & 7);
+    size_t emitter::prefix(int bits, reg r, const rm& rm) {
+        size_t len = 0;
+        if (bits == 16)
+            len += m_code.write<u8>(0x66);
+        if (bits == 64 || r >= REG_R8 || rm.r >= REG_R8)
+            len += rex(bits == 64, r >= REG_R8, false, rm.r >= REG_R8);
+        return len;
     }
 
-    size_t emitter::regmem(int r1, int base, size_t offset) {
+    size_t emitter::modrm(reg r, const rm& rm) {
+        if (!rm.is_mem)
+            return modrm(MODRM_DIRECT, r & 7, rm.r & 7);
+
         size_t len = 0;
         modrm_bits mode;
 
-        if (offset == 0)
+        if (rm.offset == 0)
             mode = MODRM_INDIRECT;
-        else if (fits_i8(offset))
+        else if (fits_i8(rm.offset))
             mode = MODRM_DISP8;
-        else if (fits_i32(offset))
-            mode = MODRM_DISP32;
         else
-            FTL_ERROR("offset 0x%zx too big to encode", offset);
+            mode = MODRM_DISP32;
 
-        len += modrm(mode, r1 & 7, base & 7);
+        len += modrm(mode, r & 7, rm.r & 7);
 
-        if ((base & 7) == 4) // rsp or r12
-            len += sib(SCALE1, base & 7, base & 7);
+        if ((rm.r & 7) == 4) // special case: rsp and r12 need extra sib
+            len += sib(SCALE1, rm.r & 7, rm.r & 7);
 
         if (mode == MODRM_DISP32)
-            len += m_code.write<i32>(offset);
+            len += m_code.write<i32>(rm.offset);
         if (mode == MODRM_DISP8)
-            len += m_code.write<i8>(offset);
+            len += m_code.write<i8>(rm.offset);
 
         return len;
     }
 
-    size_t emitter::immop(int op, int bits, reg dest, i32 imm) {
-        size_t len = 0;
-
-        if (bits == 16)
-            len += m_code.write<u8>(0x66);
-        if (bits == 64 || dest >= REG_R8)
-            len += rex(bits == 64, false, false, dest >= REG_R8);
-
-        int immlen = encode_size(imm); // 8, 16, 32 or 64bits
-        FTL_ERROR_ON(immlen > 32, "immediate operand too big");
+    size_t emitter::immop(int op, int bits, const rm& dest, i32 imm) {
+                int immlen = encode_size(imm); // 8, 16, 32 or 64bits
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
 
         u8 opcode = bits == 8 ? OPCODE_IMM8 : OPCODE_IMM32;
@@ -193,8 +150,10 @@ namespace ftl {
         else
             immlen = min(bits, 32);
 
+        size_t len = 0;
+        len += prefix(bits, (reg)0, dest);
         len += m_code.write(opcode);
-        len += modrm(MODRM_DIRECT, op, dest);
+        len += modrm((reg)op, dest);
 
         switch (immlen) {
         case  8: len += m_code.write<i8>(imm);  break;
@@ -207,51 +166,26 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::immop(int op, int bits, reg base, size_t offset, i32 imm) {
+    size_t emitter::aluop(int op, int bits, const rm& dest,
+                          const rm& src) {
+        if (dest.is_mem && src.is_mem)
+            FTL_ERROR("source and destination cannot both be in memory");
+
+        rm oprm(src.is_mem ? src : dest); // operand used for modrm.rm
+        rm op_r(src.is_mem ? dest : src); // operand used for modrm.reg
+
+        u8 opcode = op;
+        if (bits > 8)
+            opcode += 1;
+        if (src.is_mem)
+            opcode += 2;
+
         size_t len = 0;
-
-        if (bits == 16)
-            len += m_code.write<u8>(0x66);
-        if (bits == 64 || base >= REG_R8)
-            len += rex(bits == 64, false, false, base >= REG_R8);
-
-        int immlen = encode_size(imm); // 8, 16, 32 or 64bits
-        FTL_ERROR_ON(immlen > 32, "immediate operand too big");
-        FTL_ERROR_ON(immlen > bits, "immediate operand too big");
-
-        u8 opcode = bits == 8 ? OPCODE_IMM8 : OPCODE_IMM32;
-        if ((opcode == OPCODE_IMM32) && (immlen <= 8))
-            opcode = OPCODE_IMM32S;
-        else
-            immlen = min(bits, 32);
-
+        len += prefix(bits, op_r.r, oprm);
         len += m_code.write(opcode);
-        len += regmem(op, base, offset);
-
-        switch (immlen) {
-        case  8: len += m_code.write<i8>(imm);  break;
-        case 16: len += m_code.write<i16>(imm); break;
-        case 32: len += m_code.write<i32>(imm); break;
-        default:
-            FTL_ERROR("cannot encode immediate with %d bits", immlen);
-        }
+        len += modrm(op_r.r, oprm);
 
         return len;
-    }
-
-    size_t emitter::aluop(int op, int bits, reg dest, reg src) {
-        size_t len = 0;
-
-         if (bits == 16)
-             len += m_code.write<u8>(0x66);
-         if (bits == 64 || dest >= REG_R8 || src >= REG_R8)
-             len += rex(bits == 64, dest >= REG_R8, false, src >= REG_R8);
-
-         u8 opcode = alu_opcodes[op][bits == 8 ? 2 : 3];
-         len += m_code.write(opcode);
-         len += regreg(dest, src);
-
-         return len;
     }
 
     size_t emitter::ret() {
@@ -298,7 +232,7 @@ namespace ftl {
         size_t len = 0;
         len += rex(true, dest >= REG_R8, false, base >= REG_R8);
         len += m_code.write<u8>(OPCODE_MOVM);
-        len += regmem(dest, base, offset);
+        len += modrm(dest, memop(base, offset));
         return len;
     }
 
@@ -306,116 +240,78 @@ namespace ftl {
         size_t len = 0;
         len += rex(true, src >= REG_R8, false, base >= REG_R8);
         len += m_code.write<u8>(OPCODE_MOVR);
-        len += regmem(src, base, offset);
+        len += modrm(src, memop(base, offset));
         return len;
     }
 
-    size_t emitter::addi(int bits, reg dest, i32 imm) {
+    size_t emitter::addi(int bits, const rm& dest, i32 imm) {
         if (imm == 0)
             return 0;
-        return immop(ALUOP_ADD, bits, dest, imm);
+        return immop(OPCODE_IMM_ADD, bits, dest, imm);
     }
 
-    size_t emitter::ori(int bits, reg dest, i32 imm) {
+    size_t emitter::ori(int bits, const rm& dest, i32 imm) {
         if(imm == 0)
             return 0;
-        return immop(ALUOP_OR, bits, dest, imm);
+        return immop(OPCODE_IMM_OR, bits, dest, imm);
     }
 
-    size_t emitter::adci(int bits, reg dest, i32 imm) {
-        return immop(ALUOP_ADC, bits, dest, imm);
+    size_t emitter::adci(int bits, const rm& dest, i32 imm) {
+        return immop(OPCODE_IMM_ADC, bits, dest, imm);
     }
 
-    size_t emitter::sbbi(int bits, reg dest, i32 imm) {
-        return immop(ALUOP_SBB, bits, dest, imm);
+    size_t emitter::sbbi(int bits, const rm& dest, i32 imm) {
+        return immop(OPCODE_IMM_SBB, bits, dest, imm);
     }
 
-    size_t emitter::andi(int bits, reg dest, i32 imm) {
-        return immop(ALUOP_AND, bits, dest, imm);
+    size_t emitter::andi(int bits, const rm& dest, i32 imm) {
+        return immop(OPCODE_IMM_AND, bits, dest, imm);
     }
 
-    size_t emitter::subi(int bits, reg dest, i32 imm) {
+    size_t emitter::subi(int bits, const rm& dest, i32 imm) {
         if (imm == 0)
             return 0;
-        return immop(ALUOP_SUB, bits, dest, imm);
+        return immop(OPCODE_IMM_SUB, bits, dest, imm);
     }
 
-    size_t emitter::xori(int bits, reg dest, i32 imm) {
-        return immop(ALUOP_XOR, bits, dest, imm);
+    size_t emitter::xori(int bits, const rm& dest, i32 imm) {
+        return immop(OPCODE_IMM_XOR, bits, dest, imm);
     }
 
-    size_t emitter::cmpi(int bits, reg dest, i32 imm) {
-        return immop(ALUOP_CMP, bits, dest, imm);
+    size_t emitter::cmpi(int bits, const rm& dest, i32 imm) {
+        return immop(OPCODE_IMM_CMP, bits, dest, imm);
     }
 
-    size_t emitter::addi(int bits, reg base, size_t offset, i32 imm) {
-        if (imm == 0)
-            return 0;
-        return immop(ALUOP_ADD, bits, base, offset, imm);
+    size_t emitter::addr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_ADD, bits, dest, src);
     }
 
-    size_t emitter::ori(int bits, reg base, size_t offset, i32 imm) {
-        if (imm == 0)
-            return 0;
-        return immop(ALUOP_OR, bits, base, offset, imm);
+    size_t emitter::orr (int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_OR, bits, dest, src);
     }
 
-    size_t emitter::adci(int bits, reg base, size_t offset, i32 imm) {
-        return immop(ALUOP_ADC, bits, base, offset, imm);
+    size_t emitter::adcr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_ADC, bits, dest, src);
     }
 
-    size_t emitter::sbbi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(ALUOP_SBB, bits, base, offset, imm);
+    size_t emitter::sbbr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_SBB, bits, dest, src);
     }
 
-    size_t emitter::andi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(ALUOP_AND, bits, base, offset, imm);
+    size_t emitter::andr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_AND, bits, dest, src);
     }
 
-    size_t emitter::subi(int bits, reg base, size_t offset, i32 imm) {
-        if (imm == 0)
-            return 0;
-        return immop(ALUOP_SUB, bits, base, offset, imm);
+    size_t emitter::subr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_SUB, bits, dest, src);
     }
 
-    size_t emitter::xori(int bits, reg base, size_t offset, i32 imm) {
-        return immop(ALUOP_XOR, bits, base, offset, imm);
+    size_t emitter::xorr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_XOR, bits, dest, src);
     }
 
-    size_t emitter::cmpi(int bits, reg base, size_t offset, i32 imm) {
-        return immop(ALUOP_CMP, bits, base, offset, imm);
-    }
-
-    size_t emitter::addr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_ADD, bits, dest, src);
-    }
-
-    size_t emitter::orr (int bits, reg dest, reg src) {
-        return aluop(ALUOP_OR, bits, dest, src);
-    }
-
-    size_t emitter::adcr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_ADC, bits, dest, src);
-    }
-
-    size_t emitter::sbbr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_SBB, bits, dest, src);
-    }
-
-    size_t emitter::andr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_AND, bits, dest, src);
-    }
-
-    size_t emitter::subr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_SUB, bits, dest, src);
-    }
-
-    size_t emitter::xorr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_XOR, bits, dest, src);
-    }
-
-    size_t emitter::cmpr(int bits, reg dest, reg src) {
-        return aluop(ALUOP_CMP, bits, dest, src);
+    size_t emitter::cmpr(int bits, const rm& dest, const rm& src) {
+        return aluop(OPCODE_CMP, bits, dest, src);
     }
 
 }
