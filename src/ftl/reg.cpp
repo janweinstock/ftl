@@ -33,4 +33,22 @@ namespace ftl {
 
 }
 
+std::ostream& operator << (std::ostream& os, const ftl::reg& r) {
+    os << ftl::reg_name(r);
+    return os;
+}
+
+std::ostream& operator << (std::ostream& os, const ftl::reg_or_mem& rm) {
+    if (!rm.is_mem)
+        return os << rm.r;
+
+    os << "[" << rm.r;
+    if (rm.offset) {
+        if (rm.offset > 0)
+            os << "+";
+        os << rm.offset;
+    }
+    os << "]";
+    return os;
+}
 

@@ -20,6 +20,7 @@
 #define FTL_REG_H
 
 #include "ftl/common.h"
+#include "ftl/bitops.h"
 
 namespace ftl {
 
@@ -44,6 +45,23 @@ namespace ftl {
 
     const char* reg_name(reg r);
 
+    struct reg_or_mem {
+        bool is_mem;
+        reg  r;
+        i32  offset;
+    };
+
+    static inline reg_or_mem regop(reg r) {
+        return { false, r, 0 };
+    }
+
+    static inline reg_or_mem memop(reg base, i32 offset) {
+        return { true, base, offset };
+    }
+
 }
+
+std::ostream& operator << (std::ostream& os, const ftl::reg& r);
+std::ostream& operator << (std::ostream& os, const ftl::reg_or_mem& rm);
 
 #endif
