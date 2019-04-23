@@ -21,7 +21,7 @@
 namespace ftl {
 
     const char* reg_name(reg r) {
-        if (r > REG_R15)
+        if (r > R15)
             return "invalid";
 
         static const char* names[] = {

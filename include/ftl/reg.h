@@ -25,22 +25,22 @@
 namespace ftl {
 
     enum reg {
-        REG_RAX = 0,  // caller-saved
-        REG_RCX = 1,  // caller-saved
-        REG_RDX = 2,  // caller-saved
-        REG_RBX = 3,
-        REG_RSP = 4,
-        REG_RBP = 5,
-        REG_RSI = 6,
-        REG_RDI = 7,
-        REG_R8  = 8,  // caller-saved
-        REG_R9  = 9,  // caller-saved
-        REG_R10 = 10, // caller-saved
-        REG_R11 = 11, // caller-saved
-        REG_R12 = 12,
-        REG_R13 = 13,
-        REG_R14 = 14,
-        REG_R15 = 15,
+        RAX = 0,  // caller-saved
+        RCX = 1,  // caller-saved
+        RDX = 2,  // caller-saved
+        RBX = 3,
+        RSP = 4,
+        RBP = 5,
+        RSI = 6,
+        RDI = 7,
+        R8  = 8,  // caller-saved
+        R9  = 9,  // caller-saved
+        R10 = 10, // caller-saved
+        R11 = 11, // caller-saved
+        R12 = 12,
+        R13 = 13,
+        R14 = 14,
+        R15 = 15,
     };
 
     const char* reg_name(reg r);

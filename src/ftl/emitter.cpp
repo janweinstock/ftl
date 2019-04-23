@@ -108,8 +108,8 @@ namespace ftl {
         size_t len = 0;
         if (bits == 16)
             len += m_code.write<u8>(0x66);
-        if (bits == 64 || r >= REG_R8 || rm.r >= REG_R8)
-            len += rex(bits == 64, r >= REG_R8, false, rm.r >= REG_R8);
+        if (bits == 64 || r >= R8 || rm.r >= R8)
+            len += rex(bits == 64, r >= R8, false, rm.r >= R8);
         return len;
     }
 
@@ -195,7 +195,7 @@ namespace ftl {
 
     size_t emitter::push(reg src) {
         size_t len = 0;
-        if (src >= REG_R8)
+        if (src >= R8)
             len += rex(true, false, false, true);
         len += m_code.write<u8>(OPCODE_PUSH + (src & 7));
         return len;
@@ -203,7 +203,7 @@ namespace ftl {
 
     size_t emitter::pop(reg dest) {
         size_t len = 0;
-        if (dest >= REG_R8)
+        if (dest >= R8)
             len += rex(true, false, false, true);
         len += m_code.write<u8>(OPCODE_POP + (dest & 7));
         return len;

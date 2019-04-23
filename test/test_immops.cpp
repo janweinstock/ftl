@@ -31,7 +31,7 @@ typedef int (entry_func)(void);
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
         emitter.movi(64, ftl::reg, val1);                                     \
         emitter.op(bits, ftl::reg, val2);                                     \
-        emitter.movr(bits, ftl::REG_RAX, ftl::reg);                           \
+        emitter.movr(bits, ftl::RAX, ftl::reg);                               \
         emitter.ret();                                                        \
         ftl::i##bits res = (ftl::i##bits)fn();                                \
         ftl::i##bits ref = (ftl::i##bits)(val1 cop val2);                     \
@@ -48,10 +48,10 @@ typedef int (entry_func)(void);
 
 // repeat the test set using various (volatile / caller-saved!) registers
 #define MAKE_TEST_REGSET(op, cop, bits)                                       \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_RAX)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_RCX)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R10)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R11)
+    MAKE_TEST_ARGSET(op, cop, bits, RAX)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, RCX)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R10)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R11)
 
 // repeat the test set using all support bit widths
 #define MAKE_TEST_SET(op, cop)                                                \

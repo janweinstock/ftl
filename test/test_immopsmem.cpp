@@ -48,10 +48,10 @@ typedef int (entry_func)(void);
 
 // repeat the test set using various (volatile / caller-saved!) base registers
 #define MAKE_TEST_REGSET(op, cop, bits)                                       \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_RAX)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_RDX)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R9 )                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R11)
+    MAKE_TEST_ARGSET(op, cop, bits, RAX)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, RDX)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R9 )                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R11)
 
 // repeat the test set using all support bit widths
 #define MAKE_TEST_SET(op, cop)                                                \
