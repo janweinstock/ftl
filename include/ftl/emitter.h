@@ -56,11 +56,7 @@ namespace ftl {
         size_t push(reg src);
         size_t pop(reg dest);
 
-        size_t movi(reg dest, u64 imm); // dest = imm
-        size_t mov(reg dest, reg from); // dest = from
-        size_t mov(reg dest, reg base, size_t offset); // dest = [base+offset]
-        size_t mov(reg base, size_t offset, reg src);  // [base+offset] = src
-
+        size_t movi(int bits, const rm& dest, i64 imm);
         size_t addi(int bits, const rm& dest, i32 imm);
         size_t ori (int bits, const rm& dest, i32 imm);
         size_t adci(int bits, const rm& dest, i32 imm);
@@ -70,6 +66,7 @@ namespace ftl {
         size_t xori(int bits, const rm& dest, i32 imm);
         size_t cmpi(int bits, const rm& dest, i32 imm);
 
+        size_t movr(int bits, const rm& dest, const rm& src);
         size_t addr(int bits, const rm& dest, const rm& src);
         size_t orr (int bits, const rm& dest, const rm& src);
         size_t adcr(int bits, const rm& dest, const rm& src);

@@ -54,7 +54,7 @@ namespace ftl {
         if (fits_i16(val)) return 16;
         if (fits_i32(val)) return 32;
         if (fits_i64(val)) return 64;
-        return sizeof(T);
+        return sizeof(T) * 8;
     }
 
 }

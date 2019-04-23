@@ -23,7 +23,7 @@
 typedef int (entry_func)(void);
 
 #define MAKE_TEST(op, cop, bits, reg, offset, op1, op2)                       \
-    TEST(emitter, op ## bits ## _ ## reg ## _ ## op1) {                       \
+    TEST(immopsmem, op ## bits ## _ ## reg ## _ ## op1) {                     \
         ftl::i##bits orig = (ftl::i##bits)(op1);                              \
         ftl::i##bits val1 = (ftl::i##bits)(op1);                              \
         ftl::i##bits val2 = (ftl::i##bits)(ftl::i32)(op2);                    \
@@ -31,7 +31,7 @@ typedef int (entry_func)(void);
         ftl::cache code(1 * ftl::KiB);                                        \
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
-        emitter.movi(ftl::reg, addr);                                         \
+        emitter.movi(64, ftl::reg, addr);                                     \
         emitter.op(bits, ftl::memop(ftl::reg, offset), val2);                 \
         emitter.ret();                                                        \
         fn();                                                                 \
@@ -50,8 +50,8 @@ typedef int (entry_func)(void);
 #define MAKE_TEST_REGSET(op, cop, bits)                                       \
     MAKE_TEST_ARGSET(op, cop, bits, REG_RAX)                                  \
     MAKE_TEST_ARGSET(op, cop, bits, REG_RDX)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R11)                                  \
-    MAKE_TEST_ARGSET(op, cop, bits, REG_R12)
+    MAKE_TEST_ARGSET(op, cop, bits, REG_R9 )                                  \
+    MAKE_TEST_ARGSET(op, cop, bits, REG_R11)
 
 // repeat the test set using all support bit widths
 #define MAKE_TEST_SET(op, cop)                                                \

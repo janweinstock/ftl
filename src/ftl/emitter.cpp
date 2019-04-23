@@ -26,9 +26,8 @@ namespace ftl {
         OPCODE_PUSH = 0x50,
         OPCODE_POP  = 0x58,
 
-        OPCODE_MOVI = 0xb8, // reg <- imm
-        OPCODE_MOVR = 0x89, // reg <- reg
-        OPCODE_MOVM = 0x8b, // reg <- mem
+        OPCODE_MOVIR  = 0xb0, // reg <- imm
+        OPCODE_MOVIRM = 0xc6, // r/m <- imm
 
         OPCODE_IMM8   = 0x80, // r/m8  += imm8
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
@@ -42,6 +41,7 @@ namespace ftl {
         OPCODE_SUB = 0x28,
         OPCODE_XOR = 0x30,
         OPCODE_CMP = 0x38,
+        OPCODE_MOV = 0x88,
     };
 
     enum opcode_imm {
@@ -141,7 +141,7 @@ namespace ftl {
     }
 
     size_t emitter::immop(int op, int bits, const rm& dest, i32 imm) {
-                int immlen = encode_size(imm); // 8, 16, 32 or 64bits
+        int immlen = encode_size(imm); // 8, 16, 32 or 64bits
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
 
         u8 opcode = bits == 8 ? OPCODE_IMM8 : OPCODE_IMM32;
@@ -209,38 +209,32 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::movi(reg dest, u64 imm) {
-        size_t len = 0;
-        len += rex(true, false, false, dest >= REG_R8);
-        len += m_code.write<u8>(OPCODE_MOVI + (dest & 0x7));
-        len += m_code.write(imm);
-        return len;
-    }
-
-    size_t emitter::mov(reg dest, reg from) {
-        if (dest == from)
-            return 0;
+    size_t emitter::movi(int bits, const rm& dest, i64 imm) {
+        int immlen = max(encode_size(imm), bits);
+        FTL_ERROR_ON(immlen > bits, "immediate operand too big");
+        FTL_ERROR_ON(dest.is_mem && immlen > 32, "immediate operand too big");
 
         size_t len = 0;
-        len += rex(true, from >= REG_R8, false, dest >= REG_R8);
-        len += m_code.write<u8>(OPCODE_MOVR);
-        len += modrm(MODRM_DIRECT, from & 7, dest & 7);
-        return len;
-    }
+        len += prefix(bits, (reg)0, dest);
 
-    size_t emitter::mov(reg dest, reg base, size_t offset) {
-        size_t len = 0;
-        len += rex(true, dest >= REG_R8, false, base >= REG_R8);
-        len += m_code.write<u8>(OPCODE_MOVM);
-        len += modrm(dest, memop(base, offset));
-        return len;
-    }
+        if (dest.is_reg()) {
+            u8 opcode = (bits == 8) ? OPCODE_MOVIR : (OPCODE_MOVIR + 8);
+            len += m_code.write<u8>(opcode + (dest.r & 7));
+        } else {
+            u8 opcode = (bits == 8) ? OPCODE_MOVIRM : (OPCODE_MOVIRM + 1);
+            len += m_code.write<u8>(opcode);
+            len += modrm((reg)0, dest);
+        }
 
-    size_t emitter::mov(reg base, size_t offset, reg src) {
-        size_t len = 0;
-        len += rex(true, src >= REG_R8, false, base >= REG_R8);
-        len += m_code.write<u8>(OPCODE_MOVR);
-        len += modrm(src, memop(base, offset));
+        switch (immlen) {
+        case  8: len += m_code.write<i8> (imm); break;
+        case 16: len += m_code.write<i16>(imm); break;
+        case 32: len += m_code.write<i32>(imm); break;
+        case 64: len += m_code.write<i64>(imm); break;
+        default:
+            FTL_ERROR("cannot encode immediate with %d bits", immlen);
+        }
+
         return len;
     }
 
@@ -280,6 +274,12 @@ namespace ftl {
 
     size_t emitter::cmpi(int bits, const rm& dest, i32 imm) {
         return immop(OPCODE_IMM_CMP, bits, dest, imm);
+    }
+
+    size_t emitter::movr(int bits, const rm& dest, const rm& src) {
+        if (dest.is_reg() && src.is_reg() && dest.r == src.r)
+            return 0;
+        return aluop(OPCODE_MOV, bits, dest, src);
     }
 
     size_t emitter::addr(int bits, const rm& dest, const rm& src) {
