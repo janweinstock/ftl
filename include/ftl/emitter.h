@@ -77,6 +77,7 @@ namespace ftl {
         size_t xorr(int bits, const rm& dest, const rm& src);
         size_t cmpr(int bits, const rm& dest, const rm& src);
         size_t notr(int bits, const rm& dest);
+        size_t negr(int bits, const rm& dest);
 
         size_t roli(int bits, const rm& dest, i8 imm);
         size_t rori(int bits, const rm& dest, i8 imm);

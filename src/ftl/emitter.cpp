@@ -351,6 +351,10 @@ namespace ftl {
         return aluop(OPCODE_NOT, bits, dest, (reg)2);
     }
 
+    size_t emitter::negr(int bits, const rm& dest) {
+        return aluop(OPCODE_NOT, bits, dest, (reg)3);
+    }
+
     size_t emitter::roli(int bits, const rm& dest, i8 imm) {
         return shift(OPCODE_SHIFT_ROL, bits, dest, imm);
     }

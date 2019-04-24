@@ -23,7 +23,7 @@
 typedef int (entry_func)(void);
 
 #define MAKE_TEST(op, cop, bits, reg, offset, op1, op2)                       \
-    TEST(immopsmem, op ## bits ## _ ## reg ## _ ## op1) {                     \
+    TEST(iopsmem, op ## bits ## _ ## reg ## _ ## op1) {                       \
         ftl::i##bits orig = (ftl::i##bits)(op1);                              \
         ftl::i##bits val1 = (ftl::i##bits)(op1);                              \
         ftl::i##bits val2 = (ftl::i##bits)(ftl::i32)(op2);                    \

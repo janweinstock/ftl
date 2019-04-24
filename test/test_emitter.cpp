@@ -146,6 +146,20 @@ TEST(emitter, notr) {
     EXPECT_EQ(fn(), ~val);
 }
 
+TEST(emitter, negr) {
+    cache code(1 * KiB);
+    emitter emitter(code);
+
+    i32 val = -42;
+
+    entry_func* fn = (entry_func*)code.get_code_ptr();
+    emitter.movi(32, RAX, val);
+    emitter.negr(32, RAX);
+    emitter.ret();
+
+    EXPECT_EQ(fn(), -val);
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
