@@ -66,6 +66,7 @@ namespace ftl {
         size_t subi(int bits, const rm& dest, i32 imm);
         size_t xori(int bits, const rm& dest, i32 imm);
         size_t cmpi(int bits, const rm& dest, i32 imm);
+        size_t tsti(int bits, const rm& dest, i32 imm);
 
         size_t movr(int bits, const rm& dest, const rm& src);
         size_t addr(int bits, const rm& dest, const rm& src);
@@ -76,6 +77,8 @@ namespace ftl {
         size_t subr(int bits, const rm& dest, const rm& src);
         size_t xorr(int bits, const rm& dest, const rm& src);
         size_t cmpr(int bits, const rm& dest, const rm& src);
+        size_t tstr(int bits, const rm& dest, const rm& src);
+
         size_t notr(int bits, const rm& dest);
         size_t negr(int bits, const rm& dest);
 

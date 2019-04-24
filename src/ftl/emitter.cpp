@@ -44,6 +44,7 @@ namespace ftl {
         OPCODE_SUB = 0x28,
         OPCODE_XOR = 0x30,
         OPCODE_CMP = 0x38,
+        OPCODE_TST = 0x84,
         OPCODE_MOV = 0x88,
         OPCODE_NOT = 0xf6,
     };
@@ -155,8 +156,9 @@ namespace ftl {
     }
 
     size_t emitter::immop(int op, int bits, const rm& dest, i32 imm) {
-        int immlen = encode_size(imm); // 8, 16, 32 or 64bits
+        int immlen = encode_size(imm); // 8, 16 or 32bits
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
 
         u8 opcode = bits == 8 ? OPCODE_IMM8 : OPCODE_IMM32;
         if ((opcode == OPCODE_IMM32) && (immlen <= 8))
@@ -180,10 +182,10 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::aluop(int op, int bits, const rm& dest,
-                          const rm& src) {
+    size_t emitter::aluop(int op, int bits, const rm& dest, const rm& src) {
         if (dest.is_mem && src.is_mem)
             FTL_ERROR("source and destination cannot both be in memory");
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
 
         rm oprm(src.is_mem ? src : dest); // operand used for modrm.rm
         rm op_r(src.is_mem ? dest : src); // operand used for modrm.reg
@@ -203,6 +205,8 @@ namespace ftl {
     }
 
     size_t emitter::shift(int op, int bits, const rm& dest, i8 imm) {
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
+
         if (imm == 0)
             return 0;
 
@@ -244,6 +248,7 @@ namespace ftl {
 
     size_t emitter::movi(int bits, const rm& dest, i64 imm) {
         int immlen = max(encode_size(imm), bits);
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
         FTL_ERROR_ON(dest.is_mem && immlen > 32, "immediate operand too big");
 
@@ -309,6 +314,33 @@ namespace ftl {
         return immop(OPCODE_IMM_CMP, bits, dest, imm);
     }
 
+    size_t emitter::tsti(int bits, const rm& dest, i32 imm) {
+        int immlen = encode_size(imm); // 8, 16 or 32bits
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
+        FTL_ERROR_ON(immlen > bits, "immediate operand too big");
+        FTL_ERROR_ON(immlen > 32, "immediate operand too big");
+
+        u8 opcode = OPCODE_NOT;
+        if (bits > 8)
+            opcode++;
+
+        size_t len = 0;
+        len += prefix(bits, (reg)0, dest);
+        len += m_code.write(opcode);
+        len += modrm((reg)0, dest);
+
+        switch (bits) {
+        case  8: len += m_code.write<i8>(imm);  break;
+        case 16: len += m_code.write<i16>(imm); break;
+        case 32: len += m_code.write<i32>(imm); break;
+        case 64: len += m_code.write<i32>(imm); break;
+        default:
+            FTL_ERROR("cannot encode immediate with %d bits", immlen);
+        }
+
+        return len;
+    }
+
     size_t emitter::movr(int bits, const rm& dest, const rm& src) {
         if (dest.is_reg() && src.is_reg() && dest.r == src.r)
             return 0;
@@ -345,6 +377,14 @@ namespace ftl {
 
     size_t emitter::cmpr(int bits, const rm& dest, const rm& src) {
         return aluop(OPCODE_CMP, bits, dest, src);
+    }
+
+    size_t emitter::tstr(int bits, const rm& dest, const rm& src) {
+        // we must make sure that op2 is a register, otherwise aluop will
+        // compute an invalid opcode
+        const rm& op1(dest.is_mem ? dest : src);
+        const rm& op2(dest.is_mem ? src : dest);
+        return aluop(OPCODE_TST, bits, op1, op2);
     }
 
     size_t emitter::notr(int bits, const rm& dest) {
