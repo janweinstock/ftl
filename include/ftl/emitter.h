@@ -42,6 +42,7 @@ namespace ftl {
 
         size_t immop(int op, int bits, const rm& dest, i32 imm);
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
+        size_t shift(int op, int bits, const rm& dest, i8 imm);
 
         // disabled
         emitter();
@@ -75,6 +76,15 @@ namespace ftl {
         size_t subr(int bits, const rm& dest, const rm& src);
         size_t xorr(int bits, const rm& dest, const rm& src);
         size_t cmpr(int bits, const rm& dest, const rm& src);
+        size_t notr(int bits, const rm& dest);
+
+        size_t roli(int bits, const rm& dest, i8 imm);
+        size_t rori(int bits, const rm& dest, i8 imm);
+        size_t rcli(int bits, const rm& dest, i8 imm);
+        size_t rcri(int bits, const rm& dest, i8 imm);
+        size_t shli(int bits, const rm& dest, i8 imm);
+        size_t shri(int bits, const rm& dest, i8 imm);
+        size_t sari(int bits, const rm& dest, i8 imm);
     };
 
 }

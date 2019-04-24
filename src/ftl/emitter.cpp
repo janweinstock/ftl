@@ -33,6 +33,9 @@ namespace ftl {
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
         OPCODE_IMM32S = 0x83, // r/m32 += imm8
 
+        OPCODE_SHIFT  = 0xc0, // shift group
+        OPCODE_SHIFT1 = 0xd0, // shift by one
+
         OPCODE_ADD = 0x00,
         OPCODE_OR  = 0x08,
         OPCODE_ADC = 0x10,
@@ -42,6 +45,7 @@ namespace ftl {
         OPCODE_XOR = 0x30,
         OPCODE_CMP = 0x38,
         OPCODE_MOV = 0x88,
+        OPCODE_NOT = 0xf6,
     };
 
     enum opcode_imm {
@@ -53,6 +57,16 @@ namespace ftl {
         OPCODE_IMM_SUB = 5,
         OPCODE_IMM_XOR = 6,
         OPCODE_IMM_CMP = 7,
+    };
+
+    enum opcode_shift {
+        OPCODE_SHIFT_ROL = 0,
+        OPCODE_SHIFT_ROR = 1,
+        OPCODE_SHIFT_RCL = 2,
+        OPCODE_SHIFT_RCR = 3,
+        OPCODE_SHIFT_SHL = 4,
+        OPCODE_SHIFT_SHR = 5,
+        OPCODE_SHIFT_SAR = 7,
     };
 
     enum rex_bits {
@@ -188,6 +202,25 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::shift(int op, int bits, const rm& dest, i8 imm) {
+        if (imm == 0)
+            return 0;
+
+        u8 opcode = imm == 1 ? OPCODE_SHIFT1 : OPCODE_SHIFT;
+        if (bits > 8)
+            opcode++;
+
+        size_t len = 0;
+        len += prefix(bits, (reg)0, dest);
+        len += m_code.write(opcode);
+        len += modrm((reg)op, dest);
+
+        if (imm != 1)
+            len += m_code.write(imm);
+
+        return len;
+    }
+
     size_t emitter::ret() {
         m_code.write<u8>(OPCODE_RET);
         return sizeof(u8);
@@ -312,6 +345,38 @@ namespace ftl {
 
     size_t emitter::cmpr(int bits, const rm& dest, const rm& src) {
         return aluop(OPCODE_CMP, bits, dest, src);
+    }
+
+    size_t emitter::notr(int bits, const rm& dest) {
+        return aluop(OPCODE_NOT, bits, dest, (reg)2);
+    }
+
+    size_t emitter::roli(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_ROL, bits, dest, imm);
+    }
+
+    size_t emitter::rori(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_ROR, bits, dest, imm);
+    }
+
+    size_t emitter::rcli(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_RCL, bits, dest, imm);
+    }
+
+    size_t emitter::rcri(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_RCR, bits, dest, imm);
+    }
+
+    size_t emitter::shli(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_SHL, bits, dest, imm);
+    }
+
+    size_t emitter::shri(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_SHR, bits, dest, imm);
+    }
+
+    size_t emitter::sari(int bits, const rm& dest, i8 imm) {
+        return shift(OPCODE_SHIFT_SAR, bits, dest, imm);
     }
 
 }
