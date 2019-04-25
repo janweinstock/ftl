@@ -51,6 +51,10 @@ namespace ftl {
         OPCODE_CALL   = 0xe8,
         OPCODE_JMPI   = 0xeb,
         OPCODE_JMPR   = 0xff,
+
+        OPCODE_BRANCH = 0x70,
+        OPCODE_BR32   = 0x80,
+        OPCODE_EXT    = 0x0f,
     };
 
     enum opcode_imm {
@@ -72,6 +76,25 @@ namespace ftl {
         OPCODE_SHIFT_SHL = 4,
         OPCODE_SHIFT_SHR = 5,
         OPCODE_SHIFT_SAR = 7,
+    };
+
+    enum branch_condition {
+        BRCOND_O =  0x0, // jump if overflow
+        BRCOND_NO = 0x1, // jump if no overflow
+        BRCOND_B  = 0x2, // jump if below
+        BRCOND_AE = 0x3, // jump if above or equal
+        BRCOND_Z  = 0x4, // jump if zero
+        BRCOND_NZ = 0x5, // jump if not zero
+        BRCOND_BE = 0x6, // jump if below or equal
+        BRCOND_A  = 0x7, // jump if above
+        BRCOND_S  = 0x8, // jump if sign
+        BRCOND_NS = 0x9, // jump if no sign
+        BRCOND_P  = 0xa, // jump if parity even
+        BRCOND_NP = 0xb, // jump if parity odd
+        BRCOND_L  = 0xc, // jump if less than
+        BRCOND_GE = 0xd, // jump if greater or equal
+        BRCOND_LE = 0xe, // jump if less or equal
+        BRCOND_G  = 0xf, // jump if greater than
     };
 
     enum rex_bits {
@@ -225,6 +248,21 @@ namespace ftl {
 
         if (imm != 1)
             len += m_code.write(imm);
+
+        return len;
+    }
+
+    size_t emitter::branch(int op, i32 imm) {
+        size_t len = 0;
+
+        if (fits_i8(imm)) {
+            len += m_code.write<u8>(OPCODE_BRANCH + op);
+            len += m_code.write<i8>(imm);
+        } else {
+            len += m_code.write<u8>(OPCODE_EXT);
+            len += m_code.write<u8>(OPCODE_BR32 + op);
+            len += m_code.write<i32>(imm);
+        }
 
         return len;
     }
@@ -457,6 +495,70 @@ namespace ftl {
         len += m_code.write<u8>(OPCODE_JMPR);
         len += modrm((reg)4, dest);
         return len;
+    }
+
+    size_t emitter::jo(i32 offset) {
+        return branch(BRCOND_O, offset);
+    }
+
+    size_t emitter::jno(i32 offset) {
+        return branch(BRCOND_NO, offset);
+    }
+
+    size_t emitter::jb(i32 offset) {
+        return branch(BRCOND_B, offset);
+    }
+
+    size_t emitter::jae(i32 offset) {
+        return branch(BRCOND_AE, offset);
+    }
+
+    size_t emitter::jz(i32 offset) {
+        return branch(BRCOND_Z, offset);
+    }
+
+    size_t emitter::jnz(i32 offset) {
+        return branch(BRCOND_NZ, offset);
+    }
+
+    size_t emitter::jbe(i32 offset) {
+        return branch(BRCOND_BE, offset);
+    }
+
+    size_t emitter::ja(i32 offset) {
+        return branch(BRCOND_A, offset);
+    }
+
+    size_t emitter::js(i32 offset) {
+        return branch(BRCOND_S, offset);
+    }
+
+    size_t emitter::jns(i32 offset) {
+        return branch(BRCOND_NS, offset);
+    }
+
+    size_t emitter::jp(i32 offset) {
+        return branch(BRCOND_P, offset);
+    }
+
+    size_t emitter::jnp(i32 offset) {
+        return branch(BRCOND_NP, offset);
+    }
+
+    size_t emitter::jl(i32 offset) {
+        return branch(BRCOND_L, offset);
+    }
+
+    size_t emitter::jge(i32 offset) {
+        return branch(BRCOND_GE, offset);
+    }
+
+    size_t emitter::jle(i32 offset) {
+        return branch(BRCOND_LE, offset);
+    }
+
+    size_t emitter::jg(i32 offset) {
+        return branch(BRCOND_G, offset);
     }
 
 }

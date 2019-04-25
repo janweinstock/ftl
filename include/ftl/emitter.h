@@ -43,6 +43,7 @@ namespace ftl {
         size_t immop(int op, int bits, const rm& dest, i32 imm);
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
         size_t shift(int op, int bits, const rm& dest, i8 imm);
+        size_t branch(int op, i32 imm);
 
         // disabled
         emitter();
@@ -93,6 +94,23 @@ namespace ftl {
         size_t call(void* fn);
         size_t jmpi(i32 offset);
         size_t jmpr(const rm& dest);
+
+        size_t jo(i32 offset);
+        size_t jno(i32 offset);
+        size_t jb(i32 offset);
+        size_t jae(i32 offset);
+        size_t jz(i32 offset);
+        size_t jnz(i32 offset);
+        size_t jbe(i32 offset);
+        size_t ja(i32 offset);
+        size_t js(i32 offset);
+        size_t jns(i32 offset);
+        size_t jp(i32 offset);
+        size_t jnp(i32 offset);
+        size_t jl(i32 offset);
+        size_t jge(i32 offset);
+        size_t jle(i32 offset);
+        size_t jg(i32 offset);
     };
 
 }
