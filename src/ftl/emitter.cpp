@@ -21,10 +21,10 @@
 namespace ftl {
 
     enum opcode {
-        OPCODE_RET  = 0xc3,
+        OPCODE_RET    = 0xc3,
 
-        OPCODE_PUSH = 0x50,
-        OPCODE_POP  = 0x58,
+        OPCODE_PUSH   = 0x50,
+        OPCODE_POP    = 0x58,
 
         OPCODE_MOVIR  = 0xb0, // reg <- imm
         OPCODE_MOVIRM = 0xc6, // r/m <- imm
@@ -36,17 +36,21 @@ namespace ftl {
         OPCODE_SHIFT  = 0xc0, // shift group
         OPCODE_SHIFT1 = 0xd0, // shift by one
 
-        OPCODE_ADD = 0x00,
-        OPCODE_OR  = 0x08,
-        OPCODE_ADC = 0x10,
-        OPCODE_SBB = 0x18,
-        OPCODE_AND = 0x20,
-        OPCODE_SUB = 0x28,
-        OPCODE_XOR = 0x30,
-        OPCODE_CMP = 0x38,
-        OPCODE_TST = 0x84,
-        OPCODE_MOV = 0x88,
-        OPCODE_NOT = 0xf6,
+        OPCODE_ADD    = 0x00,
+        OPCODE_OR     = 0x08,
+        OPCODE_ADC    = 0x10,
+        OPCODE_SBB    = 0x18,
+        OPCODE_AND    = 0x20,
+        OPCODE_SUB    = 0x28,
+        OPCODE_XOR    = 0x30,
+        OPCODE_CMP    = 0x38,
+        OPCODE_TST    = 0x84,
+        OPCODE_MOV    = 0x88,
+        OPCODE_NOT    = 0xf6,
+
+        OPCODE_CALL   = 0xe8,
+        OPCODE_JMPI   = 0xeb,
+        OPCODE_JMPR   = 0xff,
     };
 
     enum opcode_imm {
@@ -226,8 +230,7 @@ namespace ftl {
     }
 
     size_t emitter::ret() {
-        m_code.write<u8>(OPCODE_RET);
-        return sizeof(u8);
+        return m_code.write<u8>(OPCODE_RET);
     }
 
     size_t emitter::push(reg src) {
@@ -421,6 +424,39 @@ namespace ftl {
 
     size_t emitter::sari(int bits, const rm& dest, i8 imm) {
         return shift(OPCODE_SHIFT_SAR, bits, dest, imm);
+    }
+
+    size_t emitter::call(void* fn) {
+        i64 offset = (unsigned char*)fn - m_code.get_code_ptr();
+        if (!fits_i32(offset))
+            FTL_ERROR("cannot call %p, out of reach", fn);
+
+        size_t len = 0;
+        len += m_code.write<u8>(OPCODE_CALL);
+        len += m_code.write<i32>(offset);
+        return len;
+    }
+
+    size_t emitter::jmpi(i32 offset) {
+        size_t len = 0;
+
+        if (fits_i8(offset)) {
+            len += m_code.write<u8>(OPCODE_JMPI);
+            len += m_code.write<i8>(offset);
+        } else {
+            len += m_code.write<u8>(OPCODE_JMPI - 2);
+            len += m_code.write<i32>(offset);
+        }
+
+        return len;
+    }
+
+    size_t emitter::jmpr(const rm& dest) {
+        size_t len = 0;
+        len += prefix(32, (reg)0, dest);
+        len += m_code.write<u8>(OPCODE_JMPR);
+        len += modrm((reg)4, dest);
+        return len;
     }
 
 }

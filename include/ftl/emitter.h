@@ -89,6 +89,10 @@ namespace ftl {
         size_t shli(int bits, const rm& dest, i8 imm);
         size_t shri(int bits, const rm& dest, i8 imm);
         size_t sari(int bits, const rm& dest, i8 imm);
+
+        size_t call(void* fn);
+        size_t jmpi(i32 offset);
+        size_t jmpr(const rm& dest);
     };
 
 }
