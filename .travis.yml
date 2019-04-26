@@ -1,0 +1,18 @@
+dist: trusty
+sudo: false
+
+language: c++
+
+compiler:
+    - gcc
+
+env:
+    - BUILD=DEBUG
+    - BUILD=RELEASE
+
+before_script:
+    - mkdir -p BUILD/$BUILD/BUILD && cd BUILD/$BUILD/BUILD
+    - cmake ../../.. -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=..
+
+script:
+    - make -j 4 && ctest --output-on-failure && make install
