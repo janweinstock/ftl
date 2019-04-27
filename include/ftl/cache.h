@@ -43,6 +43,9 @@ namespace ftl {
         const u8* get_code_entry() const { return m_code_head; }
         const u8* get_code_ptr()   const { return m_code_ptr; }
 
+        u8* get_code_entry() { return m_code_head; }
+        u8* get_code_ptr()   { return m_code_ptr; }
+
         size_t size_remaining() const { return m_code_end - m_code_ptr; }
 
         cache(size_t size);

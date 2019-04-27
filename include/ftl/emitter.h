@@ -25,6 +25,7 @@
 
 #include "ftl/reg.h"
 #include "ftl/cache.h"
+#include "ftl/fixup.h"
 
 namespace ftl {
 
@@ -32,6 +33,8 @@ namespace ftl {
     {
     private:
         cache& m_code;
+
+        inline void setup_fixup(fixup* fix, int size);
 
         size_t rex(bool is64, bool rexr, bool rexx, bool rexb);
         size_t modrm(int mod, int reg, int rm);
@@ -43,7 +46,7 @@ namespace ftl {
         size_t immop(int op, int bits, const rm& dest, i32 imm);
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
         size_t shift(int op, int bits, const rm& dest, i8 imm);
-        size_t branch(int op, i32 imm);
+        size_t branch(int op, i32 imm, fixup* fix);
 
         // disabled
         emitter();
@@ -80,7 +83,6 @@ namespace ftl {
         size_t cmpr(int bits, const rm& dest, const rm& src);
         size_t tstr(int bits, const rm& dest, const rm& src);
 
-        size_t tstr(int bits, const rm& op);
         size_t notr(int bits, const rm& op);
         size_t negr(int bits, const rm& op);
         size_t mulr(int bits, const rm& op);
@@ -99,26 +101,29 @@ namespace ftl {
         size_t shri(int bits, const rm& dest, i8 imm);
         size_t sari(int bits, const rm& dest, i8 imm);
 
-        size_t call(void* fn);
-        size_t jmpi(i32 offset);
+        size_t call(u8* fn, fixup* fix = NULL);
+
+        size_t jmpi(i32 offset, fixup* fix = NULL);
         size_t jmpr(const rm& dest);
 
-        size_t jo(i32 offset);
-        size_t jno(i32 offset);
-        size_t jb(i32 offset);
-        size_t jae(i32 offset);
-        size_t jz(i32 offset);
-        size_t jnz(i32 offset);
-        size_t jbe(i32 offset);
-        size_t ja(i32 offset);
-        size_t js(i32 offset);
-        size_t jns(i32 offset);
-        size_t jp(i32 offset);
-        size_t jnp(i32 offset);
-        size_t jl(i32 offset);
-        size_t jge(i32 offset);
-        size_t jle(i32 offset);
-        size_t jg(i32 offset);
+        size_t jo(i32 offset, fixup* fix = NULL);
+        size_t jno(i32 offset, fixup* fix = NULL);
+        size_t jb(i32 offset, fixup* fix = NULL);
+        size_t jae(i32 offset, fixup* fix = NULL);
+        size_t jz(i32 offset, fixup* fix = NULL);
+        size_t jnz(i32 offset, fixup* fix = NULL);
+        size_t je(i32 offset, fixup* fix = NULL);
+        size_t jne(i32 offset, fixup* fix = NULL);
+        size_t jbe(i32 offset, fixup* fix = NULL);
+        size_t ja(i32 offset, fixup* fix = NULL);
+        size_t js(i32 offset, fixup* fix = NULL);
+        size_t jns(i32 offset, fixup* fix = NULL);
+        size_t jp(i32 offset, fixup* fix = NULL);
+        size_t jnp(i32 offset, fixup* fix = NULL);
+        size_t jl(i32 offset, fixup* fix = NULL);
+        size_t jge(i32 offset, fixup* fix = NULL);
+        size_t jle(i32 offset, fixup* fix = NULL);
+        size_t jg(i32 offset, fixup* fix = NULL);
     };
 
 }

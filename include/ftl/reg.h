@@ -68,10 +68,10 @@ namespace ftl {
         return rm(base, offset);
     }
 
-    inline reg argreg(unsigned int argno) {
-        reg list[] = { RDI, RSI, RDX, RCX, R8, R9 };
-        FTL_ERROR_ON(argno > ARRAY_SIZE(list), "argno out of bounds");
-        return list[argno];
+    static inline reg argreg(unsigned int argno) {
+        reg sysv[] = { RDI, RSI, RDX, RCX, R8, R9 };
+        FTL_ERROR_ON(argno > ARRAY_SIZE(sysv), "argno out of bounds");
+        return sysv[argno];
     }
 
 }

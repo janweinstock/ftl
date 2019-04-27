@@ -137,12 +137,11 @@ namespace ftl {
         SCALE8 = 3,
     };
 
-    emitter::emitter(cache& code):
-        m_code(code) {
-    }
-
-    emitter::~emitter() {
-        // nothing to do
+    void emitter::setup_fixup(fixup* fix, int size) {
+        if (fix) {
+            fix->code = m_code.get_code_ptr();
+            fix->size = size;
+        }
     }
 
     size_t emitter::rex(bool is64, bool rexr, bool rexx, bool rexb) {
@@ -270,19 +269,29 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::branch(int op, i32 imm) {
+    size_t emitter::branch(int op, i32 imm, fixup* fix) {
         size_t len = 0;
 
         if (fits_i8(imm)) {
             len += m_code.write<u8>(OPCODE_BRANCH + op);
+            setup_fixup(fix, 1);
             len += m_code.write<i8>(imm);
         } else {
             len += m_code.write<u8>(OPCODE_ESCAPE);
             len += m_code.write<u8>(OPCODE2_BR32 + op);
+            setup_fixup(fix, 4);
             len += m_code.write<i32>(imm);
         }
 
         return len;
+    }
+
+    emitter::emitter(cache& code):
+        m_code(code) {
+    }
+
+    emitter::~emitter() {
+        // nothing to do
     }
 
     size_t emitter::ret() {
@@ -360,8 +369,6 @@ namespace ftl {
     }
 
     size_t emitter::subi(int bits, const rm& dest, i32 imm) {
-        if (imm == 0)
-            return 0;
         return immop(OPCODE_IMM_SUB, bits, dest, imm);
     }
 
@@ -384,9 +391,10 @@ namespace ftl {
             opcode++;
 
         size_t len = 0;
-        len += prefix(bits, (reg)0, dest);
+        reg r = (reg)OPCODE_UNARY_TEST;
+        len += prefix(bits, r, dest);
         len += m_code.write(opcode);
-        len += modrm((reg)0, dest);
+        len += modrm(r, dest);
 
         switch (bits) {
         case  8: len += m_code.write<i8>(imm);  break;
@@ -401,8 +409,6 @@ namespace ftl {
     }
 
     size_t emitter::movr(int bits, const rm& dest, const rm& src) {
-        if (dest.is_reg() && src.is_reg() && dest.r == src.r)
-            return 0;
         return aluop(OPCODE_MOV, bits, dest, src);
     }
 
@@ -444,10 +450,6 @@ namespace ftl {
         const rm& op1(dest.is_mem ? dest : src);
         const rm& op2(dest.is_mem ? src : dest);
         return aluop(OPCODE_TST, bits, op1, op2);
-    }
-
-    size_t emitter::tstr(int bits, const rm& op) {
-        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_TEST);
     }
 
     size_t emitter::notr(int bits, const rm& op) {
@@ -534,25 +536,31 @@ namespace ftl {
         return shift(OPCODE_SHIFT_SAR, bits, dest, imm);
     }
 
-    size_t emitter::call(void* fn) {
-        i64 offset = (unsigned char*)fn - m_code.get_code_ptr();
+    size_t emitter::call(u8* fn, fixup* fix) {
+        if ((fn == NULL) && (fix != NULL))
+            fn = m_code.get_code_ptr();
+
+        i64 offset = fn - m_code.get_code_ptr() - 5;
         if (!fits_i32(offset))
             FTL_ERROR("cannot call %p, out of reach", fn);
 
         size_t len = 0;
         len += m_code.write<u8>(OPCODE_CALL);
+        setup_fixup(fix, 4);
         len += m_code.write<i32>(offset);
         return len;
     }
 
-    size_t emitter::jmpi(i32 offset) {
+    size_t emitter::jmpi(i32 offset, fixup* fix) {
         size_t len = 0;
 
         if (fits_i8(offset)) {
             len += m_code.write<u8>(OPCODE_JMPI);
+            setup_fixup(fix, 1);
             len += m_code.write<i8>(offset);
         } else {
             len += m_code.write<u8>(OPCODE_JMPI - 2);
+            setup_fixup(fix, 4);
             len += m_code.write<i32>(offset);
         }
 
@@ -567,68 +575,76 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::jo(i32 offset) {
-        return branch(BRCOND_O, offset);
+    size_t emitter::jo(i32 offset, fixup* fix) {
+        return branch(BRCOND_O, offset, fix);
     }
 
-    size_t emitter::jno(i32 offset) {
-        return branch(BRCOND_NO, offset);
+    size_t emitter::jno(i32 offset, fixup* fix) {
+        return branch(BRCOND_NO, offset, fix);
     }
 
-    size_t emitter::jb(i32 offset) {
-        return branch(BRCOND_B, offset);
+    size_t emitter::jb(i32 offset, fixup* fix) {
+        return branch(BRCOND_B, offset, fix);
     }
 
-    size_t emitter::jae(i32 offset) {
-        return branch(BRCOND_AE, offset);
+    size_t emitter::jae(i32 offset, fixup* fix) {
+        return branch(BRCOND_AE, offset, fix);
     }
 
-    size_t emitter::jz(i32 offset) {
-        return branch(BRCOND_Z, offset);
+    size_t emitter::jz(i32 offset, fixup* fix) {
+        return branch(BRCOND_Z, offset, fix);
     }
 
-    size_t emitter::jnz(i32 offset) {
-        return branch(BRCOND_NZ, offset);
+    size_t emitter::jnz(i32 offset, fixup* fix) {
+        return branch(BRCOND_NZ, offset, fix);
     }
 
-    size_t emitter::jbe(i32 offset) {
-        return branch(BRCOND_BE, offset);
+    size_t emitter::je(i32 offset, fixup* fix) {
+        return branch(BRCOND_Z, offset, fix);
     }
 
-    size_t emitter::ja(i32 offset) {
-        return branch(BRCOND_A, offset);
+    size_t emitter::jne(i32 offset, fixup* fix) {
+        return branch(BRCOND_NZ, offset, fix);
     }
 
-    size_t emitter::js(i32 offset) {
-        return branch(BRCOND_S, offset);
+    size_t emitter::jbe(i32 offset, fixup* fix) {
+        return branch(BRCOND_BE, offset, fix);
     }
 
-    size_t emitter::jns(i32 offset) {
-        return branch(BRCOND_NS, offset);
+    size_t emitter::ja(i32 offset, fixup* fix) {
+        return branch(BRCOND_A, offset, fix);
     }
 
-    size_t emitter::jp(i32 offset) {
-        return branch(BRCOND_P, offset);
+    size_t emitter::js(i32 offset, fixup* fix) {
+        return branch(BRCOND_S, offset, fix);
     }
 
-    size_t emitter::jnp(i32 offset) {
-        return branch(BRCOND_NP, offset);
+    size_t emitter::jns(i32 offset, fixup* fix) {
+        return branch(BRCOND_NS, offset, fix);
     }
 
-    size_t emitter::jl(i32 offset) {
-        return branch(BRCOND_L, offset);
+    size_t emitter::jp(i32 offset, fixup* fix) {
+        return branch(BRCOND_P, offset, fix);
     }
 
-    size_t emitter::jge(i32 offset) {
-        return branch(BRCOND_GE, offset);
+    size_t emitter::jnp(i32 offset, fixup* fix) {
+        return branch(BRCOND_NP, offset, fix);
     }
 
-    size_t emitter::jle(i32 offset) {
-        return branch(BRCOND_LE, offset);
+    size_t emitter::jl(i32 offset, fixup* fix) {
+        return branch(BRCOND_L, offset, fix);
     }
 
-    size_t emitter::jg(i32 offset) {
-        return branch(BRCOND_G, offset);
+    size_t emitter::jge(i32 offset, fixup* fix) {
+        return branch(BRCOND_GE, offset, fix);
+    }
+
+    size_t emitter::jle(i32 offset, fixup* fix) {
+        return branch(BRCOND_LE, offset, fix);
+    }
+
+    size_t emitter::jg(i32 offset, fixup* fix) {
+        return branch(BRCOND_G, offset, fix);
     }
 
 }

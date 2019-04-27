@@ -16,17 +16,31 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#ifndef FTL_FIXUP_H
+#define FTL_FIXUP_H
 
 #include "ftl/common.h"
-#include "ftl/error.h"
 #include "ftl/bitops.h"
-#include "ftl/utils.h"
+#include "ftl/error.h"
 
-#include "ftl/reg.h"
-#include "ftl/cache.h"
-#include "ftl/fixup.h"
-#include "ftl/emitter.h"
+namespace ftl {
+
+    struct fixup {
+        u8* code;
+        int size;
+    };
+
+    static inline void patch_jump(const fixup& fix, const u8* target) {
+        ptrdiff_t offset = target - fix.code - fix.size;
+        int offlen = encode_size(offset) / 8;
+        FTL_ERROR_ON(offlen > fix.size, "jump target too far to encode");
+        memcpy(fix.code, &offset, fix.size);
+    }
+
+    static inline void patch_call(const fixup& fix, const u8* target) {
+        patch_jump(fix, target);
+    }
+
+}
 
 #endif
