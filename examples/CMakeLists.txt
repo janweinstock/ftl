@@ -16,39 +16,8 @@
  #                                                                            #
  ##############################################################################
 
-project(ftl)
-cmake_minimum_required(VERSION 3.5)
-
-option(BUILD_TESTS "Build unit tests, requires GTest and GMock >= 1.8.0" ON)
-option(BUILD_EXAMPLES "Build example programs" ON)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
-set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
-
-set(sources
-    "${src}/ftl/utils.cpp"
-    "${src}/ftl/error.cpp"
-    "${src}/ftl/reg.cpp"
-    "${src}/ftl/cache.cpp"
-    "${src}/ftl/emitter.cpp")
-
-add_library(ftl ${sources})
-
-target_include_directories(ftl PUBLIC ${inc})
-
-install(TARGETS ftl DESTINATION lib)
-install(DIRECTORY ${inc}/ DESTINATION include)
-
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(test)
-endif()
-
-if(BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+add_executable(fibonacci fibonacci.cpp)
+add_dependencies(fibonacci ftl)
+target_link_libraries(fibonacci ftl)
+install(TARGETS fibonacci DESTINATION examples)
+install(FILES fibonacci.cpp DESTINATION examples)
