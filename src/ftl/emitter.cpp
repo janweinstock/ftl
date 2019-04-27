@@ -46,15 +46,23 @@ namespace ftl {
         OPCODE_CMP    = 0x38,
         OPCODE_TST    = 0x84,
         OPCODE_MOV    = 0x88,
-        OPCODE_NOT    = 0xf6,
+        OPCODE_UNARY  = 0xf6,
+
+        OPCODE_IMUL8  = 0x6b,
+        OPCODE_IMUL32 = 0x69,
 
         OPCODE_CALL   = 0xe8,
         OPCODE_JMPI   = 0xeb,
         OPCODE_JMPR   = 0xff,
 
         OPCODE_BRANCH = 0x70,
-        OPCODE_BR32   = 0x80,
-        OPCODE_EXT    = 0x0f,
+
+        OPCODE_ESCAPE = 0x0f,
+    };
+
+    enum opcode_2bytes {
+        OPCODE2_BR32  = 0x80,
+        OPCODE2_IMUL  = 0xaf,
     };
 
     enum opcode_imm {
@@ -78,8 +86,18 @@ namespace ftl {
         OPCODE_SHIFT_SAR = 7,
     };
 
+    enum opcode_unary {
+        OPCODE_UNARY_TEST = 0,
+        OPCODE_UNARY_NOT  = 2,
+        OPCODE_UNARY_NEG  = 3,
+        OPCODE_UNARY_MUL  = 4,
+        OPCODE_UNARY_IMUL = 5,
+        OPCODE_UNARY_DIV  = 6,
+        OPCODE_UNARY_IDIV = 7,
+    };
+
     enum branch_condition {
-        BRCOND_O =  0x0, // jump if overflow
+        BRCOND_O  = 0x0, // jump if overflow
         BRCOND_NO = 0x1, // jump if no overflow
         BRCOND_B  = 0x2, // jump if below
         BRCOND_AE = 0x3, // jump if above or equal
@@ -259,8 +277,8 @@ namespace ftl {
             len += m_code.write<u8>(OPCODE_BRANCH + op);
             len += m_code.write<i8>(imm);
         } else {
-            len += m_code.write<u8>(OPCODE_EXT);
-            len += m_code.write<u8>(OPCODE_BR32 + op);
+            len += m_code.write<u8>(OPCODE_ESCAPE);
+            len += m_code.write<u8>(OPCODE2_BR32 + op);
             len += m_code.write<i32>(imm);
         }
 
@@ -361,7 +379,7 @@ namespace ftl {
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
         FTL_ERROR_ON(immlen > 32, "immediate operand too big");
 
-        u8 opcode = OPCODE_NOT;
+        u8 opcode = OPCODE_UNARY;
         if (bits > 8)
             opcode++;
 
@@ -428,12 +446,64 @@ namespace ftl {
         return aluop(OPCODE_TST, bits, op1, op2);
     }
 
-    size_t emitter::notr(int bits, const rm& dest) {
-        return aluop(OPCODE_NOT, bits, dest, (reg)2);
+    size_t emitter::tstr(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_TEST);
     }
 
-    size_t emitter::negr(int bits, const rm& dest) {
-        return aluop(OPCODE_NOT, bits, dest, (reg)3);
+    size_t emitter::notr(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_NOT);
+    }
+
+    size_t emitter::negr(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_NEG);
+    }
+
+    size_t emitter::mulr(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_MUL);
+    }
+
+    size_t emitter::imul(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_IMUL);
+    }
+
+    size_t emitter::divr(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_DIV);
+    }
+
+    size_t emitter::idiv(int bits, const rm& op) {
+        return aluop(OPCODE_UNARY, bits, op, (reg)OPCODE_UNARY_IDIV);
+    }
+
+    size_t emitter::imuli(int bits, reg dest, const rm& src, i32 imm) {
+        int immlen = encode_size(imm);
+        FTL_ERROR_ON(bits < 16, "8bit multiplication not supported");
+        FTL_ERROR_ON(immlen > bits, "immediate too big to encode");
+
+        size_t len = 0;
+        len += prefix(bits, dest, src);
+
+        u8 opcode = (immlen == 8) ? OPCODE_IMUL8 : OPCODE_IMUL32;
+        len += m_code.write(opcode);
+        len += modrm(dest, src);
+
+        if (immlen == 8)
+            len += m_code.write<i8>(imm);
+        else
+            len += m_code.write<i32>(imm);
+
+        return len;
+    }
+
+    size_t emitter::imulr(int bits, reg dest, const rm& src) {
+        FTL_ERROR_ON(bits < 16, "8bit multiplication not supported");
+
+        size_t len = 0;
+        len += prefix(bits, dest, src);
+        len += m_code.write<u8>(OPCODE_ESCAPE);
+        len += m_code.write<u8>(OPCODE2_IMUL);
+        len += modrm(dest, src);
+
+        return len;
     }
 
     size_t emitter::roli(int bits, const rm& dest, i8 imm) {

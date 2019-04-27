@@ -38,6 +38,8 @@
 #define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
 #define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
 
+#define ARRAY_SIZE(a)        (sizeof(a) / sizeof((a)[0]))
+
 namespace ftl {
 
     typedef int8_t  i8;

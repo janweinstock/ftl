@@ -80,8 +80,16 @@ namespace ftl {
         size_t cmpr(int bits, const rm& dest, const rm& src);
         size_t tstr(int bits, const rm& dest, const rm& src);
 
-        size_t notr(int bits, const rm& dest);
-        size_t negr(int bits, const rm& dest);
+        size_t tstr(int bits, const rm& op);
+        size_t notr(int bits, const rm& op);
+        size_t negr(int bits, const rm& op);
+        size_t mulr(int bits, const rm& op);
+        size_t imul(int bits, const rm& op);
+        size_t divr(int bits, const rm& op);
+        size_t idiv(int bits, const rm& op);
+
+        size_t imuli(int bits, reg dest, const rm& src, i32 imm);
+        size_t imulr(int bits, reg dest, const rm& src);
 
         size_t roli(int bits, const rm& dest, i8 imm);
         size_t rori(int bits, const rm& dest, i8 imm);

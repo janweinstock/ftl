@@ -21,20 +21,21 @@
 
 #include "ftl/common.h"
 #include "ftl/bitops.h"
+#include "ftl/error.h"
 
 namespace ftl {
 
     enum reg {
-        RAX = 0,  // caller-saved
-        RCX = 1,  // caller-saved
-        RDX = 2,  // caller-saved
+        RAX = 0,  // caller-saved, return value
+        RCX = 1,  // caller-saved, arg3
+        RDX = 2,  // caller-saved, arg2
         RBX = 3,
         RSP = 4,
         RBP = 5,
-        RSI = 6,
-        RDI = 7,
-        R8  = 8,  // caller-saved
-        R9  = 9,  // caller-saved
+        RSI = 6,  // arg1
+        RDI = 7,  // arg0
+        R8  = 8,  // caller-saved, arg4
+        R9  = 9,  // caller-saved, arg5
         R10 = 10, // caller-saved
         R11 = 11, // caller-saved
         R12 = 12,
@@ -65,6 +66,12 @@ namespace ftl {
 
     static inline rm memop(reg base, i32 offset) {
         return rm(base, offset);
+    }
+
+    inline reg argreg(unsigned int argno) {
+        reg list[] = { RDI, RSI, RDX, RCX, R8, R9 };
+        FTL_ERROR_ON(argno > ARRAY_SIZE(list), "argno out of bounds");
+        return list[argno];
     }
 
 }
