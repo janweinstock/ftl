@@ -28,5 +28,7 @@
 #include "ftl/cache.h"
 #include "ftl/fixup.h"
 #include "ftl/emitter.h"
+#include "ftl/label.h"
+#include "ftl/code.h"
 
 #endif
