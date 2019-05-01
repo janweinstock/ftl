@@ -44,7 +44,7 @@ namespace ftl {
         alloc(const alloc&);
 
     public:
-        const reg FRAME_POINTER = RSP; // base address register for locals
+        const reg STACK_POINTER = RSP; // base address register for locals
         const reg BASE_REGISTER = RBP; // base address register for globals
 
         alloc(emitter& e);
@@ -69,6 +69,9 @@ namespace ftl {
         void fetch(value& val, reg r = NREGS);
         void store(value& val);
         void flush(value& val);
+
+        void prologue();
+        void epilogue();
     };
 
     inline void alloc::set_base_addr(u64 addr) {
@@ -77,18 +80,18 @@ namespace ftl {
     }
 
     inline bool alloc::is_local(const value& v) const {
-        return v.m.r == FRAME_POINTER;
+        return v.m.r == STACK_POINTER;
     }
 
     inline bool alloc::is_global(const value& v) const {
         return v.m.r == BASE_REGISTER;
     }
 
-    bool alloc::is_empty(reg r) const {
-        return m_regs[r] != NULL;
+    inline bool alloc::is_empty(reg r) const {
+        return m_regs[r] == NULL;
     }
 
-    bool alloc::is_dirty(reg r) const {
+    inline bool alloc::is_dirty(reg r) const {
         if (is_empty(r))
             return false;
         return m_regs[r]->is_dirty();

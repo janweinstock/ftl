@@ -32,6 +32,8 @@
 
 namespace ftl {
 
+    typedef int (func)(void);
+
     class code
     {
     private:
@@ -63,6 +65,9 @@ namespace ftl {
         value gen_global_i64(void* addr);
 
         void free_value(value& val);
+
+        func* gen_function();
+        void gen_ret(value& val);
 
         void gen_jmp(label& l, bool far = false);
         void gen_jo(label& l, bool far = false);

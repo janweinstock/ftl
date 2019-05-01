@@ -42,6 +42,21 @@ namespace ftl {
             label.finalize();
     }
 
+    func* code::gen_function() {
+        func* fn = (func*)m_cache.get_code_ptr();
+        m_alloc.prologue();
+        return fn;
+    }
+
+
+    void code::gen_ret(value& val) {
+        m_alloc.fetch(val, RAX);
+        m_alloc.epilogue();
+        m_emitter.ret();
+
+        finalize();
+    }
+
     void code::gen_jmp(label& l, bool far) {
         i32 offset = far ? 128 : 0;
         m_emitter.jmpi(offset, l.mkfixup());

@@ -61,15 +61,18 @@ namespace ftl {
         m_locals &= ~(1 << idx);
 
         reg r = select();
-        value v(bits, r, FRAME_POINTER, -idx * sizeof(u64));
+        value v(bits, r, STACK_POINTER, -idx * sizeof(u64));
         m_emitter.movi(v.bits, v.r, val);
+        m_regs[r] = &v; // evil
 
         return v;
     }
 
     value alloc::new_global(int bits, u64 addr) {
-        if (m_base == 0)
+        if (m_base == 0) {
             m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
+            m_emitter.movi(64, BASE_REGISTER, m_base);
+        }
 
         i64 offset = addr - m_base;
         value v(bits, BASE_REGISTER, offset, addr, fits_i32(offset));
@@ -145,7 +148,7 @@ namespace ftl {
             m_regs[r] = &val;
             val.r = r;
 
-        } else { // copy  value from memory into r
+        } else { // copy value from memory into r
 
             if (!val.is_reachable())
                 m_emitter.movi(64, val.m.r, val.base);
@@ -184,6 +187,29 @@ namespace ftl {
             store(val);
 
         free(val.r);
+    }
+
+    static const reg callee_saved_regs[] = {
+          RBX, RBP, RSI, RDI, R12, R13, R14, R15,
+    };
+
+    void alloc::prologue() {
+        for (reg r : callee_saved_regs)
+            m_emitter.push(r);
+
+        i32 frame_size = 64 * sizeof(u64);
+        m_emitter.subi(64, STACK_POINTER, frame_size);
+
+        if (m_base)
+            m_emitter.movi(64, BASE_REGISTER, m_base);
+    }
+
+    void alloc::epilogue() {
+        i32 frame_size = 64 * sizeof(u64);
+        m_emitter.addi(64, STACK_POINTER, frame_size);
+
+        for (int i = ARRAY_SIZE(callee_saved_regs); i > 0; i--)
+            m_emitter.pop(callee_saved_regs[i-1]);
     }
 
 }
