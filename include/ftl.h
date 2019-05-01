@@ -25,10 +25,13 @@
 #include "ftl/utils.h"
 
 #include "ftl/reg.h"
+#include "ftl/value.h"
 #include "ftl/cache.h"
 #include "ftl/fixup.h"
 #include "ftl/emitter.h"
 #include "ftl/label.h"
+#include "ftl/alloc.h"
 #include "ftl/code.h"
+
 
 #endif
