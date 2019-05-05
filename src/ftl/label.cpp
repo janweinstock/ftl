@@ -20,6 +20,15 @@
 
 namespace ftl {
 
+    void label::patch() {
+        FTL_ERROR_ON(!is_placed(), "cannot patch: label not yet placed");
+
+        for (auto fix : m_fixups)
+            patch_jump(fix, m_location);
+        m_fixups.clear();
+    }
+
+
     label::label(cache& c):
         m_location(NULL),
         m_fixups(),
@@ -27,19 +36,19 @@ namespace ftl {
     }
 
     label::~label() {
-        // nothing to do
+        FTL_ERROR_ON(!is_placed() && !m_fixups.empty(), "unplaced label");
     }
 
-    fixup* label::mkfixup() {
-        m_fixups.push_back(fixup());
-        return &m_fixups.back();
+    void label::add(const fixup& fix) {
+        m_fixups.push_back(fix);
+        if (is_placed())
+            patch();
     }
 
-    void label::finalize() {
-        FTL_ERROR_ON(!m_location, "label has not been placed");
-        for (auto fix : m_fixups)
-            patch_jump(fix, m_location);
-        m_fixups.clear();
+    void label::place() {
+        FTL_ERROR_ON(m_location, "label has already been placed");
+        m_location = m_code.get_code_ptr();
+        patch();
     }
 
 }

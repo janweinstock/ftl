@@ -40,6 +40,28 @@ TEST(code, simple) {
     EXPECT_EQ(val, 42);
 }
 
+TEST(code, jump) {
+    int a = 40;
+    int b = 42;
+
+    code cgen(4 * KiB);
+    label less(cgen.get_cache());
+    func* maxfn = cgen.gen_function();
+
+    value va = cgen.gen_global_i32(&a);
+    value vb = cgen.gen_global_i32(&b);
+    cgen.gen_cmp(va, vb);
+    cgen.gen_jl(less);
+    cgen.gen_ret(va);
+    less.place();
+    cgen.gen_ret(vb);
+
+    int ret = maxfn();
+    int ref = max(a, b);
+
+    EXPECT_EQ(ret, ref);
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

@@ -35,20 +35,22 @@ namespace ftl {
         vector<fixup> m_fixups;
         cache& m_code;
 
+        void patch();
+
+        // disabled
+        label();
+        label(const label&);
+        label& operator = (const label&);
     public:
+
+        inline bool is_placed() const { return m_location != NULL; }
+
         label(cache& c);
         ~label();
 
-        fixup* mkfixup();
-
+        void add(const fixup& fix);
         void place();
-        void finalize();
     };
-
-    inline void label::place() {
-        FTL_ERROR_ON(m_location, "label has already been placed");
-        m_location = m_code.get_code_ptr();
-    }
 
 }
 

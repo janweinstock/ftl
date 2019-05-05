@@ -40,19 +40,17 @@ namespace ftl {
         cache         m_cache;
         emitter       m_emitter;
         alloc         m_alloc;
-        vector<label> m_labels;
 
         // disabled
         code();
         code(const code&);
 
     public:
+        inline cache&   get_cache()   { return m_cache; }
+        inline emitter& get_emitter() { return m_emitter; }
+
         code(size_t size);
         virtual ~code();
-
-        label& gen_label();
-        void put_label(label& l);
-        void finalize();
 
         value gen_local_i8 (i8  val);
         value gen_local_i16(i16 val);
@@ -109,10 +107,6 @@ namespace ftl {
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
     };
-
-    inline void code::put_label(label& l) {
-        l.place();
-    }
 
     inline value code::gen_local_i8(i8 val) {
         return m_alloc.new_local(8, val);

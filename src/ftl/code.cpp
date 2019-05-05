@@ -23,24 +23,14 @@ namespace ftl {
     code::code(size_t size):
         m_cache(size),
         m_emitter(m_cache),
-        m_alloc(m_emitter),
-        m_labels() {
+        m_alloc(m_emitter) {
+        // nothing to do
     }
 
     code::~code() {
         // nothing to do
     }
 
-    label& code::gen_label() {
-        m_labels.push_back(label(m_cache));
-        return m_labels.back();
-    }
-
-
-    void code::finalize() {
-        for (auto label : m_labels)
-            label.finalize();
-    }
 
     func* code::gen_function() {
         func* fn = (func*)m_cache.get_code_ptr();
@@ -53,103 +43,139 @@ namespace ftl {
         m_alloc.fetch(val, RAX);
         m_alloc.epilogue();
         m_emitter.ret();
-
-        finalize();
     }
 
     void code::gen_jmp(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jmpi(offset, l.mkfixup());
+        m_emitter.jmpi(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jo(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jo(offset, l.mkfixup());
+        m_emitter.jo(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jno(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jno(offset, l.mkfixup());
+        m_emitter.jno(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jb(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jb(offset, l.mkfixup());
+        m_emitter.jb(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jae(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jae(offset, l.mkfixup());
+        m_emitter.jae(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jz(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jz(offset, l.mkfixup());
+        m_emitter.jz(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jnz(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jnz(offset, l.mkfixup());
+        m_emitter.jnz(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_je(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.je(offset, l.mkfixup());
+        m_emitter.je(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jne(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jne(offset, l.mkfixup());
+        m_emitter.jne(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jbe(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jbe(offset, l.mkfixup());
+        m_emitter.jbe(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_ja(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.ja(offset, l.mkfixup());
+        m_emitter.ja(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_js(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.js(offset, l.mkfixup());
+        m_emitter.js(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jns(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jns(offset, l.mkfixup());
+        m_emitter.jns(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jp(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jp(offset, l.mkfixup());
+        m_emitter.jp(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jnp(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jnp(offset, l.mkfixup());
+        m_emitter.jnp(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jl(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jl(offset, l.mkfixup());
+        m_emitter.jl(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jge(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jge(offset, l.mkfixup());
+        m_emitter.jge(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jle(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jle(offset, l.mkfixup());
+        m_emitter.jle(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_jg(label& l, bool far) {
+        fixup fix;
         i32 offset = far ? 128 : 0;
-        m_emitter.jg(offset, l.mkfixup());
+        m_emitter.jg(offset, &fix);
+        l.add(fix);
     }
 
     void code::gen_add(value& dest, const value& src) {
