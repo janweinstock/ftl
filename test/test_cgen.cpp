@@ -62,6 +62,33 @@ TEST(cgen, jump) {
     EXPECT_EQ(ret, ref);
 }
 
+TEST(cgen, func) {
+    int a = 22;
+    int b = 20;
+    int c = 17;
+    int d = 11;
+
+    cgen cgen(4 * KiB);
+
+    func addfn(cgen.get_buffer());
+    value va = cgen.gen_local_i32(a);
+    value vb = cgen.gen_local_i32(b);
+    cgen.gen_add(va, vb);
+    cgen.gen_ret(va);
+
+    func subfn(cgen.get_buffer());
+    value vc = cgen.gen_local_i32(c);
+    value vd = cgen.gen_local_i32(d);
+    cgen.gen_sub(vc, vd);
+    cgen.gen_ret(vc);
+
+    int add = addfn();
+    int sub = subfn();
+
+    EXPECT_EQ(add, a + b);
+    EXPECT_EQ(sub, c - d);
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

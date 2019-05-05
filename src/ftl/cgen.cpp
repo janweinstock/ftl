@@ -43,6 +43,7 @@ namespace ftl {
     void cgen::gen_ret(value& val) {
         m_alloc.fetch(val, RAX);
         gen_jmp(m_exit, true);
+        m_buffer.align(16);
     }
 
     void cgen::gen_jmp(label& l, bool far) {

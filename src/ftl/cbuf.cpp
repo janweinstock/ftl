@@ -21,14 +21,15 @@
 namespace ftl {
 
     u8* cbuf::align(size_t boundary) {
-        size_t remain = size_remaining();
-        void* ptr = m_code_ptr;
+        size_t mask = boundary - 1;
+        u8* ptr = m_code_ptr + mask;
+        ptr = (u8*)((u64)ptr & ~mask);
 
-        FTL_ERROR_ON(!std::align(boundary, 1, ptr, remain), "out of memory");
+        FTL_ERROR_ON(ptr >= m_code_end, "out of code memory");
 
         // fill the padding with NOPs to help disassemblers
-        memset(m_code_ptr, 0x90, (u8*)ptr - m_code_ptr);
-        return m_code_ptr = (u8*)ptr;
+        memset(m_code_ptr, 0x90, ptr - m_code_ptr);
+        return m_code_ptr = ptr;
     }
 
     cbuf::cbuf(size_t size):
