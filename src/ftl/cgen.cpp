@@ -16,270 +16,270 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "ftl/code.h"
+#include "ftl/cgen.h"
 
 namespace ftl {
 
-    code::code(size_t size):
+    cgen::cgen(size_t size):
         m_cache(size),
         m_emitter(m_cache),
-        m_alloc(m_emitter) {
-        // nothing to do
-    }
-
-    code::~code() {
-        // nothing to do
-    }
-
-
-    func* code::gen_function() {
-        func* fn = (func*)m_cache.get_code_ptr();
+        m_alloc(m_emitter),
+        m_exit(m_cache) {
         m_alloc.prologue();
-        return fn;
-    }
-
-
-    void code::gen_ret(value& val) {
-        m_alloc.fetch(val, RAX);
+        m_cache.align(16);
+        m_exit.place();
         m_alloc.epilogue();
-        m_emitter.ret();
+        m_cache.align(16);
     }
 
-    void code::gen_jmp(label& l, bool far) {
+    cgen::~cgen() {
+        // nothing to do
+    }
+
+    func cgen::gen_function() {
+        return func(m_cache);
+    }
+
+    void cgen::gen_ret(value& val) {
+        m_alloc.fetch(val, RAX);
+        gen_jmp(m_exit, true);
+    }
+
+    void cgen::gen_jmp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jmpi(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jo(label& l, bool far) {
+    void cgen::gen_jo(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jo(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jno(label& l, bool far) {
+    void cgen::gen_jno(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jno(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jb(label& l, bool far) {
+    void cgen::gen_jb(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jb(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jae(label& l, bool far) {
+    void cgen::gen_jae(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jae(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jz(label& l, bool far) {
+    void cgen::gen_jz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jz(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jnz(label& l, bool far) {
+    void cgen::gen_jnz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jnz(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_je(label& l, bool far) {
+    void cgen::gen_je(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.je(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jne(label& l, bool far) {
+    void cgen::gen_jne(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jne(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jbe(label& l, bool far) {
+    void cgen::gen_jbe(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jbe(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_ja(label& l, bool far) {
+    void cgen::gen_ja(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.ja(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_js(label& l, bool far) {
+    void cgen::gen_js(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.js(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jns(label& l, bool far) {
+    void cgen::gen_jns(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jns(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jp(label& l, bool far) {
+    void cgen::gen_jp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jp(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jnp(label& l, bool far) {
+    void cgen::gen_jnp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jnp(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jl(label& l, bool far) {
+    void cgen::gen_jl(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jl(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jge(label& l, bool far) {
+    void cgen::gen_jge(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jge(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jle(label& l, bool far) {
+    void cgen::gen_jle(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jle(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_jg(label& l, bool far) {
+    void cgen::gen_jg(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_emitter.jg(offset, &fix);
         l.add(fix);
     }
 
-    void code::gen_add(value& dest, const value& src) {
+    void cgen::gen_add(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.addr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_or(value& dest, const value& src) {
+    void cgen::gen_or(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.orr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_adc(value& dest, const value& src) {
+    void cgen::gen_adc(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.adcr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_sbb(value& dest, const value& src) {
+    void cgen::gen_sbb(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.sbbr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_and(value& dest, const value& src) {
+    void cgen::gen_and(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.andr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_sub(value& dest, const value& src) {
+    void cgen::gen_sub(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.subr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_xor(value& dest, const value& src) {
+    void cgen::gen_xor(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.addr(dest.bits, dest, src);
         dest.set_dirty();
     }
 
-    void code::gen_cmp(value& dest, const value& src) {
+    void cgen::gen_cmp(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.cmpr(dest.bits, dest, src);
     }
 
-    void code::gen_tst(value& dest, const value& src) {
+    void cgen::gen_tst(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.tstr(dest.bits, dest, src);
     }
 
-    void code::gen_add(value& dest, i32 val) {
+    void cgen::gen_add(value& dest, i32 val) {
         m_emitter.addi(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_or(value& dest, i32 val) {
+    void cgen::gen_or(value& dest, i32 val) {
         m_emitter.ori(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_adc(value& dest, i32 val) {
+    void cgen::gen_adc(value& dest, i32 val) {
         m_emitter.adci(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_sbb(value& dest, i32 val) {
+    void cgen::gen_sbb(value& dest, i32 val) {
         m_emitter.sbbi(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_and(value& dest, i32 val) {
+    void cgen::gen_and(value& dest, i32 val) {
         m_emitter.andi(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_sub(value& dest, i32 val) {
+    void cgen::gen_sub(value& dest, i32 val) {
         m_emitter.subi(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_xor(value& dest, i32 val) {
+    void cgen::gen_xor(value& dest, i32 val) {
         m_emitter.xori(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_cmp(value& dest, i32 val) {
+    void cgen::gen_cmp(value& dest, i32 val) {
         m_emitter.cmpi(dest.bits, dest, val);
         dest.set_dirty();
     }
 
-    void code::gen_tst(value& dest, i32 val) {
+    void cgen::gen_tst(value& dest, i32 val) {
         m_emitter.tsti(dest.bits, dest, val);
         dest.set_dirty();
     }

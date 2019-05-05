@@ -20,6 +20,17 @@
 
 namespace ftl {
 
+    u8* cache::align(size_t boundary) {
+        size_t remain = size_remaining();
+        void* ptr = m_code_ptr;
+
+        FTL_ERROR_ON(!std::align(boundary, 1, ptr, remain), "out of memory");
+
+        // fill the padding with NOPs to help disassemblers
+        memset(m_code_ptr, 0x90, (u8*)ptr - m_code_ptr);
+        return m_code_ptr = (u8*)ptr;
+    }
+
     cache::cache(size_t size):
         m_size(size),
         m_code_head(NULL),
@@ -30,6 +41,8 @@ namespace ftl {
 
         m_code_ptr = m_code_head = (u8*)mmap(NULL, size, prot, flags, -1, 0);
         m_code_end = m_code_head + m_size;
+
+        FTL_ERROR_ON(m_code_head == MAP_FAILED, "mmap: %s", strerror(errno));
     }
 
     cache::~cache() {

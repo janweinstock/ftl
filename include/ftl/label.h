@@ -41,11 +41,12 @@ namespace ftl {
         label();
         label(const label&);
         label& operator = (const label&);
+
     public:
 
         inline bool is_placed() const { return m_location != NULL; }
 
-        label(cache& c);
+        label(cache& buf);
         ~label();
 
         void add(const fixup& fix);

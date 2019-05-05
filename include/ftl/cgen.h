@@ -16,13 +16,15 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_CODE_H
-#define FTL_CODE_H
+#ifndef FTL_CGEN_H
+#define FTL_CGEN_H
 
 #include "ftl/common.h"
 #include "ftl/bitops.h"
 #include "ftl/error.h"
 
+#include "ftl/reg.h"
+#include "ftl/func.h"
 #include "ftl/cache.h"
 #include "ftl/fixup.h"
 #include "ftl/label.h"
@@ -32,25 +34,24 @@
 
 namespace ftl {
 
-    typedef int (func)(void);
-
-    class code
+    class cgen
     {
     private:
-        cache         m_cache;
-        emitter       m_emitter;
-        alloc         m_alloc;
+        cache   m_cache;
+        emitter m_emitter;
+        alloc   m_alloc;
+        label   m_exit;
 
         // disabled
-        code();
-        code(const code&);
+        cgen();
+        cgen(const cgen&);
 
     public:
         inline cache&   get_cache()   { return m_cache; }
         inline emitter& get_emitter() { return m_emitter; }
 
-        code(size_t size);
-        virtual ~code();
+        cgen(size_t size);
+        virtual ~cgen();
 
         value gen_local_i8 (i8  val);
         value gen_local_i16(i16 val);
@@ -64,7 +65,7 @@ namespace ftl {
 
         void free_value(value& val);
 
-        func* gen_function();
+        func gen_function();
         void gen_ret(value& val);
 
         void gen_jmp(label& l, bool far = false);
@@ -108,39 +109,39 @@ namespace ftl {
         void gen_tst(value& dest, i32 val);
     };
 
-    inline value code::gen_local_i8(i8 val) {
+    inline value cgen::gen_local_i8(i8 val) {
         return m_alloc.new_local(8, val);
     }
 
-    inline value code::gen_local_i16(i16 val) {
+    inline value cgen::gen_local_i16(i16 val) {
         return m_alloc.new_local(16, val);
     }
 
-    inline value code::gen_local_i32(i32 val) {
+    inline value cgen::gen_local_i32(i32 val) {
         return m_alloc.new_local(32, val);
     }
 
-    inline value code::gen_local_i64(i64 val) {
+    inline value cgen::gen_local_i64(i64 val) {
         return m_alloc.new_local(64, val);
     }
 
-    inline value code::gen_global_i8(void* addr) {
+    inline value cgen::gen_global_i8(void* addr) {
         return m_alloc.new_global(8, (u64)addr);
     }
 
-    inline value code::gen_global_i16(void* addr) {
+    inline value cgen::gen_global_i16(void* addr) {
         return m_alloc.new_global(16, (u64)addr);
     }
 
-    inline value code::gen_global_i32(void* addr) {
+    inline value cgen::gen_global_i32(void* addr) {
         return m_alloc.new_global(32, (u64)addr);
     }
 
-    inline value code::gen_global_i64(void* addr) {
+    inline value cgen::gen_global_i64(void* addr) {
         return m_alloc.new_global(64, (u64)addr);
     }
 
-    inline void code::free_value(value& val) {
+    inline void cgen::free_value(value& val) {
         m_alloc.free_value(val);
     }
 

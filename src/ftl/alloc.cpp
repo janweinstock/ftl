@@ -202,6 +202,8 @@ namespace ftl {
 
         if (m_base)
             m_emitter.movi(64, BASE_REGISTER, m_base);
+
+        m_emitter.jmpr(RDI);
     }
 
     void alloc::epilogue() {
@@ -210,6 +212,8 @@ namespace ftl {
 
         for (int i = ARRAY_SIZE(callee_saved_regs); i > 0; i--)
             m_emitter.pop(callee_saved_regs[i-1]);
+
+        m_emitter.ret();
     }
 
 }

@@ -22,11 +22,11 @@
 
 using namespace ftl;
 
-TEST(code, simple) {
+TEST(cgen, simple) {
     int val = 40;
 
-    code cgen(4 * KiB);
-    func* fn = cgen.gen_function();
+    cgen cgen(4 * KiB);
+    func fn = cgen.gen_function();
     value a = cgen.gen_local_i32(2);
     value b = cgen.gen_global_i32(&val);
     value c = cgen.gen_local_i32(-2);
@@ -40,13 +40,13 @@ TEST(code, simple) {
     EXPECT_EQ(val, 42);
 }
 
-TEST(code, jump) {
+TEST(cgen, jump) {
     int a = 40;
     int b = 42;
 
-    code cgen(4 * KiB);
+    cgen cgen(4 * KiB);
     label less(cgen.get_cache());
-    func* maxfn = cgen.gen_function();
+    func maxfn = cgen.gen_function();
 
     value va = cgen.gen_global_i32(&a);
     value vb = cgen.gen_global_i32(&b);

@@ -48,6 +48,8 @@ namespace ftl {
 
         size_t size_remaining() const { return m_code_end - m_code_ptr; }
 
+        u8* align(size_t boundary);
+
         cache(size_t size);
         virtual ~cache();
 

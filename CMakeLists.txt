@@ -37,7 +37,7 @@ set(sources
     "${src}/ftl/emitter.cpp"
     "${src}/ftl/label.cpp"
     "${src}/ftl/alloc.cpp"
-    "${src}/ftl/code.cpp")
+    "${src}/ftl/cgen.cpp")
 
 add_library(ftl ${sources})
 

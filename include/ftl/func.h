@@ -16,40 +16,41 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "ftl/label.h"
-#include "ftl/cgen.h"
+#ifndef FTL_FUNC_H
+#define FTL_FUNC_H
+
+#include "ftl/common.h"
+#include "ftl/error.h"
+#include "ftl/cache.h"
 
 namespace ftl {
 
-    void label::patch() {
-        FTL_ERROR_ON(!is_placed(), "cannot patch: label not yet placed");
+    class func
+    {
+    private:
+        typedef int func_t (u8*);
+        u8* m_entry;
+        u8* m_code;
 
-        for (auto fix : m_fixups)
-            patch_jump(fix, m_location);
-        m_fixups.clear();
+        // disabled
+        func();
+
+    public:
+        func(cache& c);
+
+        int operator () ();
+    };
+
+    inline func::func(cache& c):
+        m_entry(c.get_code_entry()),
+        m_code(c.get_code_ptr()) {
     }
 
-
-    label::label(cache& c):
-        m_location(NULL),
-        m_fixups(),
-        m_code(c) {
-    }
-
-    label::~label() {
-        FTL_ERROR_ON(!is_placed() && !m_fixups.empty(), "unplaced label");
-    }
-
-    void label::add(const fixup& fix) {
-        m_fixups.push_back(fix);
-        if (is_placed())
-            patch();
-    }
-
-    void label::place() {
-        FTL_ERROR_ON(m_location, "label has already been placed");
-        m_location = m_code.get_code_ptr();
-        patch();
+    inline int func::operator () () {
+        func_t* fn = (func_t*)m_entry;
+        return fn(m_code);
     }
 
 }
+
+#endif
