@@ -17,7 +17,6 @@
  ******************************************************************************/
 
 #include "ftl/label.h"
-#include "ftl/cgen.h"
 
 namespace ftl {
 
@@ -30,10 +29,10 @@ namespace ftl {
     }
 
 
-    label::label(cache& c):
+    label::label(cbuf& buffer):
         m_location(NULL),
         m_fixups(),
-        m_code(c) {
+        m_buffer(buffer) {
     }
 
     label::~label() {
@@ -48,7 +47,7 @@ namespace ftl {
 
     void label::place() {
         FTL_ERROR_ON(m_location, "label has already been placed");
-        m_location = m_code.get_code_ptr();
+        m_location = m_buffer.get_code_ptr();
         patch();
     }
 

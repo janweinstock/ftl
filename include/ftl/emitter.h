@@ -24,15 +24,15 @@
 #include "ftl/bitops.h"
 
 #include "ftl/reg.h"
-#include "ftl/cache.h"
 #include "ftl/fixup.h"
+#include "ftl/cbuf.h"
 
 namespace ftl {
 
     class emitter
     {
     private:
-        cache& m_code;
+        cbuf& m_buffer;
 
         inline void setup_fixup(fixup* fix, int size);
 
@@ -53,7 +53,7 @@ namespace ftl {
         emitter(const emitter&);
 
     public:
-        emitter(cache& code_cache);
+        emitter(cbuf& buffer);
         virtual ~emitter();
 
         size_t ret();

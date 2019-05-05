@@ -21,7 +21,7 @@
 
 #include "ftl/common.h"
 #include "ftl/error.h"
-#include "ftl/cache.h"
+#include "ftl/cbuf.h"
 
 namespace ftl {
 
@@ -36,14 +36,14 @@ namespace ftl {
         func();
 
     public:
-        func(cache& c);
+        func(cbuf& c);
 
         int operator () ();
     };
 
-    inline func::func(cache& c):
-        m_entry(c.get_code_entry()),
-        m_code(c.get_code_ptr()) {
+    inline func::func(cbuf& buffer):
+        m_entry(buffer.get_code_entry()),
+        m_code(buffer.get_code_ptr()) {
     }
 
     inline int func::operator () () {

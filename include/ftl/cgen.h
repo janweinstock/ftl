@@ -25,7 +25,7 @@
 
 #include "ftl/reg.h"
 #include "ftl/func.h"
-#include "ftl/cache.h"
+#include "ftl/cbuf.h"
 #include "ftl/fixup.h"
 #include "ftl/label.h"
 #include "ftl/value.h"
@@ -37,7 +37,7 @@ namespace ftl {
     class cgen
     {
     private:
-        cache   m_cache;
+        cbuf    m_buffer;
         emitter m_emitter;
         alloc   m_alloc;
         label   m_exit;
@@ -47,7 +47,7 @@ namespace ftl {
         cgen(const cgen&);
 
     public:
-        inline cache&   get_cache()   { return m_cache; }
+        inline cbuf&    get_buffer()  { return m_buffer; }
         inline emitter& get_emitter() { return m_emitter; }
 
         cgen(size_t size);

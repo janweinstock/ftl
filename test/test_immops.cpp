@@ -26,7 +26,7 @@ typedef int (entry_func)(void);
     TEST(immops, op ## bits ## _ ## reg ## _ ## op1 ## _ ## op2) {            \
         ftl::i64 val1 = (ftl::i64)(op1);                                      \
         ftl::i##bits val2 = (ftl::i##bits)(ftl::i32)(op2);                    \
-        ftl::cache code(1 * ftl::KiB);                                        \
+        ftl::cbuf code(1 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
         emitter.movi(64, ftl::reg, val1);                                     \

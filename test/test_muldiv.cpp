@@ -23,7 +23,7 @@
 using namespace ftl;
 
 TEST(muldiv, imuli) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int);
@@ -38,7 +38,7 @@ TEST(muldiv, imuli) {
 }
 
 TEST(muldiv, imulr) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);
@@ -54,7 +54,7 @@ TEST(muldiv, imulr) {
 }
 
 TEST(muldiv, imul) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);
@@ -69,7 +69,7 @@ TEST(muldiv, imul) {
 }
 
 TEST(muldiv, idiv) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);
@@ -85,7 +85,7 @@ TEST(muldiv, idiv) {
 }
 
 TEST(muldiv, imod) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);
@@ -102,7 +102,7 @@ TEST(muldiv, imod) {
 }
 
 TEST(muldiv, mul) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef unsigned int (test_func)(unsigned int, unsigned int);
@@ -117,7 +117,7 @@ TEST(muldiv, mul) {
 }
 
 TEST(muldiv, div) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);
@@ -133,7 +133,7 @@ TEST(muldiv, div) {
 }
 
 TEST(muldiv, mod) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
 
     typedef int (test_func)(int, int);

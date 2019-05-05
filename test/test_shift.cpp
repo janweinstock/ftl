@@ -26,7 +26,7 @@ using namespace ftl;
     TEST(immopsmem, op ## shift ## _ ## bits ## _ ## reg) {                   \
         typedef u##bits (entry_func)(void);                                   \
         u##bits op = (u##bits)val;                                            \
-        ftl::cache code(1 * ftl::KiB);                                        \
+        ftl::cbuf code(1 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
         emitter.movi(64, reg, (i64)op);                                       \

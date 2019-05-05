@@ -22,7 +22,7 @@
 using namespace ftl;
 
 int main() {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
     fixup jump0, jump1;
 

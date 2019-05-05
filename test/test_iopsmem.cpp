@@ -28,7 +28,7 @@ typedef int (entry_func)(void);
         ftl::i##bits val1 = (ftl::i##bits)(op1);                              \
         ftl::i##bits val2 = (ftl::i##bits)(ftl::i32)(op2);                    \
         ftl::u64 addr = (ftl::u64)&val1 - offset;                             \
-        ftl::cache code(1 * ftl::KiB);                                        \
+        ftl::cbuf code(1 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
         emitter.movi(64, ftl::reg, addr);                                     \

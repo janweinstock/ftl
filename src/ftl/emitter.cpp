@@ -139,7 +139,7 @@ namespace ftl {
 
     void emitter::setup_fixup(fixup* fix, int size) {
         if (fix) {
-            fix->code = m_code.get_code_ptr();
+            fix->code = m_buffer.get_code_ptr();
             fix->size = size;
         }
     }
@@ -150,23 +150,23 @@ namespace ftl {
         if (rexr) rex |= REX_R;
         if (rexx) rex |= REX_X;
         if (rexb) rex |= REX_B;
-        return m_code.write(rex);
+        return m_buffer.write(rex);
     }
 
     size_t emitter::modrm(int mod, int reg, int rm) {
         u8 modrm = ((mod & 3) << 6) | ((reg & 7) << 3) | (rm & 7);
-        return m_code.write(modrm);
+        return m_buffer.write(modrm);
     }
 
     size_t emitter::sib(int scale, int index, int base) {
         u8 sib = ((scale & 3) << 6) | ((index & 7) << 3) | (base & 7);
-        return m_code.write(sib);
+        return m_buffer.write(sib);
     }
 
     size_t emitter::prefix(int bits, reg r, const rm& rm) {
         size_t len = 0;
         if (bits == 16)
-            len += m_code.write<u8>(0x66);
+            len += m_buffer.write<u8>(0x66);
         if (bits == 64 || r >= R8 || rm.r >= R8)
             len += rex(bits == 64, r >= R8, false, rm.r >= R8);
         return len;
@@ -192,9 +192,9 @@ namespace ftl {
             len += sib(SCALE1, rm.r & 7, rm.r & 7);
 
         if (mode == MODRM_DISP32)
-            len += m_code.write<i32>(rm.offset);
+            len += m_buffer.write<i32>(rm.offset);
         if (mode == MODRM_DISP8)
-            len += m_code.write<i8>(rm.offset);
+            len += m_buffer.write<i8>(rm.offset);
 
         return len;
     }
@@ -212,13 +212,13 @@ namespace ftl {
 
         size_t len = 0;
         len += prefix(bits, (reg)0, dest);
-        len += m_code.write(opcode);
+        len += m_buffer.write(opcode);
         len += modrm((reg)op, dest);
 
         switch (immlen) {
-        case  8: len += m_code.write<i8>(imm);  break;
-        case 16: len += m_code.write<i16>(imm); break;
-        case 32: len += m_code.write<i32>(imm); break;
+        case  8: len += m_buffer.write<i8>(imm);  break;
+        case 16: len += m_buffer.write<i16>(imm); break;
+        case 32: len += m_buffer.write<i32>(imm); break;
         default:
             FTL_ERROR("cannot encode immediate with %d bits", immlen);
         }
@@ -242,7 +242,7 @@ namespace ftl {
 
         size_t len = 0;
         len += prefix(bits, op_r.r, oprm);
-        len += m_code.write(opcode);
+        len += m_buffer.write(opcode);
         len += modrm(op_r.r, oprm);
 
         return len;
@@ -260,11 +260,11 @@ namespace ftl {
 
         size_t len = 0;
         len += prefix(bits, (reg)0, dest);
-        len += m_code.write(opcode);
+        len += m_buffer.write(opcode);
         len += modrm((reg)op, dest);
 
         if (imm != 1)
-            len += m_code.write(imm);
+            len += m_buffer.write(imm);
 
         return len;
     }
@@ -273,21 +273,21 @@ namespace ftl {
         size_t len = 0;
 
         if (fits_i8(imm)) {
-            len += m_code.write<u8>(OPCODE_BRANCH + op);
+            len += m_buffer.write<u8>(OPCODE_BRANCH + op);
             setup_fixup(fix, 1);
-            len += m_code.write<i8>(imm);
+            len += m_buffer.write<i8>(imm);
         } else {
-            len += m_code.write<u8>(OPCODE_ESCAPE);
-            len += m_code.write<u8>(OPCODE2_BR32 + op);
+            len += m_buffer.write<u8>(OPCODE_ESCAPE);
+            len += m_buffer.write<u8>(OPCODE2_BR32 + op);
             setup_fixup(fix, 4);
-            len += m_code.write<i32>(imm);
+            len += m_buffer.write<i32>(imm);
         }
 
         return len;
     }
 
-    emitter::emitter(cache& code):
-        m_code(code) {
+    emitter::emitter(cbuf& code):
+        m_buffer(code) {
     }
 
     emitter::~emitter() {
@@ -295,14 +295,14 @@ namespace ftl {
     }
 
     size_t emitter::ret() {
-        return m_code.write<u8>(OPCODE_RET);
+        return m_buffer.write<u8>(OPCODE_RET);
     }
 
     size_t emitter::push(reg src) {
         size_t len = 0;
         if (src >= R8)
             len += rex(false, false, false, true);
-        len += m_code.write<u8>(OPCODE_PUSH + (src & 7));
+        len += m_buffer.write<u8>(OPCODE_PUSH + (src & 7));
         return len;
     }
 
@@ -310,7 +310,7 @@ namespace ftl {
         size_t len = 0;
         if (dest >= R8)
             len += rex(false, false, false, true);
-        len += m_code.write<u8>(OPCODE_POP + (dest & 7));
+        len += m_buffer.write<u8>(OPCODE_POP + (dest & 7));
         return len;
     }
 
@@ -325,18 +325,18 @@ namespace ftl {
 
         if (dest.is_reg()) {
             u8 opcode = (bits == 8) ? OPCODE_MOVIR : (OPCODE_MOVIR + 8);
-            len += m_code.write<u8>(opcode + (dest.r & 7));
+            len += m_buffer.write<u8>(opcode + (dest.r & 7));
         } else {
             u8 opcode = (bits == 8) ? OPCODE_MOVIRM : (OPCODE_MOVIRM + 1);
-            len += m_code.write<u8>(opcode);
+            len += m_buffer.write<u8>(opcode);
             len += modrm((reg)0, dest);
         }
 
         switch (immlen) {
-        case  8: len += m_code.write<i8> (imm); break;
-        case 16: len += m_code.write<i16>(imm); break;
-        case 32: len += m_code.write<i32>(imm); break;
-        case 64: len += m_code.write<i64>(imm); break;
+        case  8: len += m_buffer.write<i8> (imm); break;
+        case 16: len += m_buffer.write<i16>(imm); break;
+        case 32: len += m_buffer.write<i32>(imm); break;
+        case 64: len += m_buffer.write<i64>(imm); break;
         default:
             FTL_ERROR("cannot encode immediate with %d bits", immlen);
         }
@@ -393,14 +393,14 @@ namespace ftl {
         size_t len = 0;
         reg r = (reg)OPCODE_UNARY_TEST;
         len += prefix(bits, r, dest);
-        len += m_code.write(opcode);
+        len += m_buffer.write(opcode);
         len += modrm(r, dest);
 
         switch (bits) {
-        case  8: len += m_code.write<i8>(imm);  break;
-        case 16: len += m_code.write<i16>(imm); break;
-        case 32: len += m_code.write<i32>(imm); break;
-        case 64: len += m_code.write<i32>(imm); break;
+        case  8: len += m_buffer.write<i8>(imm);  break;
+        case 16: len += m_buffer.write<i16>(imm); break;
+        case 32: len += m_buffer.write<i32>(imm); break;
+        case 64: len += m_buffer.write<i32>(imm); break;
         default:
             FTL_ERROR("cannot encode immediate with %d bits", immlen);
         }
@@ -485,13 +485,13 @@ namespace ftl {
         len += prefix(bits, dest, src);
 
         u8 opcode = (immlen == 8) ? OPCODE_IMUL8 : OPCODE_IMUL32;
-        len += m_code.write(opcode);
+        len += m_buffer.write(opcode);
         len += modrm(dest, src);
 
         if (immlen == 8)
-            len += m_code.write<i8>(imm);
+            len += m_buffer.write<i8>(imm);
         else
-            len += m_code.write<i32>(imm);
+            len += m_buffer.write<i32>(imm);
 
         return len;
     }
@@ -501,8 +501,8 @@ namespace ftl {
 
         size_t len = 0;
         len += prefix(bits, dest, src);
-        len += m_code.write<u8>(OPCODE_ESCAPE);
-        len += m_code.write<u8>(OPCODE2_IMUL);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_IMUL);
         len += modrm(dest, src);
 
         return len;
@@ -538,16 +538,16 @@ namespace ftl {
 
     size_t emitter::call(u8* fn, fixup* fix) {
         if ((fn == NULL) && (fix != NULL))
-            fn = m_code.get_code_ptr();
+            fn = m_buffer.get_code_ptr();
 
-        i64 offset = fn - m_code.get_code_ptr() - 5;
+        i64 offset = fn - m_buffer.get_code_ptr() - 5;
         if (!fits_i32(offset))
             FTL_ERROR("cannot call %p, out of reach", fn);
 
         size_t len = 0;
-        len += m_code.write<u8>(OPCODE_CALL);
+        len += m_buffer.write<u8>(OPCODE_CALL);
         setup_fixup(fix, 4);
-        len += m_code.write<i32>(offset);
+        len += m_buffer.write<i32>(offset);
         return len;
     }
 
@@ -555,13 +555,13 @@ namespace ftl {
         size_t len = 0;
 
         if (fits_i8(offset)) {
-            len += m_code.write<u8>(OPCODE_JMPI);
+            len += m_buffer.write<u8>(OPCODE_JMPI);
             setup_fixup(fix, 1);
-            len += m_code.write<i8>(offset);
+            len += m_buffer.write<i8>(offset);
         } else {
-            len += m_code.write<u8>(OPCODE_JMPI - 2);
+            len += m_buffer.write<u8>(OPCODE_JMPI - 2);
             setup_fixup(fix, 4);
-            len += m_code.write<i32>(offset);
+            len += m_buffer.write<i32>(offset);
         }
 
         return len;
@@ -570,7 +570,7 @@ namespace ftl {
     size_t emitter::jmpr(const rm& dest) {
         size_t len = 0;
         len += prefix(32, (reg)0, dest);
-        len += m_code.write<u8>(OPCODE_JMPR);
+        len += m_buffer.write<u8>(OPCODE_JMPR);
         len += modrm((reg)4, dest);
         return len;
     }

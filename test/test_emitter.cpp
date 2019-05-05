@@ -32,7 +32,7 @@ struct dummy {
 };
 
 TEST(emitter, mov) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     emitter.movi(64, RAX, 0ll);
@@ -45,7 +45,7 @@ TEST(emitter, mov) {
 }
 
 TEST(emitter, load) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     dummy data = { 42, 43, 44, 45 };
@@ -78,7 +78,7 @@ TEST(emitter, load) {
 }
 
 TEST(emitter, store) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     dummy src = { 42, 43, 44, 45 };
@@ -120,7 +120,7 @@ TEST(emitter, store) {
 }
 
 TEST(emitter, pushpop) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     entry_func* fn = (entry_func*)code.get_code_ptr();
@@ -133,7 +133,7 @@ TEST(emitter, pushpop) {
 }
 
 TEST(emitter, notr) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     i32 val = 0xaaaaaaaa;
@@ -147,7 +147,7 @@ TEST(emitter, notr) {
 }
 
 TEST(emitter, negr) {
-    cache code(1 * KiB);
+    cbuf code(1 * KiB);
     emitter emitter(code);
 
     i32 val = -42;

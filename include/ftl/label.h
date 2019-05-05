@@ -24,7 +24,7 @@
 #include "ftl/error.h"
 
 #include "ftl/fixup.h"
-#include "ftl/cache.h"
+#include "ftl/cbuf.h"
 
 namespace ftl {
 
@@ -33,7 +33,7 @@ namespace ftl {
     private:
         u8* m_location;
         vector<fixup> m_fixups;
-        cache& m_code;
+        cbuf& m_buffer;
 
         void patch();
 
@@ -46,7 +46,7 @@ namespace ftl {
 
         inline bool is_placed() const { return m_location != NULL; }
 
-        label(cache& buf);
+        label(cbuf& buf);
         ~label();
 
         void add(const fixup& fix);

@@ -16,59 +16,39 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_CACHE_H
-#define FTL_CACHE_H
-
-#include "ftl/common.h"
-#include "ftl/error.h"
+#include "ftl/cbuf.h"
 
 namespace ftl {
 
-    class cache
-    {
-    private:
-        size_t m_size;
+    u8* cbuf::align(size_t boundary) {
+        size_t remain = size_remaining();
+        void* ptr = m_code_ptr;
 
-        u8* m_code_head;
-        u8* m_code_ptr;
-        u8* m_code_end;
+        FTL_ERROR_ON(!std::align(boundary, 1, ptr, remain), "out of memory");
 
-        size_t write(const void* ptr, size_t sz);
-
-        // disabled
-        cache();
-        cache(const cache&);
-
-    public:
-        const u8* get_code_entry() const { return m_code_head; }
-        const u8* get_code_ptr()   const { return m_code_ptr; }
-
-        u8* get_code_entry() { return m_code_head; }
-        u8* get_code_ptr()   { return m_code_ptr; }
-
-        size_t size_remaining() const { return m_code_end - m_code_ptr; }
-
-        u8* align(size_t boundary);
-
-        cache(size_t size);
-        virtual ~cache();
-
-        template <typename T>
-        size_t write(const T& val);
-    };
-
-    inline size_t cache::write(const void* ptr, size_t sz) {
-        FTL_ERROR_ON(m_code_ptr + sz > m_code_end, "out of code memory");
-        memcpy(m_code_ptr, ptr, sz);
-        m_code_ptr += sz;
-        return sz;
+        // fill the padding with NOPs to help disassemblers
+        memset(m_code_ptr, 0x90, (u8*)ptr - m_code_ptr);
+        return m_code_ptr = (u8*)ptr;
     }
 
-    template <typename T>
-    inline size_t cache::write(const T& val) {
-        return write(&val, sizeof(T));
+    cbuf::cbuf(size_t size):
+        m_size(size),
+        m_code_head(NULL),
+        m_code_ptr(NULL),
+        m_code_end(NULL) {
+        int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
+        int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+
+        m_code_ptr = m_code_head = (u8*)mmap(NULL, size, prot, flags, -1, 0);
+        m_code_end = m_code_head + m_size;
+
+        FTL_ERROR_ON(m_code_head == MAP_FAILED, "mmap: %s", strerror(errno));
+    }
+
+    cbuf::~cbuf() {
+        if (m_code_head) {
+            munmap(m_code_head, m_size);
+        }
     }
 
 }
-
-#endif

@@ -45,7 +45,7 @@ TEST(cgen, jump) {
     int b = 42;
 
     cgen cgen(4 * KiB);
-    label less(cgen.get_cache());
+    label less(cgen.get_buffer());
     func maxfn = cgen.gen_function();
 
     value va = cgen.gen_global_i32(&a);

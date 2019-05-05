@@ -25,7 +25,7 @@ using namespace ftl;
 typedef i32 (entry_func)(void);
 
 TEST(jump, jmpi) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
     entry_func* fn = (entry_func*)code.get_code_ptr();
 
@@ -40,7 +40,7 @@ TEST(jump, jmpi) {
 }
 
 TEST(jump, jmpr) {
-    ftl::cache code(1 * ftl::KiB);
+    ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
     entry_func* fn = (entry_func*)code.get_code_ptr();
 

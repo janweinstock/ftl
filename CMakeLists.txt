@@ -33,7 +33,7 @@ set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
 set(sources
     "${src}/ftl/utils.cpp"
     "${src}/ftl/reg.cpp"
-    "${src}/ftl/cache.cpp"
+    "${src}/ftl/cbuf.cpp"
     "${src}/ftl/emitter.cpp"
     "${src}/ftl/label.cpp"
     "${src}/ftl/alloc.cpp"

@@ -21,15 +21,15 @@
 namespace ftl {
 
     cgen::cgen(size_t size):
-        m_cache(size),
-        m_emitter(m_cache),
+        m_buffer(size),
+        m_emitter(m_buffer),
         m_alloc(m_emitter),
-        m_exit(m_cache) {
+        m_exit(m_buffer) {
         m_alloc.prologue();
-        m_cache.align(16);
+        m_buffer.align(16);
         m_exit.place();
         m_alloc.epilogue();
-        m_cache.align(16);
+        m_buffer.align(16);
     }
 
     cgen::~cgen() {
@@ -37,7 +37,7 @@ namespace ftl {
     }
 
     func cgen::gen_function() {
-        return func(m_cache);
+        return func(m_buffer);
     }
 
     void cgen::gen_ret(value& val) {
