@@ -53,10 +53,15 @@ namespace ftl {
         cgen(size_t size);
         virtual ~cgen();
 
-        value gen_local_i8 (i8  val);
-        value gen_local_i16(i16 val);
-        value gen_local_i32(i32 val);
-        value gen_local_i64(i64 val);
+        void set_base_ptr(void* ptr);
+        void set_base_ptr_stack();
+        void set_base_ptr_heap();
+        void set_base_ptr_code();
+
+        value gen_local_i8 (i8  val, reg r = NREGS);
+        value gen_local_i16(i16 val, reg r = NREGS);
+        value gen_local_i32(i32 val, reg r = NREGS);
+        value gen_local_i64(i64 val, reg r = NREGS);
 
         value gen_global_i8 (void* addr);
         value gen_global_i16(void* addr);
@@ -66,6 +71,7 @@ namespace ftl {
         void free_value(value& val);
 
         func gen_function();
+        void gen_ret();
         void gen_ret(value& val);
 
         void gen_jmp(label& l, bool far = false);
@@ -107,22 +113,36 @@ namespace ftl {
         void gen_xor(value& dest, i32 val);
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
+
+        typedef i64 (func1)(void* bptr);
+        typedef i64 (func2)(void* bptr, i64 arg1);
+        typedef i64 (func3)(void* bptr, i64 arg1, i64 arg2);
+        typedef i64 (func4)(void* bptr, i64 arg1, i64 arg2, i64 arg3);
+
+        value gen_call(func1* fn);
+        value gen_call(func2* fn, value& arg1);
+        value gen_call(func3* fn, value& arg1, value& arg2);
+        value gen_call(func4* fn, value& arg1, value& arg2, value& arg3);
     };
 
-    inline value cgen::gen_local_i8(i8 val) {
-        return m_alloc.new_local(8, val);
+    inline void cgen::set_base_ptr(void* ptr) {
+        m_alloc.set_base_addr((u64)ptr);
     }
 
-    inline value cgen::gen_local_i16(i16 val) {
-        return m_alloc.new_local(16, val);
+    inline value cgen::gen_local_i8(i8 val, reg r) {
+        return m_alloc.new_local(8, val, r);
     }
 
-    inline value cgen::gen_local_i32(i32 val) {
-        return m_alloc.new_local(32, val);
+    inline value cgen::gen_local_i16(i16 val, reg r) {
+        return m_alloc.new_local(16, val, r);
     }
 
-    inline value cgen::gen_local_i64(i64 val) {
-        return m_alloc.new_local(64, val);
+    inline value cgen::gen_local_i32(i32 val, reg r) {
+        return m_alloc.new_local(32, val, r);
+    }
+
+    inline value cgen::gen_local_i64(i64 val, reg r) {
+        return m_alloc.new_local(64, val, r);
     }
 
     inline value cgen::gen_global_i8(void* addr) {

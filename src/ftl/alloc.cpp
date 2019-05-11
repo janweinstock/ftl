@@ -55,14 +55,23 @@ namespace ftl {
         // nothing to do
     }
 
-    value alloc::new_local(int bits, i64 val) {
+    value alloc::new_local(int bits, i64 val, reg r) {
+        value v = new_local_noinit(bits, r);
+        m_emitter.movi(bits, v.r, val);
+        return v;
+    }
+
+    value alloc::new_local_noinit(int bits, reg r) {
         int idx = ffs(m_locals) - 1;
         FTL_ERROR_ON(idx < 0, "out of stack frame memory");
         m_locals &= ~(1 << idx);
 
-        reg r = select();
+        if (r == NREGS)
+            r = select();
+        else
+            flush(r);
+
         value v(bits, *this, r, STACK_POINTER, -idx * sizeof(u64));
-        m_emitter.movi(v.bits, v.r, val);
         m_regmap[r] = &v;
 
         return v;
@@ -97,7 +106,7 @@ namespace ftl {
 
     // According to SYSV/Linux calling convention
     static const reg callee_saved_regs[] = {
-        RBX, RBP, RSI, RDI, R12, R13, R14, R15,
+        RBP, RBX, RSI, RDI, R12, R13, R14, R15,
     };
 
     // Never allocate RSP or RBP, since we need them for addressing local and
@@ -105,7 +114,7 @@ namespace ftl {
     // from function calls. RDX gets spoiled in MUL/DIV operations. Prefer
     // registers which are callee saved and not used for function arguments.
     static const reg alloc_order[] = {
-        RBX, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
+        RBP, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
     };
 
     reg alloc::select() {
@@ -132,6 +141,7 @@ namespace ftl {
             }
         }
 
+        flush(lru);
         return lru;
     }
 
@@ -165,6 +175,12 @@ namespace ftl {
     void alloc::use(reg r) {
         FTL_ERROR_ON(r == NREGS, "invalid register use");
         m_reguse[r] = m_usecnt++;
+    }
+
+    void alloc::flush(reg r) {
+        value* val = m_regmap[r];
+        if (val != NULL)
+            flush(*val);
     }
 
     void alloc::fetch(value& val, reg r) {
@@ -225,7 +241,12 @@ namespace ftl {
         for (reg r : callee_saved_regs)
             m_emitter.push(r);
 
-        i32 frame_size = 64 * sizeof(u64);
+        // Our stack pointer should be 16 byte aligned to allow us calling
+        // functions from generated code. So far, our stack frame has 8 bytes
+        // (return address) + register spill (8 registers = 64 bytes) + local
+        // storage (64 * 8 = 512 bytes). So we need an extra 8 bytes dummy
+        // stack storage to reach alignment.
+        i32 frame_size = 64 * sizeof(u64) + 8;
         m_emitter.subi(64, STACK_POINTER, frame_size);
 
         if (m_base)
@@ -235,7 +256,7 @@ namespace ftl {
     }
 
     void alloc::epilogue() {
-        i32 frame_size = 64 * sizeof(u64);
+        i32 frame_size = 64 * sizeof(u64) + 8;
         m_emitter.addi(64, STACK_POINTER, frame_size);
 
         for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)

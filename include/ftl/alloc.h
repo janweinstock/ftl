@@ -47,7 +47,7 @@ namespace ftl {
 
     public:
         const reg STACK_POINTER = RSP; // base address register for locals
-        const reg BASE_REGISTER = RBP; // base address register for globals
+        const reg BASE_REGISTER = RBX; // base address register for globals
 
         alloc(emitter& e);
         virtual ~alloc();
@@ -58,7 +58,8 @@ namespace ftl {
         bool is_local(const value& v) const;
         bool is_global(const value& v) const;
 
-        value new_local(int bits, i64 val);
+        value new_local(int bits, i64 val, reg r = NREGS);
+        value new_local_noinit(int bits, reg r = NREGS);
         value new_global(int bits, u64 addr);
         void free_value(value& val);
 
@@ -69,6 +70,7 @@ namespace ftl {
         void assign(reg r, value* val);
         void free(reg r);
         void use(reg r);
+        void flush(reg r);
 
         void fetch(value& val, reg r = NREGS);
         void store(value& val);

@@ -49,7 +49,12 @@ namespace ftl {
         if (is_reg())
             m_allocator.assign(r, this);
 
-        other.m_vt = VAL_DEAD;
+        other.mark_dead();
+    }
+
+    value::~value() {
+        if (!is_dead())
+            m_allocator.free_value(*this);
     }
 
     value::operator const rm() const {

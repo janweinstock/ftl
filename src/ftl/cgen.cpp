@@ -36,14 +36,33 @@ namespace ftl {
         // nothing to do
     }
 
+    void cgen::set_base_ptr_stack() {
+        int dummy;
+        set_base_ptr(&dummy);
+    }
+
+    void cgen::set_base_ptr_heap() {
+        int* dummy = new int;
+        set_base_ptr(dummy);
+        delete dummy;
+    }
+
+    void cgen::set_base_ptr_code() {
+        set_base_ptr(m_buffer.get_code_ptr());
+    }
+
     func cgen::gen_function() {
         return func(m_buffer);
     }
 
-    void cgen::gen_ret(value& val) {
-        m_alloc.fetch(val, RAX);
+    void cgen::gen_ret() {
         gen_jmp(m_exit, true);
         m_buffer.align(16);
+    }
+
+    void cgen::gen_ret(value& val) {
+        m_alloc.fetch(val, RAX);
+        gen_ret();
     }
 
     void cgen::gen_jmp(label& l, bool far) {
@@ -283,6 +302,31 @@ namespace ftl {
     void cgen::gen_tst(value& dest, i32 val) {
         m_emitter.tsti(dest.bits, dest, val);
         dest.mark_dirty();
+    }
+
+    value cgen::gen_call(func1* fn) {
+        m_alloc.flush(argreg(0));
+        m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
+
+        value ret = m_alloc.new_local(64, (i64)fn, RAX);
+        m_emitter.call(RAX);
+
+        return ret;
+    }
+
+    value cgen::gen_call(func2* fn, value& arg1) {
+        m_alloc.fetch(arg1, argreg(1));
+        return gen_call((func1*)fn);
+    }
+
+    value cgen::gen_call(func3* fn, value& arg1, value& arg2) {
+        m_alloc.fetch(arg2, argreg(2));
+        return gen_call((func2*)fn, arg1);
+    }
+
+    value cgen::gen_call(func4* fn, value& arg1, value& arg2, value& arg3) {
+        m_alloc.fetch(arg3, argreg(3));
+        return gen_call((func3*)fn, arg1, arg2);
     }
 
 }

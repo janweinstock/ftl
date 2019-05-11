@@ -102,6 +102,7 @@ namespace ftl {
         size_t sari(int bits, const rm& dest, i8 imm);
 
         size_t call(u8* fn, fixup* fix = NULL);
+        size_t call(const rm& dest);
 
         size_t jmpi(i32 offset, fixup* fix = NULL);
         size_t jmpr(const rm& dest);

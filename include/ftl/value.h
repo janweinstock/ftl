@@ -66,6 +66,7 @@ namespace ftl {
         value(int bits, alloc& a, reg r, reg base, i32 offset);
         value(int bits, alloc& a, reg base, i32 offset, u64 addr, bool fits);
         value(value&& other);
+        virtual ~value();
 
         operator const rm() const;
         value& operator = (value&& other);

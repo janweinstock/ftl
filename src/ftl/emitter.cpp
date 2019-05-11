@@ -551,6 +551,14 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::call(const rm& dest) {
+        size_t len = 0;
+        len += prefix(32, (reg)0, dest);
+        len += m_buffer.write<u8>(OPCODE_JMPR);
+        len += modrm((reg)2, dest);
+        return len;
+    }
+
     size_t emitter::jmpi(i32 offset, fixup* fix) {
         size_t len = 0;
 
