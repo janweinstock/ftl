@@ -26,53 +26,66 @@
 
 namespace ftl {
 
-    enum val_type {
-        VAL_REG    = 0, // value in register and memory
-        VAL_DIRTY  = 1, // value in register differs from memory
-        VAL_MEMORY = 2, // value only held in memory
-        VAL_DEAD   = 3, // value marked end-of-life
-    };
+    class alloc;
 
-    struct value {
-        int      bits;
-        val_type type;
-        u64      base;
+    class value
+    {
+    private:
+        alloc& m_allocator;
 
-        reg      r;
-        rm       m;
+        enum val_type {
+            VAL_REG    = 0, // value in register and memory
+            VAL_DIRTY  = 1, // value in register differs from memory
+            VAL_MEMORY = 2, // value only held in memory
+            VAL_DEAD   = 3, // value marked end-of-life
+        } m_vt;
 
-        bool is_dead()  const { return type == VAL_DEAD; }
-        bool is_mem()   const { return type == VAL_MEMORY; }
-        bool is_reg()   const { return type == VAL_REG || type == VAL_DIRTY; }
-        bool is_dirty() const { return type == VAL_DIRTY; }
+        // disabled
+        value(const value&);
+        value& operator = (const value&);
 
-        void set_dirty();
+    public:
+        const int bits;
+        const u64 base;
+
+        reg r;
+        rm  m;
+
+        bool is_dead()  const { return m_vt == VAL_DEAD; }
+        bool is_mem()   const { return m_vt == VAL_MEMORY; }
+        bool is_reg()   const { return m_vt == VAL_REG || m_vt == VAL_DIRTY; }
+        bool is_dirty() const { return m_vt == VAL_DIRTY; }
+
+        void mark_dead();
+        void mark_dirty();
+
+        void assign(reg r);
 
         bool is_reachable() const { return base == 0; }
 
-        value(int bits, reg r, reg base, i32 offset);
-        value(int bits, reg base, i32 offset, u64 addr, bool fits);
+        value(int bits, alloc& a, reg r, reg base, i32 offset);
+        value(int bits, alloc& a, reg base, i32 offset, u64 addr, bool fits);
+        value(value&& other);
 
         operator const rm() const;
+        value& operator = (value&& other);
     };
 
-    inline value::value(int w, reg x, reg breg, i32 offset):
-        bits(w), type(VAL_REG), base(0), r(x), m(breg, offset) {
-    }
-
-    inline value::value(int w, reg b, i32 off, u64 addr, bool fits):
-        bits(w), type(VAL_MEMORY), base(fits ? 0 : addr), r(NREGS), m(b, off) {
-    }
-
-    inline value::operator const rm() const {
+    inline void value::mark_dead() {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
-        return is_reg() ? r : m;
+        m_vt = VAL_DEAD;
     }
 
-    inline void value::set_dirty() {
+    inline void value::mark_dirty() {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
-        if (type == VAL_REG)
-            type = VAL_DIRTY;
+        if (m_vt == VAL_REG)
+            m_vt = VAL_DIRTY;
+    }
+
+    inline void value::assign(reg _r) {
+        FTL_ERROR_ON(is_dead(), "operation on dead value");
+        r = _r;
+        m_vt = (r == NREGS) ? VAL_MEMORY : VAL_REG;
     }
 
 }

@@ -20,35 +20,35 @@
 
 namespace ftl {
 
-    void alloc::check(value& val) const {
-        switch (val.type) {
-        case VAL_REG:
-        case VAL_DIRTY:
+    void alloc::validate(const value& val) const {
+        // Make sure the register value has been assigned to a register and
+        // that it also has been registered to this register in our map.
+        if (val.is_reg()) {
             FTL_ERROR_ON(val.r == NREGS, "unassigned register value");
-            FTL_ERROR_ON(m_regs[val.r] != &val, "corrupt register cache");
-            break;
-
-        case VAL_MEMORY:
-            FTL_ERROR_ON(val.r != NREGS, "memory value in register");
-            for (auto v : m_regs)
-                FTL_ERROR_ON(v == &val, "corrupt register cache");
-            break;
-
-        case VAL_DEAD:
-            FTL_ERROR("attempt to operate on dead value");
-            break;
-
-        default:
-            FTL_ERROR("invalid value type %d", val.type);
+            FTL_ERROR_ON(m_regmap[val.r] != &val, "corrupt register map");
         }
+
+        // Make sure the memory value has not been assigned to a register and
+        // that our register map has no stall references to it.
+        if (val.is_mem()) {
+            FTL_ERROR_ON(val.r != NREGS, "memory value in register");
+            for (auto v : m_regmap)
+                FTL_ERROR_ON(v == &val, "corrupt register map");
+        }
+
+        if (val.is_dead())
+            FTL_ERROR("attempt to operate on dead value");
     }
 
     alloc::alloc(emitter& e):
         m_emitter(e),
-        m_regs(),
+        m_regmap(),
+        m_reguse(),
+        m_usecnt(0),
         m_locals(~0),
         m_base(0) {
-        // nothing to do
+        memset(m_regmap, 0, sizeof(m_regmap));
+        memset(m_reguse, 0, sizeof(m_reguse));
     }
 
     alloc::~alloc() {
@@ -61,9 +61,9 @@ namespace ftl {
         m_locals &= ~(1 << idx);
 
         reg r = select();
-        value v(bits, r, STACK_POINTER, -idx * sizeof(u64));
+        value v(bits, *this, r, STACK_POINTER, -idx * sizeof(u64));
         m_emitter.movi(v.bits, v.r, val);
-        m_regs[r] = &v; // evil
+        m_regmap[r] = &v;
 
         return v;
     }
@@ -75,7 +75,7 @@ namespace ftl {
         }
 
         i64 offset = addr - m_base;
-        value v(bits, BASE_REGISTER, offset, addr, fits_i32(offset));
+        value v(bits, *this, BASE_REGISTER, offset, addr, fits_i32(offset));
 
         return v;
     }
@@ -90,13 +90,22 @@ namespace ftl {
         }
 
         if (val.is_reg())
-            m_regs[val.r] = NULL;
+            m_regmap[val.r] = NULL;
 
-        val.type = VAL_DEAD;
+        val.mark_dead();
     }
 
+    // According to SYSV/Linux calling convention
+    static const reg callee_saved_regs[] = {
+        RBX, RBP, RSI, RDI, R12, R13, R14, R15,
+    };
+
+    // Never allocate RSP or RBP, since we need them for addressing local and
+    // memory variables. Allocate RAX last, since we need it to return values
+    // from function calls. RDX gets spoiled in MUL/DIV operations. Prefer
+    // registers which are callee saved and not used for function arguments.
     static const reg alloc_order[] = {
-        RAX, RCX, RDX, RBX, RSI, RDI, R8, R9, R10, R11, R12, R13, R14, R15
+        RBX, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
     };
 
     reg alloc::select() {
@@ -113,10 +122,34 @@ namespace ftl {
             }
         }
 
-        // nothing good found
-        reg r = alloc_order[0];
-        free(r);
-        return r;
+        // pick least recently used
+        reg lru = RAX;
+        u64 min = m_reguse[lru];
+        for (reg r : alloc_order) {
+            if (m_reguse[r] < min) {
+                lru = r;
+                min = m_reguse[r];
+            }
+        }
+
+        return lru;
+    }
+
+    void alloc::assign(reg r, value* val) {
+        if (val == NULL) {
+            m_regmap[r] = NULL;
+            return;
+        }
+
+        if (val->r < NREGS)
+            m_regmap[val->r] = NULL;
+
+        val->assign(r);
+
+        if (r < NREGS) {
+            m_regmap[r] = val;
+            use(r);
+        }
     }
 
     void alloc::free(reg r) {
@@ -125,13 +158,17 @@ namespace ftl {
 
         FTL_ERROR_ON(is_dirty(r), "attempt to free a dirty register");
 
-        m_regs[r]->r = NREGS;
-        m_regs[r]->type = VAL_MEMORY;
-        m_regs[r] = NULL;
+        m_regmap[r]->assign(NREGS);
+        m_regmap[r] = NULL;
+    }
+
+    void alloc::use(reg r) {
+        FTL_ERROR_ON(r == NREGS, "invalid register use");
+        m_reguse[r] = m_usecnt++;
     }
 
     void alloc::fetch(value& val, reg r) {
-        check(val);
+        validate(val);
 
         if (r == NREGS)
             r = val.is_reg() ? val.r : select();
@@ -141,12 +178,9 @@ namespace ftl {
                 return;
 
             if (is_dirty(r))
-                flush(*m_regs[r]);
+                flush(*m_regmap[r]);
 
             m_emitter.movr(val.bits, r, val.r);
-            m_regs[val.r] = NULL;
-            m_regs[r] = &val;
-            val.r = r;
 
         } else { // copy value from memory into r
 
@@ -155,15 +189,13 @@ namespace ftl {
             m_emitter.movr(val.bits, r, val.m);
             if (!val.is_reachable())
                 m_emitter.movi(64, val.m.r, m_base);
-
-            val.r = r;
-            val.type = VAL_REG;
-            m_regs[r] = &val;
         }
+
+        assign(r, &val);
     }
 
     void alloc::store(value& val) {
-        check(val);
+        validate(val);
 
         if (!val.is_dirty())
             return;
@@ -174,11 +206,11 @@ namespace ftl {
         if (!val.is_reachable())
             m_emitter.movi(64, val.m.r, m_base);
 
-        val.type = VAL_REG;
+        val.assign(val.r);
     }
 
     void alloc::flush(value& val) {
-        check(val);
+        validate(val);
 
         if (val.is_mem())
             return;
@@ -188,10 +220,6 @@ namespace ftl {
 
         free(val.r);
     }
-
-    static const reg callee_saved_regs[] = {
-          RBX, RBP, RSI, RDI, R12, R13, R14, R15,
-    };
 
     void alloc::prologue() {
         for (reg r : callee_saved_regs)
@@ -210,7 +238,7 @@ namespace ftl {
         i32 frame_size = 64 * sizeof(u64);
         m_emitter.addi(64, STACK_POINTER, frame_size);
 
-        for (int i = ARRAY_SIZE(callee_saved_regs); i > 0; i--)
+        for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)
             m_emitter.pop(callee_saved_regs[i-1]);
 
         m_emitter.ret();

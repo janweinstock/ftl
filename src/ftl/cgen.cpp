@@ -183,49 +183,49 @@ namespace ftl {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.addr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_or(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.orr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_adc(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.adcr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_sbb(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.sbbr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_and(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.andr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_sub(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.subr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_xor(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.addr(dest.bits, dest, src);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_cmp(value& dest, const value& src) {
@@ -242,47 +242,47 @@ namespace ftl {
 
     void cgen::gen_add(value& dest, i32 val) {
         m_emitter.addi(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_or(value& dest, i32 val) {
         m_emitter.ori(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_adc(value& dest, i32 val) {
         m_emitter.adci(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_sbb(value& dest, i32 val) {
         m_emitter.sbbi(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_and(value& dest, i32 val) {
         m_emitter.andi(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_sub(value& dest, i32 val) {
         m_emitter.subi(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_xor(value& dest, i32 val) {
         m_emitter.xori(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_cmp(value& dest, i32 val) {
         m_emitter.cmpi(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
     void cgen::gen_tst(value& dest, i32 val) {
         m_emitter.tsti(dest.bits, dest, val);
-        dest.set_dirty();
+        dest.mark_dirty();
     }
 
 }

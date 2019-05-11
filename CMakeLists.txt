@@ -36,6 +36,7 @@ set(sources
     "${src}/ftl/cbuf.cpp"
     "${src}/ftl/emitter.cpp"
     "${src}/ftl/label.cpp"
+    "${src}/ftl/value.cpp"
     "${src}/ftl/alloc.cpp"
     "${src}/ftl/cgen.cpp")
 

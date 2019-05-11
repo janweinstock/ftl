@@ -16,54 +16,64 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_COMMON_H
-#define FTL_COMMON_H
-
-#include <stdlib.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
-
-#include <string>
-#include <vector>
-#include <sstream>
-#include <iostream>
-
-#include <unistd.h>
-#include <sys/mman.h>
-
-#define FTL_PAGE_SIZE        (4096)
-#define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
-#define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
-
-#define FTL_ARRAY_SIZE(a)    (sizeof(a) / sizeof((a)[0]))
+#include "ftl/value.h"
+#include "ftl/alloc.h"
 
 namespace ftl {
 
-    typedef int8_t  i8;
-    typedef int16_t i16;
-    typedef int32_t i32;
-    typedef int64_t i64;
+    value::value(int w, alloc& a, reg x, reg breg, i32 offset):
+        m_allocator(a),
+        m_vt(VAL_REG),
+        bits(w),
+        base(0),
+        r(x),
+        m(breg, offset) {
+    }
 
-    typedef uint8_t  u8;
-    typedef uint16_t u16;
-    typedef uint32_t u32;
-    typedef uint64_t u64;
+    value::value(int w, alloc& a, reg b, i32 off, u64 addr, bool fits):
+        m_allocator(a),
+        m_vt(VAL_MEMORY),
+        bits(w),
+        base(fits ? 0 : addr),
+        r(NREGS),
+        m(b, off) {
+    }
 
-    const size_t KiB = 1024;
-    const size_t MiB = 1024 * KiB;
-    const size_t GiB = 1024 * MiB;
-    const size_t TiB = 1024 * GiB;
+    value::value(value&& other):
+        m_allocator(other.m_allocator),
+        m_vt(other.m_vt),
+        bits(other.bits),
+        base(other.base),
+        r(other.r),
+        m(other.m) {
+        if (is_reg())
+            m_allocator.assign(r, this);
 
-    using std::min;
-    using std::max;
+        other.m_vt = VAL_DEAD;
+    }
 
-    using std::string;
-    using std::vector;
-    using std::stringstream;
+    value::operator const rm() const {
+        FTL_ERROR_ON(is_dead(), "operation on dead value");
+        if (is_mem())
+            return m;
+
+        m_allocator.use(r);
+        return r;
+    }
+
+    value& value::operator = (value&& other) {
+        FTL_ERROR_ON(bits != other.bits, "different value size");
+        FTL_ERROR_ON(base != other.base, "different value address");
+
+        m_vt = other.m_vt;
+        r = other.r;
+        m = other.m;
+
+        if (is_reg())
+            m_allocator.assign(r, this);
+
+        other.m_vt = VAL_DEAD;
+        return *this;
+    };
 
 }
-
-#endif

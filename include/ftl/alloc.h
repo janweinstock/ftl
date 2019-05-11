@@ -33,11 +33,13 @@ namespace ftl {
     {
     private:
         emitter& m_emitter;
-        value*   m_regs[NREGS];
+        value*   m_regmap[NREGS];
+        u64      m_reguse[NREGS];
+        u64      m_usecnt;
         u64      m_locals;
         u64      m_base;
 
-        void check(value& val) const;
+        void validate(const value& val) const;
 
         // disabled
         alloc();
@@ -64,7 +66,9 @@ namespace ftl {
         bool is_dirty(reg r) const;
 
         reg select();
+        void assign(reg r, value* val);
         void free(reg r);
+        void use(reg r);
 
         void fetch(value& val, reg r = NREGS);
         void store(value& val);
@@ -88,13 +92,13 @@ namespace ftl {
     }
 
     inline bool alloc::is_empty(reg r) const {
-        return m_regs[r] == NULL;
+        return m_regmap[r] == NULL;
     }
 
     inline bool alloc::is_dirty(reg r) const {
         if (is_empty(r))
             return false;
-        return m_regs[r]->is_dirty();
+        return m_regmap[r]->is_dirty();
     }
 
 }

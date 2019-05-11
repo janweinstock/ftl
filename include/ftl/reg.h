@@ -48,9 +48,9 @@ namespace ftl {
     const char* reg_name(reg r);
 
     struct rm {
-        const bool is_mem;
-        const reg  r;
-        const i32  offset;
+        bool is_mem;
+        reg  r;
+        i32  offset;
 
         bool is_reg() const { return !is_mem; }
 
@@ -71,7 +71,7 @@ namespace ftl {
 
     static inline reg argreg(unsigned int argno) {
         reg sysv[] = { RDI, RSI, RDX, RCX, R8, R9 };
-        FTL_ERROR_ON(argno > ARRAY_SIZE(sysv), "argno out of bounds");
+        FTL_ERROR_ON(argno > FTL_ARRAY_SIZE(sysv), "argno out of bounds");
         return sysv[argno];
     }
 
