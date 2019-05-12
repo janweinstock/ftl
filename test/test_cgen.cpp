@@ -89,6 +89,88 @@ TEST(cgen, func) {
     EXPECT_EQ(sub, c - d);
 }
 
+i64 test_muldiv(void* ptr, i64 a, i64 b, i64 c) {
+    i32 _a = (i32)a;
+    i32 _b = (i32)b;
+    i32 _c = (i32)c;
+    EXPECT_EQ(_a, 16 * -5);
+    EXPECT_EQ(_b, 16 / -5);
+    EXPECT_EQ(_c, 16 % -5);
+    return 0;
+}
+
+TEST(cgen, muldiv) {
+    int a = 16;
+    int b = -5;
+
+    cgen code(4 * KiB);
+
+    func test_val = code.gen_function();
+    value vb = code.gen_global_i32(&b);
+    value vx = code.gen_local_i32(a);
+    value vy = code.gen_local_i32(a);
+    value vz = code.gen_local_i32(a);
+    code.gen_imul(vx, vb);
+    code.gen_idiv(vy, vb);
+    code.gen_imod(vz, vb);
+    code.gen_call(test_muldiv, vx, vy, vz);
+    code.gen_ret();
+
+    func test_imm = code.gen_function();
+    value vx2 = code.gen_local_i32(a);
+    value vy2 = code.gen_local_i32(a);
+    value vz2 = code.gen_local_i32(a);
+    code.gen_imul(vx2, b);
+    code.gen_idiv(vy2, b);
+    code.gen_imod(vz2, b);
+    code.gen_call(test_muldiv, vx2, vy2, vz2);
+    code.gen_ret();
+
+    test_val();
+    test_imm();
+}
+
+i64 test_umuldiv(void* ptr, i64 a, i64 b, i64 c) {
+    i32 _a = (i32)a;
+    i32 _b = (i32)b;
+    i32 _c = (i32)c;
+    EXPECT_EQ(_a, 16 * 5);
+    EXPECT_EQ(_b, 16 / 5);
+    EXPECT_EQ(_c, 16 % 5);
+    return 0;
+}
+
+TEST(cgen, umuldiv) {
+    int a = 16;
+    int b = 5;
+
+    cgen code(4 * KiB);
+
+    func test_val = code.gen_function();
+    value vb = code.gen_global_i32(&b);
+    value vx = code.gen_local_i32(a);
+    value vy = code.gen_local_i32(a);
+    value vz = code.gen_local_i32(a);
+    code.gen_umul(vx, vb);
+    code.gen_udiv(vy, vb);
+    code.gen_umod(vz, vb);
+    code.gen_call(test_umuldiv, vx, vy, vz);
+    code.gen_ret();
+
+    func test_imm = code.gen_function();
+    value vx2 = code.gen_local_i32(a);
+    value vy2 = code.gen_local_i32(a);
+    value vz2 = code.gen_local_i32(a);
+    code.gen_umul(vx2, b);
+    code.gen_udiv(vy2, b);
+    code.gen_umod(vz2, b);
+    code.gen_call(test_umuldiv, vx2, vy2, vz2);
+    code.gen_ret();
+
+    test_val();
+    test_imm();
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

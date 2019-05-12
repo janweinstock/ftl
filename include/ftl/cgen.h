@@ -114,6 +114,20 @@ namespace ftl {
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
 
+        void gen_imul(value& dest, const value& src);
+        void gen_idiv(value& dest, const value& src);
+        void gen_imod(value& dest, const value& src);
+        void gen_umul(value& dest, const value& src);
+        void gen_udiv(value& dest, const value& src);
+        void gen_umod(value& dest, const value& src);
+
+        void gen_imul(value& dest, i64 val);
+        void gen_idiv(value& dest, i64 val);
+        void gen_imod(value& dest, i64 val);
+        void gen_umul(value& dest, i64 val);
+        void gen_udiv(value& dest, i64 val);
+        void gen_umod(value& dest, i64 val);
+
         typedef i64 (func1)(void* bptr);
         typedef i64 (func2)(void* bptr, i64 arg1);
         typedef i64 (func3)(void* bptr, i64 arg1, i64 arg2);
