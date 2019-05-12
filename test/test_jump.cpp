@@ -44,8 +44,8 @@ TEST(jump, jmpr) {
     ftl::emitter emitter(code);
     entry_func* fn = (entry_func*)code.get_code_ptr();
 
-    EXPECT_EQ(emitter.movi(32, RAX, 0), 5);
-    EXPECT_EQ(emitter.movi(64, R8, (i64)fn + 5 + 10 + 3 + 5 + 1), 10);
+    EXPECT_EQ(emitter.movi(32, RAX, 0), 2); // should be "xor rax, rax"
+    EXPECT_EQ(emitter.movi(64, R8, (i64)fn + 2 + 10 + 3 + 5 + 1), 10);
     EXPECT_EQ(emitter.jmpr(R8), 3);
     EXPECT_EQ(emitter.movi(32, RAX, 41), 5);
     EXPECT_EQ(emitter.ret(), 1);

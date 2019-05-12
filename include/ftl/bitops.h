@@ -60,7 +60,11 @@ namespace ftl {
     static inline bool is_pow2(u64 val) {
         if (val == 0)
             return false;
-        return val & (val - 1);
+        return (val & (val - 1)) == 0;
+    }
+
+    static inline int log2(u64 val) {
+        return __builtin_ctzl(val); // works only if val is power of two!
     }
 
 }

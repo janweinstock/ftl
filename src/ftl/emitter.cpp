@@ -316,6 +316,9 @@ namespace ftl {
     }
 
     size_t emitter::movi(int bits, const rm& dest, i64 imm) {
+        if (imm == 0 && dest.is_reg())
+            return xorr(bits, dest, dest);
+
         int immlen = max(encode_size(imm), bits);
         FTL_ERROR_ON(bits > 64, "requested operation too wide");
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");

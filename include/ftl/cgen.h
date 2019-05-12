@@ -124,9 +124,9 @@ namespace ftl {
         void gen_imul(value& dest, i64 val);
         void gen_idiv(value& dest, i64 val);
         void gen_imod(value& dest, i64 val);
-        void gen_umul(value& dest, i64 val);
-        void gen_udiv(value& dest, i64 val);
-        void gen_umod(value& dest, i64 val);
+        void gen_umul(value& dest, u64 val);
+        void gen_udiv(value& dest, u64 val);
+        void gen_umod(value& dest, u64 val);
 
         void gen_not(value& dest);
         void gen_neg(value& dest);

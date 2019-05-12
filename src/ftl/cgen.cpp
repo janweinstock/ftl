@@ -350,36 +350,113 @@ namespace ftl {
 
     void cgen::gen_imul(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+
+        if (val == 0) {
+            gen_xor(dest, dest);
+            return;
+        }
+
+        if (val == 1)
+            return;
+
+        if (val == -1) {
+            gen_neg(dest);
+            return;
+        }
+
+        if (is_pow2(val)) {
+            gen_shl(dest, log2(val));
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_imul(dest, src);
     }
 
     void cgen::gen_idiv(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+        FTL_ERROR_ON(val == 0, "division by zero");
+
+        if (val == 1)
+            return;
+
+        if (val == -1) {
+            gen_neg(dest);
+            return;
+        }
+
+        if (is_pow2(val)) {
+            gen_sha(dest, log2(val));
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_idiv(dest, src);
     }
 
     void cgen::gen_imod(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+        FTL_ERROR_ON(val == 0, "division by zero");
+
+        if (val == 1 || val == -1) {
+            gen_xor(dest, dest);
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_imod(dest, src);
     }
 
-    void cgen::gen_umul(value& dest, i64 val) {
+    void cgen::gen_umul(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+
+        if (val == 0) {
+            gen_xor(dest, dest);
+            return;
+        }
+
+        if (val == 1)
+            return;
+
+        if (is_pow2(val)) {
+            gen_shl(dest, log2(val));
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_umul(dest, src);
     }
 
-    void cgen::gen_udiv(value& dest, i64 val) {
+    void cgen::gen_udiv(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+        FTL_ERROR_ON(val == 0, "division by zero");
+
+        if (val == 1)
+            return;
+
+        if (is_pow2(val)) {
+            gen_shr(dest, log2(val));
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_udiv(dest, src);
     }
 
-    void cgen::gen_umod(value& dest, i64 val) {
+    void cgen::gen_umod(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
+        FTL_ERROR_ON(val == 0, "division by zero");
+
+        if (val == 1) {
+            gen_xor(dest, dest);
+            return;
+        }
+
+        if (is_pow2(val)) {
+            gen_and(dest, val - 1);
+            return;
+        }
+
         value src = m_alloc.new_local(dest.bits, val);
         gen_umod(dest, src);
     }
