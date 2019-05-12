@@ -63,7 +63,7 @@ namespace ftl {
         return (val & (val - 1)) == 0;
     }
 
-    static inline int log2(u64 val) {
+    static inline int log2i(u64 val) {
         return __builtin_ctzl(val); // works only if val is power of two!
     }
 

@@ -365,7 +365,7 @@ namespace ftl {
         }
 
         if (is_pow2(val)) {
-            gen_shl(dest, log2(val));
+            gen_shl(dest, log2i(val));
             return;
         }
 
@@ -386,7 +386,7 @@ namespace ftl {
         }
 
         if (is_pow2(val)) {
-            gen_sha(dest, log2(val));
+            gen_sha(dest, log2i(val));
             return;
         }
 
@@ -419,7 +419,7 @@ namespace ftl {
             return;
 
         if (is_pow2(val)) {
-            gen_shl(dest, log2(val));
+            gen_shl(dest, log2i(val));
             return;
         }
 
@@ -435,7 +435,7 @@ namespace ftl {
             return;
 
         if (is_pow2(val)) {
-            gen_shr(dest, log2(val));
+            gen_shr(dest, log2i(val));
             return;
         }
 

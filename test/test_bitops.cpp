@@ -54,22 +54,22 @@ TEST(bitops, pow2) {
     EXPECT_TRUE(is_pow2(274877906944));
 }
 
-TEST(bitops, log2) {
-    EXPECT_EQ(log2(2), 1);
-    EXPECT_EQ(log2(4), 2);
-    EXPECT_EQ(log2(8), 3);
-    EXPECT_EQ(log2(16), 4);
-    EXPECT_EQ(log2(32), 5);
-    EXPECT_EQ(log2(64), 6);
-    EXPECT_EQ(log2(128), 7);
-    EXPECT_EQ(log2(256), 8);
-    EXPECT_EQ(log2(512), 9);
-    EXPECT_EQ(log2(1024), 10);
-    EXPECT_EQ(log2(2048), 11);
-    EXPECT_EQ(log2(4096), 12);
-    EXPECT_EQ(log2(8192), 13);
-    EXPECT_EQ(log2(16384), 14);
-    EXPECT_EQ(log2(32768), 15);
+TEST(bitops, log2i) {
+    EXPECT_EQ(log2i(2), 1);
+    EXPECT_EQ(log2i(4), 2);
+    EXPECT_EQ(log2i(8), 3);
+    EXPECT_EQ(log2i(16), 4);
+    EXPECT_EQ(log2i(32), 5);
+    EXPECT_EQ(log2i(64), 6);
+    EXPECT_EQ(log2i(128), 7);
+    EXPECT_EQ(log2i(256), 8);
+    EXPECT_EQ(log2i(512), 9);
+    EXPECT_EQ(log2i(1024), 10);
+    EXPECT_EQ(log2i(2048), 11);
+    EXPECT_EQ(log2i(4096), 12);
+    EXPECT_EQ(log2i(8192), 13);
+    EXPECT_EQ(log2i(16384), 14);
+    EXPECT_EQ(log2i(32768), 15);
 }
 
 extern "C" int main(int argc, char** argv) {
