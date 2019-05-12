@@ -45,10 +45,10 @@ using namespace ftl;
         MAKE_TEST(op, cop, 64, reg, val, shift)
 
 #define MAKE_TEST_SET(op, cop)                                                \
-        MAKE_TEST_BITSET(op, cop, RCX, 0xaa12aa34ull,  1)                     \
-        MAKE_TEST_BITSET(op, cop, RDX, 0xaa12aa34ull,  2)                     \
-        MAKE_TEST_BITSET(op, cop, R8,  0xaa12aa34ull,  7)                     \
-        MAKE_TEST_BITSET(op, cop, R9,  0xaa12aa34ull, 12)                     \
+        MAKE_TEST_BITSET(op, cop, RCX, 0xaa12aa34ull, 1)                      \
+        MAKE_TEST_BITSET(op, cop, RDX, 0xaa12aa34ull, 2)                      \
+        MAKE_TEST_BITSET(op, cop, R8,  0xaa12aa34ull, 5)                      \
+        MAKE_TEST_BITSET(op, cop, R9,  0xaa12aa34ull, 7)                      \
 
 MAKE_TEST_SET(shli, <<)
 MAKE_TEST_SET(shri, >>)

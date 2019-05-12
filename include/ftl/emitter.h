@@ -45,7 +45,7 @@ namespace ftl {
 
         size_t immop(int op, int bits, const rm& dest, i32 imm);
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
-        size_t shift(int op, int bits, const rm& dest, i8 imm);
+        size_t shift(int op, int bits, const rm& dest, u8 imm);
         size_t branch(int op, i32 imm, fixup* fix);
 
         // disabled
@@ -93,13 +93,13 @@ namespace ftl {
         size_t imuli(int bits, reg dest, const rm& src, i32 imm);
         size_t imulr(int bits, reg dest, const rm& src);
 
-        size_t roli(int bits, const rm& dest, i8 imm);
-        size_t rori(int bits, const rm& dest, i8 imm);
-        size_t rcli(int bits, const rm& dest, i8 imm);
-        size_t rcri(int bits, const rm& dest, i8 imm);
-        size_t shli(int bits, const rm& dest, i8 imm);
-        size_t shri(int bits, const rm& dest, i8 imm);
-        size_t sari(int bits, const rm& dest, i8 imm);
+        size_t roli(int bits, const rm& dest, u8 imm);
+        size_t rori(int bits, const rm& dest, u8 imm);
+        size_t rcli(int bits, const rm& dest, u8 imm);
+        size_t rcri(int bits, const rm& dest, u8 imm);
+        size_t shli(int bits, const rm& dest, u8 imm);
+        size_t shri(int bits, const rm& dest, u8 imm);
+        size_t sari(int bits, const rm& dest, u8 imm);
 
         size_t call(u8* fn, fixup* fix = NULL);
         size_t call(const rm& dest);

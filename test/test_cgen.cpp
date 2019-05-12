@@ -171,6 +171,71 @@ TEST(cgen, umuldiv) {
     test_imm();
 }
 
+i64 test_notneg(void* ptr, i64 a, i64 b) {
+    EXPECT_EQ(a, ~42);
+    EXPECT_EQ(b, -42);
+    return 0;
+}
+
+TEST(cgen, notneg) {
+    cgen code(4 * KiB);
+
+    func test = code.gen_function();
+    value va = code.gen_local_i64(42);
+    value vb = code.gen_local_i64(42);
+    code.gen_not(va);
+    code.gen_neg(vb);
+    code.gen_call(test_notneg, va, vb);
+    code.gen_ret();
+
+    test();
+}
+
+i64 test_shift(void* ptr, i64 a, i64 b, i64 c) {
+    EXPECT_EQ(a, 42u << 4);
+    EXPECT_EQ(b, 42u >> 2);
+    EXPECT_EQ(c, -42 >> 2);
+    return 0;
+}
+
+TEST(cgen, shift) {
+    cgen code(4 * KiB);
+
+    func test = code.gen_function();
+    value a = code.gen_local_i64(42);
+    value b = code.gen_local_i64(42);
+    value c = code.gen_local_i64(-42);
+    code.gen_shl(a, 4);
+    code.gen_shr(b, 2);
+    code.gen_sha(c, 2);
+    code.gen_call(test_shift, a, b, c);
+    code.gen_ret();
+
+    test();
+}
+
+i64 test_rot(void* ptr, i64 op1, i64 op2) {
+    u8 a = (u8)op1;
+    u8 b = (u8)op2;
+    EXPECT_EQ(a, 81);
+    EXPECT_EQ(b, 69);
+    return 0;
+}
+
+TEST(cgen, rot) {
+    cgen code(4 * KiB);
+
+    func test = code.gen_function();
+    value a = code.gen_local_i8(42);
+    value b = code.gen_local_i8(42);
+    code.gen_rol(a, 3);
+    code.gen_ror(b, 3);
+    code.gen_call(test_rot, a, b);
+    code.gen_ret();
+
+    test();
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

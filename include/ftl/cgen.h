@@ -128,6 +128,15 @@ namespace ftl {
         void gen_udiv(value& dest, i64 val);
         void gen_umod(value& dest, i64 val);
 
+        void gen_not(value& dest);
+        void gen_neg(value& dest);
+
+        void gen_shl(value& dest, u8 shift);
+        void gen_shr(value& dest, u8 shift);
+        void gen_sha(value& dest, u8 shift);
+        void gen_rol(value& dest, u8 shift);
+        void gen_ror(value& dest, u8 shift);
+
         typedef i64 (func1)(void* bptr);
         typedef i64 (func2)(void* bptr, i64 arg1);
         typedef i64 (func3)(void* bptr, i64 arg1, i64 arg2);

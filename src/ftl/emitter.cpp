@@ -167,7 +167,7 @@ namespace ftl {
         size_t len = 0;
         if (bits == 16)
             len += m_buffer.write<u8>(0x66);
-        if (bits == 64 || r >= R8 || rm.r >= R8)
+        if (bits == 8 || bits == 64 || r >= R8 || rm.r >= R8)
             len += rex(bits == 64, r >= R8, false, rm.r >= R8);
         return len;
     }
@@ -248,8 +248,9 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::shift(int op, int bits, const rm& dest, i8 imm) {
+    size_t emitter::shift(int op, int bits, const rm& dest, u8 imm) {
         FTL_ERROR_ON(bits > 64, "requested operation too wide");
+        FTL_ERROR_ON(imm >= bits, "cannot shift by %d", (int)imm);
 
         if (imm == 0)
             return 0;
@@ -508,31 +509,31 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::roli(int bits, const rm& dest, i8 imm) {
+    size_t emitter::roli(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_ROL, bits, dest, imm);
     }
 
-    size_t emitter::rori(int bits, const rm& dest, i8 imm) {
+    size_t emitter::rori(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_ROR, bits, dest, imm);
     }
 
-    size_t emitter::rcli(int bits, const rm& dest, i8 imm) {
+    size_t emitter::rcli(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_RCL, bits, dest, imm);
     }
 
-    size_t emitter::rcri(int bits, const rm& dest, i8 imm) {
+    size_t emitter::rcri(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_RCR, bits, dest, imm);
     }
 
-    size_t emitter::shli(int bits, const rm& dest, i8 imm) {
+    size_t emitter::shli(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_SHL, bits, dest, imm);
     }
 
-    size_t emitter::shri(int bits, const rm& dest, i8 imm) {
+    size_t emitter::shri(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_SHR, bits, dest, imm);
     }
 
-    size_t emitter::sari(int bits, const rm& dest, i8 imm) {
+    size_t emitter::sari(int bits, const rm& dest, u8 imm) {
         return shift(OPCODE_SHIFT_SAR, bits, dest, imm);
     }
 

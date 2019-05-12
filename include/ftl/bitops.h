@@ -49,12 +49,18 @@ namespace ftl {
     }
 
     template <typename T>
-    static int encode_size(const T& val) {
+    static inline int encode_size(const T& val) {
         if (fits_i8(val))  return 8;
         if (fits_i16(val)) return 16;
         if (fits_i32(val)) return 32;
         if (fits_i64(val)) return 64;
         return sizeof(T) * 8;
+    }
+
+    static inline bool is_pow2(u64 val) {
+        if (val == 0)
+            return false;
+        return val & (val - 1);
     }
 
 }

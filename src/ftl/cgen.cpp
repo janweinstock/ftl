@@ -384,6 +384,56 @@ namespace ftl {
         gen_umod(dest, src);
     }
 
+    void cgen::gen_not(value& dest) {
+        m_emitter.notr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_neg(value& dest) {
+        m_emitter.negr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_shl(value& dest, u8 shift) {
+        if (shift == 0)
+            return;
+
+        m_emitter.shli(dest.bits, dest, shift);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_shr(value& dest, u8 shift) {
+        if (shift == 0)
+            return;
+
+        m_emitter.shri(dest.bits, dest, shift);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_sha(value& dest, u8 shift) {
+        if (shift == 0)
+            return;
+
+        m_emitter.sari(dest.bits, dest, shift);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_rol(value& dest, u8 shift) {
+        if (shift == 0)
+            return;
+
+        m_emitter.roli(dest.bits, dest, shift);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_ror(value& dest, u8 shift) {
+        if (shift == 0)
+            return;
+
+        m_emitter.rori(dest.bits, dest, shift);
+        dest.mark_dirty();
+    }
+
     value cgen::gen_call(func1* fn) {
         m_alloc.flush(argreg(0));
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
