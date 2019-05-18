@@ -452,7 +452,7 @@ namespace ftl {
             return;
         }
 
-        if (is_pow2(val)) {
+        if (is_pow2(val) && fits_i32(val)) {
             gen_and(dest, val - 1);
             return;
         }
