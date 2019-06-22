@@ -58,6 +58,7 @@ namespace ftl {
     value alloc::new_local(int bits, i64 val, reg r) {
         value v = new_local_noinit(bits, r);
         m_emitter.movi(bits, v.r, val);
+        v.mark_dirty();
         return v;
     }
 
