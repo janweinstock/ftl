@@ -57,7 +57,11 @@ namespace ftl {
 
     void cgen::gen_ret() {
         gen_jmp(m_exit, true);
-        m_buffer.align(16);
+    }
+
+    void cgen::gen_ret(i64 val) {
+        m_emitter.movi(64, RAX, val);
+        gen_ret();
     }
 
     void cgen::gen_ret(value& val) {
@@ -511,8 +515,14 @@ namespace ftl {
         dest.mark_dirty();
     }
 
+    static const reg caller_saved_regs[] = {
+            RAX, RCX, RDX, RSP, RDI, RSI, R8, R9, R10, R11
+    };
+
     value cgen::gen_call(func1* fn) {
-        m_alloc.flush(argreg(0));
+        for (reg r : caller_saved_regs)
+            m_alloc.flush(r);
+
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
         value ret = m_alloc.new_local(64, (i64)fn, RAX);
@@ -522,17 +532,17 @@ namespace ftl {
     }
 
     value cgen::gen_call(func2* fn, value& arg1) {
-        m_alloc.fetch(arg1, argreg(1));
+        m_emitter.movr(64, argreg(1), arg1);
         return gen_call((func1*)fn);
     }
 
     value cgen::gen_call(func3* fn, value& arg1, value& arg2) {
-        m_alloc.fetch(arg2, argreg(2));
+        m_emitter.movr(64, argreg(2), arg2);
         return gen_call((func2*)fn, arg1);
     }
 
     value cgen::gen_call(func4* fn, value& arg1, value& arg2, value& arg3) {
-        m_alloc.fetch(arg3, argreg(3));
+        m_emitter.movr(64, argreg(3), arg3);
         return gen_call((func3*)fn, arg1, arg2);
     }
 

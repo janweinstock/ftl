@@ -72,6 +72,7 @@ namespace ftl {
 
         func gen_function();
         void gen_ret();
+        void gen_ret(i64 val);
         void gen_ret(value& val);
 
         void gen_jmp(label& l, bool far = false);
