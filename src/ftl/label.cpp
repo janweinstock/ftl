@@ -35,6 +35,12 @@ namespace ftl {
         m_buffer(buffer) {
     }
 
+    label::label(label&& other):
+        m_location(other.m_location),
+        m_fixups(other.m_fixups),
+        m_buffer(other.m_buffer) {
+    }
+
     label::~label() {
         FTL_ERROR_ON(!is_placed() && !m_fixups.empty(), "unplaced label");
     }

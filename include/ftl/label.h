@@ -47,6 +47,7 @@ namespace ftl {
         inline bool is_placed() const { return m_location != NULL; }
 
         label(cbuf& buf);
+        label(label&& other);
         ~label();
 
         void add(const fixup& fix);

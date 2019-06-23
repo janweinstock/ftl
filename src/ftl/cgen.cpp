@@ -20,6 +20,10 @@
 
 namespace ftl {
 
+    label cgen::gen_label() {
+        return label(m_buffer);
+    }
+
     cgen::cgen(size_t size):
         m_buffer(size),
         m_emitter(m_buffer),
