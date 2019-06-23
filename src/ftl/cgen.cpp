@@ -20,20 +20,11 @@
 
 namespace ftl {
 
-    label cgen::gen_label() {
-        return label(m_buffer);
-    }
-
     cgen::cgen(size_t size):
         m_buffer(size),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
         m_exit(m_buffer) {
-        m_alloc.prologue();
-        m_buffer.align(16);
-        m_exit.place();
-        m_alloc.epilogue();
-        m_buffer.align(16);
     }
 
     cgen::~cgen() {
@@ -56,6 +47,14 @@ namespace ftl {
     }
 
     func cgen::gen_function() {
+        if (!m_exit.is_placed()) {
+            m_alloc.prologue();
+            m_buffer.align(16);
+            m_exit.place();
+            m_alloc.epilogue();
+            m_buffer.align(16);
+        }
+
         return func(m_buffer);
     }
 

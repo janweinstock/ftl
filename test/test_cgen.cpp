@@ -45,7 +45,7 @@ TEST(cgen, jump) {
     int b = 42;
 
     cgen cgen(4 * KiB);
-    label less(cgen.get_buffer());
+    label less = cgen.gen_label();
     func maxfn = cgen.gen_function();
 
     value va = cgen.gen_global_i32(&a);
@@ -70,13 +70,13 @@ TEST(cgen, func) {
 
     cgen cgen(4 * KiB);
 
-    func addfn(cgen.get_buffer());
+    func addfn = cgen.gen_function();
     value va = cgen.gen_local_i32(a);
     value vb = cgen.gen_local_i32(b);
     cgen.gen_add(va, vb);
     cgen.gen_ret(va);
 
-    func subfn(cgen.get_buffer());
+    func subfn = cgen.gen_function();
     value vc = cgen.gen_local_i32(c);
     value vd = cgen.gen_local_i32(d);
     cgen.gen_sub(vc, vd);

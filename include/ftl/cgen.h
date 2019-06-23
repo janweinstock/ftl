@@ -47,9 +47,6 @@ namespace ftl {
         cgen(const cgen&);
 
     public:
-        inline cbuf&    get_buffer()  { return m_buffer; }
-        inline emitter& get_emitter() { return m_emitter; }
-
         cgen(size_t size);
         virtual ~cgen();
 
@@ -155,7 +152,9 @@ namespace ftl {
         m_alloc.set_base_addr((u64)ptr);
     }
 
-
+    inline label cgen::gen_label() {
+        return label(m_buffer);
+    }
 
     inline value cgen::gen_local_i8(i8 val, reg r) {
         return m_alloc.new_local(8, val, r);
