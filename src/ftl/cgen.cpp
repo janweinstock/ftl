@@ -20,6 +20,17 @@
 
 namespace ftl {
 
+    void cgen::gen_entry_exit() {
+        m_alloc.prologue();
+        m_buffer.align(16);
+
+        if (!m_exit.is_placed())
+            m_exit.place();
+
+        m_alloc.epilogue();
+        m_buffer.align(16);
+    }
+
     cgen::cgen(size_t size):
         m_buffer(size),
         m_emitter(m_buffer),
@@ -29,6 +40,12 @@ namespace ftl {
 
     cgen::~cgen() {
         // nothing to do
+    }
+
+    void cgen::reset() {
+        m_alloc.reset();
+        m_buffer.reset();
+        gen_entry_exit();
     }
 
     void cgen::set_base_ptr_stack() {
@@ -47,14 +64,8 @@ namespace ftl {
     }
 
     func cgen::gen_function() {
-        if (!m_exit.is_placed()) {
-            m_alloc.prologue();
-            m_buffer.align(16);
-            m_exit.place();
-            m_alloc.epilogue();
-            m_buffer.align(16);
-        }
-
+        if (!m_exit.is_placed())
+            gen_entry_exit();
         return func(m_buffer);
     }
 
@@ -207,7 +218,7 @@ namespace ftl {
 
     void cgen::gen_mov(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            m_alloc.assign(m_alloc.select(), &dest);
 
         m_emitter.movr(dest.bits, dest, src);
         dest.mark_dirty();
@@ -277,7 +288,7 @@ namespace ftl {
     void cgen::gen_mov(value& dest, i64 val) {
         int immlen = max(encode_size(val), dest.bits);
         if (dest.is_mem() && immlen > 32)
-            m_alloc.fetch(dest);
+            m_alloc.assign(m_alloc.select(), &dest);
 
         m_emitter.movi(dest.bits, dest, val);
         dest.mark_dirty();

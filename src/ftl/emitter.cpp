@@ -413,6 +413,8 @@ namespace ftl {
     }
 
     size_t emitter::movr(int bits, const rm& dest, const rm& src) {
+        if (dest.is_reg() && src.is_reg() && dest.r == src.r)
+            return 0;
         return aluop(OPCODE_MOV, bits, dest, src);
     }
 

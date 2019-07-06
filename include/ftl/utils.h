@@ -26,6 +26,16 @@ namespace ftl {
     string mkstr(const char* format, ...);
     string vmkstr(const char* format, va_list args);
 
+    template <typename V, typename T>
+    inline void stl_remove_erase(V& v, const T& t) {
+        v.erase(std::remove(v.begin(), v.end(), t), v.end());
+    }
+
+    template <typename V, typename T>
+    inline bool stl_contains(const V& v, const T& t) {
+        return std::find(v.begin(), v.end(), t) != v.end();
+    }
+
 }
 
 #endif

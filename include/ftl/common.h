@@ -30,6 +30,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 #include <unistd.h>
 #include <sys/mman.h>

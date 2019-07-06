@@ -52,4 +52,9 @@ namespace ftl {
         }
     }
 
+    void cbuf::reset() {
+        m_code_ptr = m_code_head;
+        memset(m_code_ptr, 0x90, m_code_end - m_code_head);
+    }
+
 }

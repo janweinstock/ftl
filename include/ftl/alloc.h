@@ -22,6 +22,7 @@
 #include "ftl/common.h"
 #include "ftl/bitops.h"
 #include "ftl/error.h"
+#include "ftl/utils.h"
 
 #include "ftl/reg.h"
 #include "ftl/value.h"
@@ -38,6 +39,8 @@ namespace ftl {
         u64      m_usecnt;
         u64      m_locals;
         u64      m_base;
+
+        vector<value*> m_values;
 
         void validate(const value& val) const;
 
@@ -57,6 +60,9 @@ namespace ftl {
 
         bool is_local(const value& v) const;
         bool is_global(const value& v) const;
+
+        void register_value(value* v);
+        void unregister_value(value* v);
 
         value new_local(int bits, i64 val, reg r = NREGS);
         value new_local_noinit(int bits, reg r = NREGS);
@@ -78,6 +84,9 @@ namespace ftl {
 
         void prologue();
         void epilogue();
+
+        void reset();
+
     };
 
     inline void alloc::set_base_addr(u64 addr) {
@@ -94,7 +103,11 @@ namespace ftl {
     }
 
     inline bool alloc::is_empty(reg r) const {
-        return m_regmap[r] == NULL;
+        if (m_regmap[r] == NULL)
+            return true;
+        if (m_regmap[r]->is_dead())
+            return true;
+        return false;
     }
 
     inline bool alloc::is_dirty(reg r) const {

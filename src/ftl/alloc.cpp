@@ -45,7 +45,7 @@ namespace ftl {
         m_regmap(),
         m_reguse(),
         m_usecnt(0),
-        m_locals(~0),
+        m_locals(~0ull),
         m_base(0) {
         memset(m_regmap, 0, sizeof(m_regmap));
         memset(m_reguse, 0, sizeof(m_reguse));
@@ -53,6 +53,18 @@ namespace ftl {
 
     alloc::~alloc() {
         // nothing to do
+    }
+
+    void alloc::register_value(value* val) {
+        if (stl_contains(m_values, val))
+            FTL_ERROR("attempt to register value %p twice", val);
+        m_values.push_back(val);
+    }
+
+    void alloc::unregister_value(value* val) {
+        if (!stl_contains(m_values, val))
+            FTL_ERROR("attempt to unregister unknown value %p", val);
+        stl_remove_erase(m_values, val);
     }
 
     value alloc::new_local(int bits, i64 val, reg r) {
@@ -264,6 +276,21 @@ namespace ftl {
             m_emitter.pop(callee_saved_regs[i-1]);
 
         m_emitter.ret();
+    }
+
+    void alloc::reset() {
+        for (auto val : m_values)
+            val->mark_dead();
+
+        m_values.clear();
+        m_locals = ~0ull;
+
+        m_usecnt = 0;
+        for (auto& use : m_reguse)
+            use = 0;
+
+        for (auto& val : m_regmap)
+            val = NULL;
     }
 
 }

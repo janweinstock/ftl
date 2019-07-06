@@ -53,6 +53,8 @@ namespace ftl {
         cbuf(size_t size);
         virtual ~cbuf();
 
+        void reset();
+
         template <typename T>
         size_t write(const T& val);
     };

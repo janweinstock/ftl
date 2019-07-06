@@ -28,6 +28,7 @@ namespace ftl {
         base(0),
         r(x),
         m(breg, offset) {
+        m_allocator.register_value(this);
     }
 
     value::value(int w, alloc& a, reg b, i32 off, u64 addr, bool fits):
@@ -37,6 +38,7 @@ namespace ftl {
         base(fits ? 0 : addr),
         r(NREGS),
         m(b, off) {
+        m_allocator.register_value(this);
     }
 
     value::value(value&& other):
@@ -46,6 +48,8 @@ namespace ftl {
         base(other.base),
         r(other.r),
         m(other.m) {
+        m_allocator.register_value(this);
+
         if (is_reg())
             m_allocator.assign(r, this);
 
@@ -55,6 +59,7 @@ namespace ftl {
     value::~value() {
         if (!is_dead())
             m_allocator.free_value(*this);
+        m_allocator.unregister_value(this);
     }
 
     value::operator const rm() const {

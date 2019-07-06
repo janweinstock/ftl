@@ -42,6 +42,8 @@ namespace ftl {
         alloc   m_alloc;
         label   m_exit;
 
+        void gen_entry_exit();
+
         // disabled
         cgen();
         cgen(const cgen&);
@@ -49,6 +51,8 @@ namespace ftl {
     public:
         cgen(size_t size);
         virtual ~cgen();
+
+        void reset();
 
         void set_base_ptr(void* ptr);
         void set_base_ptr_stack();
