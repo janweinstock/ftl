@@ -67,6 +67,7 @@ namespace ftl {
         value gen_global_i32(void* addr);
         value gen_global_i64(void* addr);
 
+        void sync_value(value& val);
         void free_value(value& val);
 
         func gen_function();
@@ -94,6 +95,7 @@ namespace ftl {
         void gen_jle(label& l, bool far = false);
         void gen_jg(label& l, bool far = false);
 
+        void gen_mov(value& dest, const value& src);
         void gen_add(value& dest, const value& src);
         void gen_or (value& dest, const value& src);
         void gen_adc(value& dest, const value& src);
@@ -104,6 +106,7 @@ namespace ftl {
         void gen_cmp(value& dest, const value& src);
         void gen_tst(value& dest, const value& src);
 
+        void gen_mov(value& dest, i64 val);
         void gen_add(value& dest, i32 val);
         void gen_or (value& dest, i32 val);
         void gen_adc(value& dest, i32 val);
@@ -186,6 +189,10 @@ namespace ftl {
 
     inline value cgen::gen_global_i64(void* addr) {
         return m_alloc.new_global(64, (u64)addr);
+    }
+
+    inline void cgen::sync_value(value& val) {
+        m_alloc.store(val);
     }
 
     inline void cgen::free_value(value& val) {

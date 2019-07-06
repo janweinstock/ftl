@@ -205,6 +205,14 @@ namespace ftl {
         l.add(fix);
     }
 
+    void cgen::gen_mov(value& dest, const value& src) {
+        if (dest.is_mem() && src.is_mem())
+            m_alloc.fetch(dest);
+
+        m_emitter.movr(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
     void cgen::gen_add(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
@@ -264,6 +272,15 @@ namespace ftl {
         if (dest.is_mem() && src.is_mem())
             m_alloc.fetch(dest);
         m_emitter.tstr(dest.bits, dest, src);
+    }
+
+    void cgen::gen_mov(value& dest, i64 val) {
+        int immlen = max(encode_size(val), dest.bits);
+        if (dest.is_mem() && immlen > 32)
+            m_alloc.fetch(dest);
+
+        m_emitter.movi(dest.bits, dest, val);
+        dest.mark_dirty();
     }
 
     void cgen::gen_add(value& dest, i32 val) {
