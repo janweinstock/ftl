@@ -51,17 +51,20 @@ namespace ftl {
         reg r;
         rm  m;
 
-        bool is_dead()  const { return m_vt == VAL_DEAD; }
-        bool is_mem()   const { return m_vt == VAL_MEMORY; }
-        bool is_reg()   const { return m_vt == VAL_REG || m_vt == VAL_DIRTY; }
-        bool is_dirty() const { return m_vt == VAL_DIRTY; }
-
+        bool is_reachable() const { return base == 0; }
+        bool is_dead()      const { return m_vt == VAL_DEAD; }
+        bool is_dirty()     const { return m_vt == VAL_DIRTY; }
+        bool is_mem()       const { return m_vt == VAL_MEMORY; }
+        bool is_reg()       const { return m_vt == VAL_REG ||
+                                           m_vt == VAL_DIRTY; }
         void mark_dead();
         void mark_dirty();
 
         void assign(reg r);
 
-        bool is_reachable() const { return base == 0; }
+        void fetch(reg r = NREGS);
+        void store();
+        void flush();
 
         value(int bits, alloc& a, reg r, reg base, i32 offset);
         value(int bits, alloc& a, reg base, i32 offset, u64 addr, bool fits);

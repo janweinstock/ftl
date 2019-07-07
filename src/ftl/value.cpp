@@ -21,6 +21,18 @@
 
 namespace ftl {
 
+    void value::fetch(reg r) {
+        m_allocator.fetch(*this, r);
+    }
+
+    void value::store() {
+        m_allocator.store(*this);
+    }
+
+    void value::flush() {
+        m_allocator.flush(*this);
+    }
+
     value::value(int w, alloc& a, reg x, reg breg, i32 offset):
         m_allocator(a),
         m_vt(VAL_REG),

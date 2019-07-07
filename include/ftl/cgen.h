@@ -53,7 +53,6 @@ namespace ftl {
         cgen(size_t size);
         virtual ~cgen();
 
-
         cbuf&    get_cbuffer()  { return m_buffer; }
         emitter& get_emitter()  { return m_emitter; }
         alloc&   get_alloc()    { return m_alloc; }

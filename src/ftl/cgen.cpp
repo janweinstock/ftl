@@ -234,14 +234,14 @@ namespace ftl {
 
     void cgen::gen_add(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.addr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_or(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.orr(dest.bits, dest, src);
         dest.mark_dirty();
     }
@@ -255,41 +255,41 @@ namespace ftl {
 
     void cgen::gen_sbb(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.sbbr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_and(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.andr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_sub(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.subr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_xor(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.addr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_cmp(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.cmpr(dest.bits, dest, src);
     }
 
     void cgen::gen_tst(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.tstr(dest.bits, dest, src);
     }
 

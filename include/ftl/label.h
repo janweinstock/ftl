@@ -43,8 +43,10 @@ namespace ftl {
         label& operator = (const label&);
 
     public:
+        bool is_placed() const { return m_location != NULL; }
 
-        inline bool is_placed() const { return m_location != NULL; }
+        u8*  get_address() { return m_location; }
+        const u8* get_address() const { return m_location; }
 
         label(cbuf& buf);
         label(label&& other);
