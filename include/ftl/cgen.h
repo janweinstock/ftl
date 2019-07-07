@@ -40,6 +40,7 @@ namespace ftl {
         cbuf    m_buffer;
         emitter m_emitter;
         alloc   m_alloc;
+        label   m_entry;
         label   m_exit;
 
         void gen_entry_exit();
@@ -51,6 +52,14 @@ namespace ftl {
     public:
         cgen(size_t size);
         virtual ~cgen();
+
+
+        cbuf&    get_cbuffer()  { return m_buffer; }
+        emitter& get_emitter()  { return m_emitter; }
+        alloc&   get_alloc()    { return m_alloc; }
+
+        label&   get_prologue() { return m_entry; }
+        label&   get_epilogue() { return m_exit; }
 
         void reset();
 

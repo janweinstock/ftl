@@ -21,6 +21,13 @@
 namespace ftl {
 
     void cgen::gen_entry_exit() {
+        u8* head = m_buffer.get_code_entry();
+        u8* code = m_buffer.get_code_ptr();
+        FTL_ERROR_ON(code != head, "entry code must be written to head");
+
+        if (!m_entry.is_placed())
+            m_entry.place();
+
         m_alloc.prologue();
         m_buffer.align(16);
 
@@ -35,6 +42,7 @@ namespace ftl {
         m_buffer(size),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
+        m_entry(m_buffer),
         m_exit(m_buffer) {
     }
 
@@ -64,7 +72,7 @@ namespace ftl {
     }
 
     func cgen::gen_function() {
-        if (!m_exit.is_placed())
+        if (!m_entry.is_placed() || !m_exit.is_placed())
             gen_entry_exit();
         return func(m_buffer);
     }
