@@ -20,6 +20,8 @@
 
 namespace ftl {
 
+    static const u8 NOP = 0x90;
+
     u8* cbuf::align(size_t boundary) {
         size_t mask = boundary - 1;
         u8* ptr = m_code_ptr + mask;
@@ -28,7 +30,7 @@ namespace ftl {
         FTL_ERROR_ON(ptr >= m_code_end, "out of code memory");
 
         // fill the padding with NOPs to help disassemblers
-        memset(m_code_ptr, 0x90, ptr - m_code_ptr);
+        memset(m_code_ptr, NOP, ptr - m_code_ptr);
         return m_code_ptr = ptr;
     }
 
@@ -43,6 +45,8 @@ namespace ftl {
         m_code_ptr = m_code_head = (u8*)mmap(NULL, size, prot, flags, -1, 0);
         m_code_end = m_code_head + m_size;
 
+        memset(m_code_head, NOP, m_size);
+
         FTL_ERROR_ON(m_code_head == MAP_FAILED, "mmap: %s", strerror(errno));
     }
 
@@ -52,9 +56,21 @@ namespace ftl {
         }
     }
 
+    void cbuf::reset(u8* addr) {
+        if (addr < m_code_head || addr >= m_code_end)
+            FTL_ERROR("attempt to reset code pointer to outside code memory");
+
+        if (addr > m_code_ptr) {
+            memset(m_code_ptr, NOP, addr - m_code_ptr);
+            m_code_ptr = addr;
+        } else if (addr < m_code_ptr) {
+            memset(addr, NOP, m_code_ptr - addr);
+            m_code_ptr = addr;
+        }
+    }
+
     void cbuf::reset() {
-        m_code_ptr = m_code_head;
-        memset(m_code_ptr, 0x90, m_code_end - m_code_head);
+        reset(m_code_head);
     }
 
 }

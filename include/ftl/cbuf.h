@@ -53,6 +53,7 @@ namespace ftl {
         cbuf(size_t size);
         virtual ~cbuf();
 
+        void reset(u8* addr);
         void reset();
 
         template <typename T>
