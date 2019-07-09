@@ -28,6 +28,7 @@ namespace ftl {
 
         OPCODE_MOVIR  = 0xb0, // reg <- imm
         OPCODE_MOVIRM = 0xc6, // r/m <- imm
+        OPCODE_MOVSXD = 0x63, // reg <- signext(r/m32)
 
         OPCODE_IMM8   = 0x80, // r/m8  += imm8
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
@@ -62,7 +63,10 @@ namespace ftl {
 
     enum opcode_2bytes {
         OPCODE2_BR32  = 0x80,
+        OPCODE2_SET   = 0x90,
         OPCODE2_IMUL  = 0xaf,
+        OPCODE2_MOVZX = 0xb6,
+        OPCODE2_MOVSX = 0xbe,
     };
 
     enum opcode_imm {
@@ -283,6 +287,17 @@ namespace ftl {
             setup_fixup(fix, 4);
             len += m_buffer.write<i32>(imm);
         }
+
+        return len;
+    }
+
+    size_t emitter::setcc(int op, const rm& dest) {
+        size_t len = 0;
+
+        len += prefix(8, (reg)0, dest);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_SET + op);
+        len += modrm((reg)0, dest);
 
         return len;
     }
@@ -542,6 +557,61 @@ namespace ftl {
         return shift(OPCODE_SHIFT_SAR, bits, dest, imm);
     }
 
+    size_t emitter::movzx(int dbits, int sbits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dbits < sbits, "source wider than destination");
+        FTL_ERROR_ON(dbits == sbits, "attempt to extend to same width");
+        FTL_ERROR_ON(dbits == 32, "cannot extend 32bit operand");
+
+        if (dest.is_mem)
+           FTL_ERROR("destination must be register");
+
+        size_t len = 0;
+        len += prefix(dbits, dest.r, src);
+
+        u8 opcode = OPCODE2_MOVZX;
+        if (sbits == 16)
+            opcode++;
+
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(opcode);
+        len += modrm(dest.r, src);
+
+        return len;
+    }
+
+    size_t emitter::movsx(int dbits, int sbits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dbits < sbits, "source wider than destination");
+        FTL_ERROR_ON(dbits == sbits, "attempt to extend to same width");
+
+        if (dest.is_mem)
+           FTL_ERROR("destination must be register");
+
+        size_t len = 0;
+        len += prefix(dbits, dest.r, src);
+
+        switch (sbits) {
+        case 32:
+            len += m_buffer.write<u8>(OPCODE_MOVSXD);
+            break;
+
+        case 16:
+            len += m_buffer.write<u8>(OPCODE_ESCAPE);
+            len += m_buffer.write<u8>(OPCODE2_MOVSX + 1);
+            break;
+
+        case 8:
+            len += m_buffer.write<u8>(OPCODE_ESCAPE);
+            len += m_buffer.write<u8>(OPCODE2_MOVSX);
+            break;
+
+        default:
+            FTL_ERROR("invalid source operand width: %d bits", sbits);
+        }
+
+        len += modrm(dest.r, src);
+        return len;
+    }
+
     size_t emitter::call(u8* fn, fixup* fix) {
         if ((fn == NULL) && (fix != NULL))
             fn = m_buffer.get_code_ptr();
@@ -659,6 +729,78 @@ namespace ftl {
 
     size_t emitter::jg(i32 offset, fixup* fix) {
         return branch(BRCOND_G, offset, fix);
+    }
+
+    size_t emitter::seto(const rm& dest) {
+        return setcc(BRCOND_O, dest);
+    }
+
+    size_t emitter::setno(const rm& dest) {
+        return setcc(BRCOND_NO, dest);
+    }
+
+    size_t emitter::setb(const rm& dest) {
+        return setcc(BRCOND_B, dest);
+    }
+
+    size_t emitter::setae(const rm& dest) {
+        return setcc(BRCOND_AE, dest);
+    }
+
+    size_t emitter::setz(const rm& dest) {
+        return setcc(BRCOND_Z, dest);
+    }
+
+    size_t emitter::setnz(const rm& dest) {
+        return setcc(BRCOND_NZ, dest);
+    }
+
+    size_t emitter::sete(const rm& dest) {
+        return setcc(BRCOND_Z, dest);
+    }
+
+    size_t emitter::setne(const rm& dest) {
+        return setcc(BRCOND_NZ, dest);
+    }
+
+    size_t emitter::setbe(const rm& dest) {
+        return setcc(BRCOND_BE, dest);
+    }
+
+    size_t emitter::seta(const rm& dest) {
+        return setcc(BRCOND_A, dest);
+    }
+
+    size_t emitter::sets(const rm& dest) {
+        return setcc(BRCOND_S, dest);
+    }
+
+    size_t emitter::setns(const rm& dest) {
+        return setcc(BRCOND_NS, dest);
+    }
+
+    size_t emitter::setp(const rm& dest) {
+        return setcc(BRCOND_P, dest);
+    }
+
+    size_t emitter::setnp(const rm& dest) {
+        return setcc(BRCOND_NP, dest);
+    }
+
+    size_t emitter::setl(const rm& dest) {
+        return setcc(BRCOND_L, dest);
+    }
+
+    size_t emitter::setge(const rm& dest) {
+        return setcc(BRCOND_GE, dest);
+    }
+
+    size_t emitter::setle(const rm& dest) {
+        return setcc(BRCOND_LE, dest);
+    }
+
+    size_t emitter::setg(const rm& dest) {
+        return setcc(BRCOND_G, dest);
     }
 
 }

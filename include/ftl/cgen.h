@@ -107,6 +107,25 @@ namespace ftl {
         void gen_jle(label& l, bool far = false);
         void gen_jg(label& l, bool far = false);
 
+        void gen_seto(value& dest);
+        void gen_setno(value& dest);
+        void gen_setb(value& dest);
+        void gen_setae(value& dest);
+        void gen_setz(value& dest);
+        void gen_setnz(value& dest);
+        void gen_sete(value& dest);
+        void gen_setne(value& dest);
+        void gen_setbe(value& dest);
+        void gen_seta(value& dest);
+        void gen_sets(value& dest);
+        void gen_setns(value& dest);
+        void gen_setp(value& dest);
+        void gen_setnp(value& dest);
+        void gen_setl(value& dest);
+        void gen_setge(value& dest);
+        void gen_setle(value& dest);
+        void gen_setg(value& dest);
+
         void gen_mov(value& dest, const value& src);
         void gen_add(value& dest, const value& src);
         void gen_or (value& dest, const value& src);

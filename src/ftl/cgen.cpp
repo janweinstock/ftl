@@ -224,6 +224,168 @@ namespace ftl {
         l.add(fix);
     }
 
+    void cgen::gen_seto(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.seto(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setno(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setno(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setb(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setb(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setae(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setae(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setz(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setz(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setnz(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setnz(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_sete(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.sete(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setne(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setne(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setbe(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setbe(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_seta(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.seta(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_sets(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.sets(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setns(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setns(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setp(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setp(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setnp(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setnp(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setl(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setl(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setge(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setge(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setle(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setle(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_setg(value& dest) {
+        if (dest.is_mem())
+            m_alloc.assign(m_alloc.select(), &dest);
+
+        m_emitter.setg(dest);
+        m_emitter.movzx(dest.bits, 8, dest, dest);
+        dest.mark_dirty();
+    }
+
     void cgen::gen_mov(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             m_alloc.assign(m_alloc.select(), &dest);

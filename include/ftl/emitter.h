@@ -47,6 +47,7 @@ namespace ftl {
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
         size_t shift(int op, int bits, const rm& dest, u8 imm);
         size_t branch(int op, i32 imm, fixup* fix);
+        size_t setcc(int op, const rm& dest);
 
         // disabled
         emitter();
@@ -101,6 +102,9 @@ namespace ftl {
         size_t shri(int bits, const rm& dest, u8 imm);
         size_t sari(int bits, const rm& dest, u8 imm);
 
+        size_t movzx(int dbits, int sbits, const rm& dest, const rm& src);
+        size_t movsx(int dbits, int sbits, const rm& dest, const rm& src);
+
         size_t call(u8* fn, fixup* fix = NULL);
         size_t call(const rm& dest);
 
@@ -125,6 +129,25 @@ namespace ftl {
         size_t jge(i32 offset, fixup* fix = NULL);
         size_t jle(i32 offset, fixup* fix = NULL);
         size_t jg(i32 offset, fixup* fix = NULL);
+
+        size_t seto(const rm& dest);
+        size_t setno(const rm& dest);
+        size_t setb(const rm& dest);
+        size_t setae(const rm& dest);
+        size_t setz(const rm& dest);
+        size_t setnz(const rm& dest);
+        size_t sete(const rm& dest);
+        size_t setne(const rm& dest);
+        size_t setbe(const rm& dest);
+        size_t seta(const rm& dest);
+        size_t sets(const rm& dest);
+        size_t setns(const rm& dest);
+        size_t setp(const rm& dest);
+        size_t setnp(const rm& dest);
+        size_t setl(const rm& dest);
+        size_t setge(const rm& dest);
+        size_t setle(const rm& dest);
+        size_t setg(const rm& dest);
     };
 
 }
