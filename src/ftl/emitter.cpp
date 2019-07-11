@@ -560,10 +560,12 @@ namespace ftl {
     size_t emitter::movzx(int dbits, int sbits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(dbits < sbits, "source wider than destination");
         FTL_ERROR_ON(dbits == sbits, "attempt to extend to same width");
-        FTL_ERROR_ON(dbits == 32, "cannot extend 32bit operand");
 
         if (dest.is_mem)
            FTL_ERROR("destination must be register");
+
+        if (sbits == 32)
+            return movr(sbits, dest, src);
 
         size_t len = 0;
         len += prefix(dbits, dest.r, src);
