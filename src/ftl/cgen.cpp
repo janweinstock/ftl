@@ -393,7 +393,7 @@ namespace ftl {
         if (dest.is_mem() && src.is_mem())
             m_alloc.assign(m_alloc.select(), &dest);
 
-        if (dest.bits < src.bits)
+        if (dest.bits > src.bits)
             m_emitter.movzx(dest.bits, src.bits, dest, src);
         else
             m_emitter.movr(dest.bits, dest, src);
