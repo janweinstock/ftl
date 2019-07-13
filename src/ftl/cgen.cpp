@@ -446,7 +446,7 @@ namespace ftl {
     void cgen::gen_xor(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
-        m_emitter.addr(dest.bits, dest, src);
+        m_emitter.xorr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
