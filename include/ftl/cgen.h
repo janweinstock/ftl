@@ -69,6 +69,11 @@ namespace ftl {
 
         label gen_label();
 
+        value gen_local_i8 (reg r = NREGS);
+        value gen_local_i16(reg r = NREGS);
+        value gen_local_i32(reg r = NREGS);
+        value gen_local_i64(reg r = NREGS);
+
         value gen_local_i8 (i8  val, reg r = NREGS);
         value gen_local_i16(i16 val, reg r = NREGS);
         value gen_local_i32(i32 val, reg r = NREGS);
@@ -165,6 +170,12 @@ namespace ftl {
         void gen_not(value& dest);
         void gen_neg(value& dest);
 
+        void gen_shl(value& dest, value& src);
+        void gen_shr(value& dest, value& src);
+        void gen_sha(value& dest, value& src);
+        void gen_rol(value& dest, value& src);
+        void gen_ror(value& dest, value& src);
+
         void gen_shl(value& dest, u8 shift);
         void gen_shr(value& dest, u8 shift);
         void gen_sha(value& dest, u8 shift);
@@ -188,6 +199,22 @@ namespace ftl {
 
     inline label cgen::gen_label() {
         return label(m_buffer);
+    }
+
+    inline value cgen::gen_local_i8 (reg r) {
+        return m_alloc.new_local_noinit(8, r);
+    }
+
+    inline value cgen::gen_local_i16(reg r) {
+        return m_alloc.new_local_noinit(16, r);
+    }
+
+    inline value cgen::gen_local_i32(reg r) {
+        return m_alloc.new_local_noinit(32, r);
+    }
+
+    inline value cgen::gen_local_i64(reg r) {
+        return m_alloc.new_local_noinit(64, r);
     }
 
     inline value cgen::gen_local_i8(i8 val, reg r) {

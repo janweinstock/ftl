@@ -73,6 +73,8 @@ namespace ftl {
 
         operator const rm() const;
         value& operator = (value&& other);
+
+        bool operator == (const value& other) const;
     };
 
     inline void value::mark_dead() {
@@ -90,6 +92,13 @@ namespace ftl {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
         r = _r;
         m_vt = (r == NREGS) ? VAL_MEMORY : VAL_REG;
+    }
+
+    inline bool value::operator == (const value& other) const {
+        return bits == other.bits &&
+               base == other.base &&
+               r == other.r &&
+               m == other.m;
     }
 
 }

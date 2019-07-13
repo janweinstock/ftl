@@ -34,8 +34,9 @@ namespace ftl {
         OPCODE_IMM32  = 0x81, // r/m32 += imm32
         OPCODE_IMM32S = 0x83, // r/m32 += imm8
 
-        OPCODE_SHIFT  = 0xc0, // shift group
+        OPCODE_SHIFTI = 0xc0, // shift immediate group
         OPCODE_SHIFT1 = 0xd0, // shift by one
+        OPCODE_SHIFTR = 0xd2, // shift by value in ecx
 
         OPCODE_ADD    = 0x00,
         OPCODE_OR     = 0x08,
@@ -259,7 +260,7 @@ namespace ftl {
         if (imm == 0)
             return 0;
 
-        u8 opcode = imm == 1 ? OPCODE_SHIFT1 : OPCODE_SHIFT;
+        u8 opcode = imm == 1 ? OPCODE_SHIFT1 : OPCODE_SHIFTI;
         if (bits > 8)
             opcode++;
 
@@ -529,6 +530,34 @@ namespace ftl {
         len += modrm(dest, src);
 
         return len;
+    }
+
+    size_t emitter::rolr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_ROL);
+    }
+
+    size_t emitter::rorr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_ROR);
+    }
+
+    size_t emitter::rclr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_RCL);
+    }
+
+    size_t emitter::rcrr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_RCR);
+    }
+
+    size_t emitter::shlr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_SHL);
+    }
+
+    size_t emitter::shrr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_SHR);
+    }
+
+    size_t emitter::sarr(int bits, const rm& dest) {
+        return aluop(OPCODE_SHIFTR, bits, dest, (reg)OPCODE_SHIFT_SAR);
     }
 
     size_t emitter::roli(int bits, const rm& dest, u8 imm) {

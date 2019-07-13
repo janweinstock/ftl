@@ -53,6 +53,42 @@ using namespace ftl;
 MAKE_TEST_SET(shli, <<)
 MAKE_TEST_SET(shri, >>)
 
+#undef MAKE_TEST_SET
+#undef MAKE_TEST_BITSET
+#undef MAKE_TEST
+
+#define MAKE_TEST(op, cop, bits, reg, val, shift)                             \
+    TEST(immopsmem, op ## shift ## _ ## bits ## _ ## reg) {                   \
+        typedef u##bits (entry_func)(void);                                   \
+        u##bits op = (u##bits)val;                                            \
+        ftl::cbuf code(1 * ftl::KiB);                                         \
+        ftl::emitter emitter(code);                                           \
+        entry_func* fn = (entry_func*)code.get_code_ptr();                    \
+        emitter.movi(64, reg, (i64)op);                                       \
+        emitter.movi(64, RCX, shift);                                         \
+        emitter.op(bits, reg);                                                \
+        emitter.movr(bits, RAX, reg);                                         \
+        emitter.ret();                                                        \
+        u##bits res = fn();                                                   \
+        u##bits ref = (u##bits)((op cop shift));                              \
+        EXPECT_EQ(res, ref);                                                  \
+    }
+
+#define MAKE_TEST_BITSET(op, cop, reg, val, shift)                            \
+        MAKE_TEST(op, cop,  8, reg, val, shift)                               \
+        MAKE_TEST(op, cop, 16, reg, val, shift)                               \
+        MAKE_TEST(op, cop, 32, reg, val, shift)                               \
+        MAKE_TEST(op, cop, 64, reg, val, shift)
+
+#define MAKE_TEST_SET(op, cop)                                                \
+        MAKE_TEST_BITSET(op, cop, RBX, 0xaa12aa34ull, 1)                      \
+        MAKE_TEST_BITSET(op, cop, RDX, 0xaa12aa34ull, 2)                      \
+        MAKE_TEST_BITSET(op, cop, R8,  0xaa12aa34ull, 5)                      \
+        MAKE_TEST_BITSET(op, cop, R9,  0xaa12aa34ull, 7)
+
+MAKE_TEST_SET(shlr, <<)
+MAKE_TEST_SET(shrr, >>)
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

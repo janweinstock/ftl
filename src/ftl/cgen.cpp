@@ -387,6 +387,9 @@ namespace ftl {
     }
 
     void cgen::gen_mov(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
         if (dest.is_mem() && src.is_mem())
             m_alloc.assign(m_alloc.select(), &dest);
 
@@ -677,6 +680,36 @@ namespace ftl {
 
     void cgen::gen_neg(value& dest) {
         m_emitter.negr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_shl(value& dest, value& src) {
+        src.fetch(RCX);
+        m_emitter.shlr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_shr(value& dest, value& src) {
+        src.fetch(RCX);
+        m_emitter.shrr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_sha(value& dest, value& src) {
+        src.fetch(RCX);
+        m_emitter.sarr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_rol(value& dest, value& src) {
+        src.fetch(RCX);
+        m_emitter.rolr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_ror(value& dest, value& src) {
+        src.fetch(RCX);
+        m_emitter.rorr(dest.bits, dest);
         dest.mark_dirty();
     }
 

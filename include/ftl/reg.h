@@ -57,9 +57,15 @@ namespace ftl {
         rm(reg _r): is_mem(false), r(_r), offset(0) {}
         rm(reg base, i32 off): is_mem(true), r(base), offset(off) {}
 
+        bool operator == (const rm& other) const;
+
     private:
         rm(); // disabled
     };
+
+    inline bool rm::operator == (const rm& o) const {
+        return is_mem == o.is_mem && r == o.r && offset == o.offset;
+    }
 
     static inline rm regop(reg r) {
         return rm(r);

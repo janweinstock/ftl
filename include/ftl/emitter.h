@@ -94,6 +94,14 @@ namespace ftl {
         size_t imuli(int bits, reg dest, const rm& src, i32 imm);
         size_t imulr(int bits, reg dest, const rm& src);
 
+        size_t rolr(int bits, const rm& dest);
+        size_t rorr(int bits, const rm& dest);
+        size_t rclr(int bits, const rm& dest);
+        size_t rcrr(int bits, const rm& dest);
+        size_t shlr(int bits, const rm& dest);
+        size_t shrr(int bits, const rm& dest);
+        size_t sarr(int bits, const rm& dest);
+
         size_t roli(int bits, const rm& dest, u8 imm);
         size_t rori(int bits, const rm& dest, u8 imm);
         size_t rcli(int bits, const rm& dest, u8 imm);
