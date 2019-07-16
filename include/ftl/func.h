@@ -28,7 +28,7 @@ namespace ftl {
     class func
     {
     private:
-        typedef int func_t (u8*);
+        typedef i64 func_t (u8*);
         u8* m_entry;
         u8* m_code;
 
@@ -38,7 +38,7 @@ namespace ftl {
     public:
         func(cbuf& c);
 
-        int operator () ();
+        i64 operator () ();
     };
 
     inline func::func(cbuf& buffer):
@@ -46,7 +46,7 @@ namespace ftl {
         m_code(buffer.get_code_ptr()) {
     }
 
-    inline int func::operator () () {
+    inline i64 func::operator () () {
         func_t* fn = (func_t*)m_entry;
         return fn(m_code);
     }
