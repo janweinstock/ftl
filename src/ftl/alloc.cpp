@@ -122,6 +122,10 @@ namespace ftl {
         RBP, RBX, RSI, RDI, R12, R13, R14, R15,
     };
 
+    static const reg caller_saved_regs[] = {
+        RAX, RCX, RDX, RSP, RDI, RSI, R8, R9, R10, R11
+    };
+
     // Never allocate RSP or RBP, since we need them for addressing local and
     // memory variables. Allocate RAX last, since we need it to return values
     // from function calls. RDX gets spoiled in MUL/DIV operations. Prefer
@@ -190,10 +194,26 @@ namespace ftl {
         m_reguse[r] = m_usecnt++;
     }
 
+    void alloc::store(reg r) {
+        value* val = m_regmap[r];
+        if (val != NULL)
+            store(*val);
+    }
+
     void alloc::flush(reg r) {
         value* val = m_regmap[r];
         if (val != NULL)
             flush(*val);
+    }
+
+    void alloc::store_volatile_regs() {
+        for (reg r : caller_saved_regs)
+            store(r);
+    }
+
+    void alloc::flush_volatile_regs() {
+        for (reg r : caller_saved_regs)
+            flush(r);
     }
 
     void alloc::fetch(value& val, reg r) {

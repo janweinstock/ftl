@@ -25,6 +25,7 @@
 
 #include "ftl/reg.h"
 #include "ftl/func.h"
+#include "ftl/call.h"
 #include "ftl/cbuf.h"
 #include "ftl/fixup.h"
 #include "ftl/label.h"
@@ -188,9 +189,9 @@ namespace ftl {
         typedef i64 (func4)(void* bptr, i64 arg1, i64 arg2, i64 arg3);
 
         value gen_call(func1* fn);
-        value gen_call(func2* fn, value& arg1);
-        value gen_call(func3* fn, value& arg1, value& arg2);
-        value gen_call(func4* fn, value& arg1, value& arg2, value& arg3);
+        value gen_call(func2* fn, const arg& a);
+        value gen_call(func3* fn, const arg& a, const arg& b);
+        value gen_call(func4* fn, const arg& a, const arg& b, const arg& c);
     };
 
     inline void cgen::set_base_ptr(void* ptr) {

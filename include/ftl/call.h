@@ -16,23 +16,41 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#ifndef FTL_CALL_H
+#define FTL_CALL_H
 
 #include "ftl/common.h"
-#include "ftl/error.h"
 #include "ftl/bitops.h"
-#include "ftl/utils.h"
+#include "ftl/error.h"
 
 #include "ftl/reg.h"
-#include "ftl/func.h"
-#include "ftl/call.h"
 #include "ftl/value.h"
-#include "ftl/fixup.h"
-#include "ftl/cbuf.h"
-#include "ftl/emitter.h"
-#include "ftl/label.h"
 #include "ftl/alloc.h"
-#include "ftl/cgen.h"
+#include "ftl/emitter.h"
+
+namespace ftl {
+
+    class arg
+    {
+    private:
+        value* m_value;
+        i64    m_const;
+
+        arg();
+
+    public:
+        arg(value& v): m_value(&v), m_const() {}
+        arg(i64 v): m_value(NULL), m_const(v) {}
+        void fetch(emitter& e, reg r) const;
+    };
+
+    inline void arg::fetch(emitter& e, reg r) const {
+        if (m_value != NULL)
+            e.movr(m_value->bits, r, *m_value);
+        else
+            e.movi(64, r, m_const);
+    }
+
+}
 
 #endif

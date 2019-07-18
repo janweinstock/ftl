@@ -753,14 +753,8 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    static const reg caller_saved_regs[] = {
-            RAX, RCX, RDX, RSP, RDI, RSI, R8, R9, R10, R11
-    };
-
     value cgen::gen_call(func1* fn) {
-        for (reg r : caller_saved_regs)
-            m_alloc.flush(r);
-
+        m_alloc.flush_volatile_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
         value ret = m_alloc.new_local(64, (i64)fn, RAX);
@@ -769,19 +763,25 @@ namespace ftl {
         return ret;
     }
 
-    value cgen::gen_call(func2* fn, value& arg1) {
-        m_emitter.movr(64, argreg(1), arg1);
+    value cgen::gen_call(func2* fn, const arg& a) {
+        reg r = argreg(1);
+        m_alloc.flush(r);
+        a.fetch(m_emitter, r);
         return gen_call((func1*)fn);
     }
 
-    value cgen::gen_call(func3* fn, value& arg1, value& arg2) {
-        m_emitter.movr(64, argreg(2), arg2);
-        return gen_call((func2*)fn, arg1);
+    value cgen::gen_call(func3* fn, const arg& a, const arg& b) {
+        reg r = argreg(2);
+        m_alloc.flush(r);
+        b.fetch(m_emitter, r);
+        return gen_call((func2*)fn, a);
     }
 
-    value cgen::gen_call(func4* fn, value& arg1, value& arg2, value& arg3) {
-        m_emitter.movr(64, argreg(3), arg3);
-        return gen_call((func3*)fn, arg1, arg2);
+    value cgen::gen_call(func4* fn, const arg& a, const arg& b, const arg& c) {
+        reg r = argreg(3);
+        m_alloc.flush(r);
+        c.fetch(m_emitter, r);
+        return gen_call((func3*)fn, a, b);
     }
 
 }

@@ -76,7 +76,11 @@ namespace ftl {
         void assign(reg r, value* val);
         void free(reg r);
         void use(reg r);
+        void store(reg r);
         void flush(reg r);
+
+        void store_volatile_regs();
+        void flush_volatile_regs();
 
         void fetch(value& val, reg r = NREGS);
         void store(value& val);
@@ -86,7 +90,6 @@ namespace ftl {
         void epilogue();
 
         void reset();
-
     };
 
     inline void alloc::set_base_addr(u64 addr) {
