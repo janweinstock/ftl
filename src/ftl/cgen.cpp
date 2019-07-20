@@ -516,13 +516,48 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_imul(value& dest, const value& src) {
-        if (dest.r == RAX) {
-            m_emitter.imul(dest.bits, src);
-        } else {
-            m_alloc.fetch(dest);
-            m_emitter.imulr(dest.bits, dest.r, src);
+    void cgen::gen_imul(value& hi, value& dest, const value& src) {
+        m_alloc.fetch(dest, RAX);
+
+        if (hi.is_mem() || hi.r != RDX) {
+            m_alloc.flush(RDX);
+            m_alloc.assign(RDX, &hi);
         }
+
+        m_emitter.imul(dest.bits, src);
+
+        hi.mark_dirty();
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_umul(value& hi, value& dest, const value& src) {
+        m_alloc.fetch(dest, RAX);
+
+        if (hi.is_mem() || hi.r != RDX) {
+            m_alloc.flush(RDX);
+            m_alloc.assign(RDX, &hi);
+        }
+
+        m_emitter.mulr(dest.bits, src);
+
+        hi.mark_dirty();
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_imul(value& dest, const value& src) {
+        m_alloc.fetch(dest, RAX);
+        m_alloc.flush(RDX);
+
+        m_emitter.imul(dest.bits, src);
+
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_umul(value& dest, const value& src) {
+        m_alloc.fetch(dest, RAX);
+        m_alloc.flush(RDX);
+
+        m_emitter.mulr(dest.bits, src);
 
         dest.mark_dirty();
     }
@@ -538,13 +573,6 @@ namespace ftl {
     void cgen::gen_imod(value& dest, const value& src) {
         gen_idiv(dest, src);
         m_alloc.assign(RDX, &dest);
-    }
-
-    void cgen::gen_umul(value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
-        m_alloc.flush(RDX);
-        m_emitter.mulr(dest.bits, src);
-        dest.mark_dirty();
     }
 
     void cgen::gen_udiv(value& dest, const value& src) {
@@ -583,6 +611,7 @@ namespace ftl {
 
         value src = m_alloc.new_local(dest.bits, val);
         gen_imul(dest, src);
+        m_alloc.free_value(src);
     }
 
     void cgen::gen_idiv(value& dest, i64 val) {
@@ -637,6 +666,7 @@ namespace ftl {
 
         value src = m_alloc.new_local(dest.bits, val);
         gen_umul(dest, src);
+        m_alloc.free_value(src);
     }
 
     void cgen::gen_udiv(value& dest, u64 val) {

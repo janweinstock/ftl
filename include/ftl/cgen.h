@@ -154,11 +154,13 @@ namespace ftl {
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
 
+        void gen_imul(value& hi, value& lo, const value& src);
+        void gen_umul(value& hi, value& lo, const value& src);
         void gen_imul(value& dest, const value& src);
-        void gen_idiv(value& dest, const value& src);
-        void gen_imod(value& dest, const value& src);
         void gen_umul(value& dest, const value& src);
+        void gen_idiv(value& dest, const value& src);
         void gen_udiv(value& dest, const value& src);
+        void gen_imod(value& dest, const value& src);
         void gen_umod(value& dest, const value& src);
 
         void gen_imul(value& dest, i64 val);
