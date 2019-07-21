@@ -64,9 +64,9 @@ namespace ftl {
         void register_value(value* v);
         void unregister_value(value* v);
 
-        value new_local(int bits, i64 val, reg r = NREGS);
-        value new_local_noinit(int bits, reg r = NREGS);
-        value new_global(int bits, u64 addr);
+        value new_local(const string& name, int bits, i64 val, reg r = NREGS);
+        value new_local_noinit(const string& name, int bits, reg r = NREGS);
+        value new_global(const string& name, int bits, u64 addr);
         void free_value(value& val);
 
         bool is_empty(reg r) const;

@@ -609,7 +609,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_imul_imm", dest.bits, val);
         gen_imul(dest, src);
         m_alloc.free_value(src);
     }
@@ -631,7 +631,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_idiv_imm", dest.bits, val);
         gen_idiv(dest, src);
     }
 
@@ -644,7 +644,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_imod_imm", dest.bits, val);
         gen_imod(dest, src);
     }
 
@@ -664,7 +664,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_umul_imm", dest.bits, val);
         gen_umul(dest, src);
         m_alloc.free_value(src);
     }
@@ -681,7 +681,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_udiv_imm", dest.bits, val);
         gen_udiv(dest, src);
     }
 
@@ -699,7 +699,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local(dest.bits, val);
+        value src = m_alloc.new_local("temp_umod_imm", dest.bits, val);
         gen_umod(dest, src);
     }
 
@@ -787,7 +787,7 @@ namespace ftl {
         m_alloc.flush_volatile_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
-        value ret = m_alloc.new_local(64, (i64)fn, RAX);
+        value ret = m_alloc.new_local("func", 64, (i64)fn, RAX);
         m_emitter.call(RAX);
 
         return ret;

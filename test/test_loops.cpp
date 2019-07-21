@@ -36,8 +36,8 @@ TEST(loops, simple) {
     code.set_base_ptr(&ss);
 
     func fn = code.gen_function("fn");
-    value i = code.gen_local_i32(0);
-    value s = code.gen_global_i64(&sum);
+    value i = code.gen_local_i32("i", 0);
+    value s = code.gen_global_i64("sum", &sum);
 
     label loop = code.gen_label("loop");
     loop.place();

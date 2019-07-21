@@ -70,20 +70,23 @@ namespace ftl {
 
         label gen_label(const string& name);
 
-        value gen_local_i8 (reg r = NREGS);
-        value gen_local_i16(reg r = NREGS);
-        value gen_local_i32(reg r = NREGS);
-        value gen_local_i64(reg r = NREGS);
+        value gen_local_val(const string& name, int bits, reg r = NREGS);
+        value gen_local_i8 (const string& name, reg r = NREGS);
+        value gen_local_i16(const string& name, reg r = NREGS);
+        value gen_local_i32(const string& name, reg r = NREGS);
+        value gen_local_i64(const string& name, reg r = NREGS);
 
-        value gen_local_i8 (i8  val, reg r = NREGS);
-        value gen_local_i16(i16 val, reg r = NREGS);
-        value gen_local_i32(i32 val, reg r = NREGS);
-        value gen_local_i64(i64 val, reg r = NREGS);
+        value gen_local_val(const string& nm, int bits, i64 v, reg r = NREGS);
+        value gen_local_i8 (const string& nm, i8  val, reg r = NREGS);
+        value gen_local_i16(const string& nm, i16 val, reg r = NREGS);
+        value gen_local_i32(const string& nm, i32 val, reg r = NREGS);
+        value gen_local_i64(const string& nm, i64 val, reg r = NREGS);
 
-        value gen_global_i8 (void* addr);
-        value gen_global_i16(void* addr);
-        value gen_global_i32(void* addr);
-        value gen_global_i64(void* addr);
+        value gen_global_val(const string& name, int bits, void* addr);
+        value gen_global_i8 (const string& name, void* addr);
+        value gen_global_i16(const string& name, void* addr);
+        value gen_global_i32(const string& name, void* addr);
+        value gen_global_i64(const string& name, void* addr);
 
         void sync_value(value& val);
         void free_value(value& val);
@@ -204,52 +207,65 @@ namespace ftl {
         return label(name, m_buffer);
     }
 
-    inline value cgen::gen_local_i8 (reg r) {
-        return m_alloc.new_local_noinit(8, r);
+    inline value cgen::gen_local_val(const string& name, int bits, reg r) {
+        return m_alloc.new_local_noinit(name, bits, r);
     }
 
-    inline value cgen::gen_local_i16(reg r) {
-        return m_alloc.new_local_noinit(16, r);
+    inline value cgen::gen_local_i8 (const string& name, reg r) {
+        return gen_local_val(name, 8, r);
     }
 
-    inline value cgen::gen_local_i32(reg r) {
-        return m_alloc.new_local_noinit(32, r);
+    inline value cgen::gen_local_i16(const string& name, reg r) {
+        return gen_local_val(name, 16, r);
     }
 
-    inline value cgen::gen_local_i64(reg r) {
-        return m_alloc.new_local_noinit(64, r);
+    inline value cgen::gen_local_i32(const string& name, reg r) {
+        return gen_local_val(name, 32, r);
     }
 
-    inline value cgen::gen_local_i8(i8 val, reg r) {
-        return m_alloc.new_local(8, val, r);
+    inline value cgen::gen_local_i64(const string& name, reg r) {
+        return gen_local_val(name, 64, r);
     }
 
-    inline value cgen::gen_local_i16(i16 val, reg r) {
-        return m_alloc.new_local(16, val, r);
+    inline value cgen::gen_local_val(const string& nm, int w, i64 v, reg r) {
+        FTL_ERROR_ON(encode_size(v) > w, "initialization value for too large");
+        return m_alloc.new_local(nm, w, v, r);
     }
 
-    inline value cgen::gen_local_i32(i32 val, reg r) {
-        return m_alloc.new_local(32, val, r);
+    inline value cgen::gen_local_i8(const string& name, i8 val, reg r) {
+        return gen_local_val(name, 8, val, r);
     }
 
-    inline value cgen::gen_local_i64(i64 val, reg r) {
-        return m_alloc.new_local(64, val, r);
+    inline value cgen::gen_local_i16(const string& name, i16 val, reg r) {
+        return gen_local_val(name, 16, val, r);
     }
 
-    inline value cgen::gen_global_i8(void* addr) {
-        return m_alloc.new_global(8, (u64)addr);
+    inline value cgen::gen_local_i32(const string& name, i32 val, reg r) {
+        return gen_local_val(name, 32, val, r);
     }
 
-    inline value cgen::gen_global_i16(void* addr) {
-        return m_alloc.new_global(16, (u64)addr);
+    inline value cgen::gen_local_i64(const string& name, i64 val, reg r) {
+        return gen_local_val(name, 64, val, r);
     }
 
-    inline value cgen::gen_global_i32(void* addr) {
-        return m_alloc.new_global(32, (u64)addr);
+    inline value cgen::gen_global_val(const string& nm, int bits, void* addr) {
+        return m_alloc.new_global(nm, bits, (u64)addr);
     }
 
-    inline value cgen::gen_global_i64(void* addr) {
-        return m_alloc.new_global(64, (u64)addr);
+    inline value cgen::gen_global_i8(const string& name, void* addr) {
+        return gen_global_val(name, 8, addr);
+    }
+
+    inline value cgen::gen_global_i16(const string& name, void* addr) {
+        return gen_global_val(name, 16, addr);
+    }
+
+    inline value cgen::gen_global_i32(const string& name, void* addr) {
+        return gen_global_val(name, 32, addr);
+    }
+
+    inline value cgen::gen_global_i64(const string& name, void* addr) {
+        return gen_global_val(name, 64, addr);
     }
 
     inline void cgen::sync_value(value& val) {

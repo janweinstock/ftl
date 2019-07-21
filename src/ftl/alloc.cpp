@@ -67,14 +67,14 @@ namespace ftl {
         stl_remove_erase(m_values, val);
     }
 
-    value alloc::new_local(int bits, i64 val, reg r) {
-        value v = new_local_noinit(bits, r);
+    value alloc::new_local(const string& name, int bits, i64 val, reg r) {
+        value v = new_local_noinit(name, bits, r);
         m_emitter.movi(bits, v.r, val);
         v.mark_dirty();
         return v;
     }
 
-    value alloc::new_local_noinit(int bits, reg r) {
+    value alloc::new_local_noinit(const string& name, int bits, reg r) {
         int idx = ffs(m_locals) - 1;
         FTL_ERROR_ON(idx < 0, "out of stack frame memory");
         m_locals &= ~(1 << idx);
@@ -84,20 +84,21 @@ namespace ftl {
         else
             flush(r);
 
-        value v(bits, *this, r, STACK_POINTER, -idx * sizeof(u64));
+        value v(name, bits, *this, r, STACK_POINTER, -idx * sizeof(u64));
         m_regmap[r] = &v;
 
         return v;
     }
 
-    value alloc::new_global(int bits, u64 addr) {
+    value alloc::new_global(const string& name, int bits, u64 addr) {
         if (m_base == 0) {
             m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
             m_emitter.movi(64, BASE_REGISTER, m_base);
         }
 
         i64 offset = addr - m_base;
-        value v(bits, *this, BASE_REGISTER, offset, addr, fits_i32(offset));
+        bool fits = fits_i32(offset);
+        value v(name, bits, *this, BASE_REGISTER, offset, addr, fits);
 
         return v;
     }

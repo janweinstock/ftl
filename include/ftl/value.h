@@ -31,6 +31,7 @@ namespace ftl {
     class value
     {
     private:
+        string m_name;
         alloc& m_allocator;
 
         enum val_type {
@@ -51,6 +52,8 @@ namespace ftl {
         reg r;
         rm  m;
 
+        const char* name()  const { return m_name.c_str(); }
+
         bool is_reachable() const { return base == 0; }
         bool is_dead()      const { return m_vt == VAL_DEAD; }
         bool is_dirty()     const { return m_vt == VAL_DIRTY; }
@@ -68,8 +71,10 @@ namespace ftl {
         void store();
         void flush();
 
-        value(int bits, alloc& a, reg r, reg base, i32 offset);
-        value(int bits, alloc& a, reg base, i32 offset, u64 addr, bool fits);
+        value(const string& name, int bits, alloc& a, reg r, reg base,
+              i32 offset);
+        value(const string& name, int bits, alloc& a, reg base, i32 offset,
+              u64 addr, bool fits);
         value(value&& other);
         virtual ~value();
 

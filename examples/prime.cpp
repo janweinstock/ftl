@@ -32,8 +32,8 @@ static func gen_isprime(cgen& code) {
 
     func isprime = code.gen_function("isprime");
 
-    value n = code.gen_global_i32(&number);
-    value i = code.gen_local_i32(2);
+    value n = code.gen_global_i32("n", &number);
+    value i = code.gen_local_i32("i", 2);
 
     loop.place();
     code.gen_cmp(i, n);
