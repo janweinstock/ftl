@@ -58,10 +58,12 @@ namespace ftl {
         bool is_reg()       const { return m_vt == VAL_REG ||
                                            m_vt == VAL_DIRTY; }
         void mark_dead();
+        void mark_clean();
         void mark_dirty();
 
-        void assign(reg r);
+        void update_register(reg r);
 
+        void assign(reg r = NREGS);
         void fetch(reg r = NREGS);
         void store();
         void flush();
@@ -82,13 +84,19 @@ namespace ftl {
         m_vt = VAL_DEAD;
     }
 
+    inline void value::mark_clean() {
+        FTL_ERROR_ON(is_dead(), "operation on dead value");
+        if (m_vt == VAL_DIRTY)
+            m_vt = VAL_REG;
+    }
+
     inline void value::mark_dirty() {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
         if (m_vt == VAL_REG)
             m_vt = VAL_DIRTY;
     }
 
-    inline void value::assign(reg _r) {
+    inline void value::update_register(reg _r) {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
         r = _r;
         m_vt = (r == NREGS) ? VAL_MEMORY : VAL_REG;

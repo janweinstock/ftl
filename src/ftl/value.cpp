@@ -21,6 +21,10 @@
 
 namespace ftl {
 
+    void value::assign(reg r) {
+        m_allocator.assign(r == NREGS ? m_allocator.select() : r, this);
+    }
+
     void value::fetch(reg r) {
         m_allocator.fetch(*this, r);
     }

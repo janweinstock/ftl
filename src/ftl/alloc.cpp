@@ -172,7 +172,7 @@ namespace ftl {
             m_regmap[val->r] = NULL;
 
         flush(r);
-        val->assign(r);
+        val->update_register(r);
 
         if (r < NREGS) {
             m_regmap[r] = val;
@@ -186,7 +186,7 @@ namespace ftl {
 
         FTL_ERROR_ON(is_dirty(r), "attempt to free a dirty register");
 
-        m_regmap[r]->assign(NREGS);
+        m_regmap[r]->update_register(NREGS);
         m_regmap[r] = NULL;
     }
 
@@ -256,7 +256,7 @@ namespace ftl {
         if (!val.is_reachable())
             m_emitter.movi(64, val.m.r, m_base);
 
-        val.assign(val.r);
+        val.update_register(val.r);
     }
 
     void alloc::flush(value& val) {
