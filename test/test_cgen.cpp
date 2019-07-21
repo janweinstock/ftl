@@ -26,7 +26,7 @@ TEST(cgen, simple) {
     int val = 40;
 
     cgen cgen(4 * KiB);
-    func fn = cgen.gen_function();
+    func fn = cgen.gen_function("fn");
     value a = cgen.gen_local_i32(2);
     value b = cgen.gen_global_i32(&val);
     value c = cgen.gen_local_i32(-2);
@@ -46,7 +46,7 @@ TEST(cgen, jump) {
 
     cgen cgen(4 * KiB);
     label less = cgen.gen_label("less");
-    func maxfn = cgen.gen_function();
+    func maxfn = cgen.gen_function("maxfn");
 
     value va = cgen.gen_global_i32(&a);
     value vb = cgen.gen_global_i32(&b);
@@ -70,13 +70,13 @@ TEST(cgen, func) {
 
     cgen cgen(4 * KiB);
 
-    func addfn = cgen.gen_function();
+    func addfn = cgen.gen_function("addfn");
     value va = cgen.gen_local_i32(a);
     value vb = cgen.gen_local_i32(b);
     cgen.gen_add(va, vb);
     cgen.gen_ret(va);
 
-    func subfn = cgen.gen_function();
+    func subfn = cgen.gen_function("subfn");
     value vc = cgen.gen_local_i32(c);
     value vd = cgen.gen_local_i32(d);
     cgen.gen_sub(vc, vd);
@@ -105,7 +105,7 @@ TEST(cgen, muldiv) {
 
     cgen code(4 * KiB);
 
-    func test_val = code.gen_function();
+    func test_val = code.gen_function("test_val");
     value vb = code.gen_global_i32(&b);
     value vx = code.gen_local_i32(a);
     value vy = code.gen_local_i32(a);
@@ -116,7 +116,7 @@ TEST(cgen, muldiv) {
     code.gen_call(test_muldiv, vx, vy, vz);
     code.gen_ret();
 
-    func test_imm = code.gen_function();
+    func test_imm = code.gen_function("test_imm");
     value vx2 = code.gen_local_i32(a);
     value vy2 = code.gen_local_i32(a);
     value vz2 = code.gen_local_i32(a);
@@ -146,7 +146,7 @@ TEST(cgen, umuldiv) {
 
     cgen code(4 * KiB);
 
-    func test_val = code.gen_function();
+    func test_val = code.gen_function("test_val");
     value vb = code.gen_global_i32(&b);
     value vx = code.gen_local_i32(a);
     value vy = code.gen_local_i32(a);
@@ -157,7 +157,7 @@ TEST(cgen, umuldiv) {
     code.gen_call(test_umuldiv, vx, vy, vz);
     code.gen_ret();
 
-    func test_imm = code.gen_function();
+    func test_imm = code.gen_function("test_imm");
     value vx2 = code.gen_local_i32(a);
     value vy2 = code.gen_local_i32(a);
     value vz2 = code.gen_local_i32(a);
@@ -180,7 +180,7 @@ i64 test_notneg(void* ptr, i64 a, i64 b) {
 TEST(cgen, notneg) {
     cgen code(4 * KiB);
 
-    func test = code.gen_function();
+    func test = code.gen_function("test");
     value va = code.gen_local_i64(42);
     value vb = code.gen_local_i64(42);
     code.gen_not(va);
@@ -201,7 +201,7 @@ i64 test_shift(void* ptr, i64 a, i64 b, i64 c) {
 TEST(cgen, shift) {
     cgen code(4 * KiB);
 
-    func test = code.gen_function();
+    func test = code.gen_function("test");
     value a = code.gen_local_i64(42);
     value b = code.gen_local_i64(42);
     value c = code.gen_local_i64(-42);
@@ -225,7 +225,7 @@ i64 test_rot(void* ptr, i64 op1, i64 op2) {
 TEST(cgen, rot) {
     cgen code(4 * KiB);
 
-    func test = code.gen_function();
+    func test = code.gen_function("test");
     value a = code.gen_local_i8(42);
     value b = code.gen_local_i8(42);
     code.gen_rol(a, 3);

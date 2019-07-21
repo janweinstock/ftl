@@ -29,21 +29,25 @@ namespace ftl {
     {
     private:
         typedef i64 func_t (u8*);
-        u8* m_entry;
-        u8* m_code;
+        u8*    m_entry;
+        u8*    m_code;
+        string m_name;
 
         // disabled
         func();
 
     public:
-        func(cbuf& c);
+        const char* name() const { return m_name.c_str(); }
+
+        func(const string& name, cbuf& c);
 
         i64 operator () ();
     };
 
-    inline func::func(cbuf& buffer):
+    inline func::func(const string& name, cbuf& buffer):
         m_entry(buffer.get_code_entry()),
-        m_code(buffer.get_code_ptr()) {
+        m_code(buffer.get_code_ptr()),
+        m_name(name) {
     }
 
     inline i64 func::operator () () {

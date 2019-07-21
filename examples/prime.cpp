@@ -30,7 +30,7 @@ static func gen_isprime(cgen& code) {
     label is_prime = code.gen_label("is_prime");
     label no_prime = code.gen_label("no_prime");
 
-    func isprime = code.gen_function();
+    func isprime = code.gen_function("isprime");
 
     value n = code.gen_global_i32(&number);
     value i = code.gen_local_i32(2);

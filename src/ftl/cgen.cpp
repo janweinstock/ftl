@@ -71,10 +71,10 @@ namespace ftl {
         set_base_ptr(m_buffer.get_code_ptr());
     }
 
-    func cgen::gen_function() {
+    func cgen::gen_function(const string& name) {
         if (!m_entry.is_placed() || !m_exit.is_placed())
             gen_entry_exit();
-        return func(m_buffer);
+        return func(name, m_buffer);
     }
 
     void cgen::gen_ret() {

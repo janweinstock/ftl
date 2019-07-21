@@ -88,7 +88,7 @@ namespace ftl {
         void sync_value(value& val);
         void free_value(value& val);
 
-        func gen_function();
+        func gen_function(const string& name);
         void gen_ret();
         void gen_ret(i64 val);
         void gen_ret(value& val);

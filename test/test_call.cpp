@@ -35,7 +35,7 @@ TEST(call, test1) {
     cgen code(4 * KiB);
     code.set_base_ptr(&test1_called);
 
-    func test = code.gen_function();
+    func test = code.gen_function("test");
     value ret = code.gen_call(test1);
     code.gen_ret(ret);
 
@@ -56,7 +56,7 @@ TEST(call, test3) {
     cgen code(4 * KiB);
     code.set_base_ptr(&test1_called);
 
-    func test = code.gen_function();
+    func test = code.gen_function("test");
     value op1 = code.gen_local_i64(1, argreg(1));
     value op2 = code.gen_local_i64(10, argreg(2));
     value op3 = code.gen_local_i64(100, argreg(3));
