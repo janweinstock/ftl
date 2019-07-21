@@ -171,6 +171,7 @@ namespace ftl {
         if (val->r < NREGS)
             m_regmap[val->r] = NULL;
 
+        flush(r);
         val->assign(r);
 
         if (r < NREGS) {
