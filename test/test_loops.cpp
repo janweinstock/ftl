@@ -39,7 +39,7 @@ TEST(loops, simple) {
     value i = code.gen_local_i32(0);
     value s = code.gen_global_i64(&sum);
 
-    label loop = code.gen_label();
+    label loop = code.gen_label("loop");
     loop.place();
 
     value r = code.gen_call(append, i);

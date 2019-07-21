@@ -34,6 +34,7 @@ namespace ftl {
         u8* m_location;
         vector<fixup> m_fixups;
         cbuf& m_buffer;
+        string m_name;
 
         void patch();
 
@@ -43,12 +44,14 @@ namespace ftl {
         label& operator = (const label&);
 
     public:
+        const char* name() const { return m_name.c_str(); }
+
         bool is_placed() const { return m_location != NULL; }
 
         u8*  get_address() { return m_location; }
         const u8* get_address() const { return m_location; }
 
-        label(cbuf& buf);
+        label(const string& name, cbuf& buf);
         label(label&& other);
         ~label();
 

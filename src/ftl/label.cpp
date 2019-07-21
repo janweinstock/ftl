@@ -21,7 +21,8 @@
 namespace ftl {
 
     void label::patch() {
-        FTL_ERROR_ON(!is_placed(), "cannot patch: label not yet placed");
+        if (!is_placed())
+            FTL_ERROR("cannot patch: label '%s' not yet placed", name());
 
         for (auto fix : m_fixups)
             patch_jump(fix, m_location);
@@ -29,20 +30,23 @@ namespace ftl {
     }
 
 
-    label::label(cbuf& buffer):
+    label::label(const string& name, cbuf& buffer):
         m_location(NULL),
         m_fixups(),
-        m_buffer(buffer) {
+        m_buffer(buffer),
+        m_name(name) {
     }
 
     label::label(label&& other):
         m_location(other.m_location),
         m_fixups(other.m_fixups),
-        m_buffer(other.m_buffer) {
+        m_buffer(other.m_buffer),
+        m_name(other.m_name) {
     }
 
     label::~label() {
-        FTL_ERROR_ON(!is_placed() && !m_fixups.empty(), "unplaced label");
+        if (!is_placed() && !m_fixups.empty())
+            FTL_ERROR("unplaced label '%s'", name());
     }
 
     void label::add(const fixup& fix) {
@@ -52,7 +56,7 @@ namespace ftl {
     }
 
     void label::place() {
-        FTL_ERROR_ON(m_location, "label has already been placed");
+        FTL_ERROR_ON(m_location, "label '%s' has already been placed", name());
         m_location = m_buffer.get_code_ptr();
         patch();
     }

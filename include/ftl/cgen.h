@@ -68,7 +68,7 @@ namespace ftl {
         void set_base_ptr_heap();
         void set_base_ptr_code();
 
-        label gen_label();
+        label gen_label(const string& name);
 
         value gen_local_i8 (reg r = NREGS);
         value gen_local_i16(reg r = NREGS);
@@ -200,8 +200,8 @@ namespace ftl {
         m_alloc.set_base_addr((u64)ptr);
     }
 
-    inline label cgen::gen_label() {
-        return label(m_buffer);
+    inline label cgen::gen_label(const string& name) {
+        return label(name, m_buffer);
     }
 
     inline value cgen::gen_local_i8 (reg r) {

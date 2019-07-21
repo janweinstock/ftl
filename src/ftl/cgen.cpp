@@ -42,8 +42,8 @@ namespace ftl {
         m_buffer(size),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
-        m_entry(m_buffer),
-        m_exit(m_buffer) {
+        m_entry("entry", m_buffer),
+        m_exit("exit", m_buffer) {
     }
 
     cgen::~cgen() {

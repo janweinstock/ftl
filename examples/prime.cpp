@@ -26,9 +26,9 @@ using namespace ftl;
 int number;
 
 static func gen_isprime(cgen& code) {
-    label loop = code.gen_label();
-    label is_prime = code.gen_label();
-    label no_prime = code.gen_label();
+    label loop = code.gen_label("loop");
+    label is_prime = code.gen_label("is_prime");
+    label no_prime = code.gen_label("no_prime");
 
     func isprime = code.gen_function();
 

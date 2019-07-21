@@ -45,7 +45,7 @@ TEST(cgen, jump) {
     int b = 42;
 
     cgen cgen(4 * KiB);
-    label less = cgen.gen_label();
+    label less = cgen.gen_label("less");
     func maxfn = cgen.gen_function();
 
     value va = cgen.gen_global_i32(&a);
