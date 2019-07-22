@@ -565,7 +565,7 @@ namespace ftl {
     void cgen::gen_idiv(value& dest, const value& src) {
         m_alloc.fetch(dest, RAX);
         m_alloc.flush(RDX);
-        m_emitter.xorr(32, RDX, RDX);
+        m_emitter.cwd(dest.bits);
         m_emitter.idiv(dest.bits, src);
         dest.mark_dirty();
     }
@@ -578,7 +578,7 @@ namespace ftl {
     void cgen::gen_udiv(value& dest, const value& src) {
         m_alloc.fetch(dest, RAX);
         m_alloc.flush(RDX);
-        m_emitter.xorr(32, RDX, RDX);
+        m_emitter.xorr(dest.bits, RDX, RDX);
         m_emitter.divr(dest.bits, src);
         dest.mark_dirty();
     }

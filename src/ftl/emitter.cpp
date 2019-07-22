@@ -53,6 +53,8 @@ namespace ftl {
         OPCODE_IMUL8  = 0x6b,
         OPCODE_IMUL32 = 0x69,
 
+        OPCODE_CWD    = 0x99,
+
         OPCODE_CALL   = 0xe8,
         OPCODE_JMPI   = 0xeb,
         OPCODE_JMPR   = 0xff,
@@ -529,6 +531,17 @@ namespace ftl {
         len += m_buffer.write<u8>(OPCODE2_IMUL);
         len += modrm(dest, src);
 
+        return len;
+    }
+
+    size_t emitter::cwd(int bits) {
+        FTL_ERROR_ON(bits < 16, "cannot convert 8bits");
+
+        size_t len = 0;
+        if (bits == 64)
+            len += rex(true, false, false, false);
+
+        len += m_buffer.write<u8>(OPCODE_CWD);
         return len;
     }
 
