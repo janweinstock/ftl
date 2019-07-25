@@ -164,6 +164,11 @@ namespace ftl {
     }
 
     void alloc::assign(reg r, value* val) {
+        if (m_regmap[r] == val)
+            return;
+
+        flush(r);
+
         if (val == NULL) {
             m_regmap[r] = NULL;
             return;
@@ -172,7 +177,6 @@ namespace ftl {
         if (val->r < NREGS)
             m_regmap[val->r] = NULL;
 
-        flush(r);
         val->update_register(r);
 
         if (r < NREGS) {
