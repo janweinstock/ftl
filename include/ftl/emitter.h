@@ -59,6 +59,8 @@ namespace ftl {
 
         size_t ret();
 
+        size_t lock();
+
         size_t push(reg src);
         size_t pop(reg dest);
 

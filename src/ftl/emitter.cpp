@@ -20,6 +20,11 @@
 
 namespace ftl {
 
+    enum prefix {
+        PREFIX_16BIT  = 0x66,
+        PREFIX_LOCK   = 0xf0,
+    };
+
     enum opcode {
         OPCODE_RET    = 0xc3,
 
@@ -173,7 +178,7 @@ namespace ftl {
     size_t emitter::prefix(int bits, reg r, const rm& rm) {
         size_t len = 0;
         if (bits == 16)
-            len += m_buffer.write<u8>(0x66);
+            len += m_buffer.write<u8>(PREFIX_16BIT);
         if (bits == 8 || bits == 64 || r >= R8 || rm.r >= R8)
             len += rex(bits == 64, r >= R8, false, rm.r >= R8);
         return len;
@@ -315,6 +320,10 @@ namespace ftl {
 
     size_t emitter::ret() {
         return m_buffer.write<u8>(OPCODE_RET);
+    }
+
+    size_t emitter::lock() {
+        return m_buffer.write<u8>(PREFIX_LOCK);
     }
 
     size_t emitter::push(reg src) {
