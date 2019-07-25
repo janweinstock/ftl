@@ -787,31 +787,10 @@ namespace ftl {
         m_alloc.flush_volatile_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
-        value ret = m_alloc.new_local("func", 64, (i64)fn, RAX);
+        value ret = m_alloc.new_local("retval", 64, (i64)fn, RAX);
         m_emitter.call(RAX);
 
         return ret;
-    }
-
-    value cgen::gen_call(func2* fn, const arg& a) {
-        reg r = argreg(1);
-        m_alloc.flush(r);
-        a.fetch(m_emitter, r);
-        return gen_call((func1*)fn);
-    }
-
-    value cgen::gen_call(func3* fn, const arg& a, const arg& b) {
-        reg r = argreg(2);
-        m_alloc.flush(r);
-        b.fetch(m_emitter, r);
-        return gen_call((func2*)fn, a);
-    }
-
-    value cgen::gen_call(func4* fn, const arg& a, const arg& b, const arg& c) {
-        reg r = argreg(3);
-        m_alloc.flush(r);
-        c.fetch(m_emitter, r);
-        return gen_call((func3*)fn, a, b);
     }
 
 }

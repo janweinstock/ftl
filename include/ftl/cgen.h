@@ -194,9 +194,15 @@ namespace ftl {
         typedef i64 (func4)(void* bptr, i64 arg1, i64 arg2, i64 arg3);
 
         value gen_call(func1* fn);
-        value gen_call(func2* fn, const arg& a);
-        value gen_call(func3* fn, const arg& a, const arg& b);
-        value gen_call(func4* fn, const arg& a, const arg& b, const arg& c);
+
+        template <typename T1>
+        value gen_call(func2* fn, const T1& a);
+
+        template <typename T1, typename T2>
+        value gen_call(func3* fn, const T1& a, const T2& b);
+
+        template <typename T1, typename T2, typename T3>
+        value gen_call(func4* fn, const T1& a, const T2& b, const T3& c);
     };
 
     inline void cgen::set_base_ptr(void* ptr) {
@@ -274,6 +280,31 @@ namespace ftl {
 
     inline void cgen::free_value(value& val) {
         m_alloc.free_value(val);
+    }
+
+    template <typename T1>
+    inline value cgen::gen_call(func2* fn, const T1& a) {
+        reg r = argreg(1);
+        m_alloc.flush(r);
+        arg<T1>::fetch(m_emitter, r, a);
+        return gen_call((func1*)fn);
+    }
+
+    template <typename T1, typename T2>
+    inline value cgen::gen_call(func3* fn, const T1& a, const T2& b) {
+        reg r = argreg(2);
+        m_alloc.flush(r);
+        arg<T2>::fetch(m_emitter, r, b);
+        return gen_call((func2*)fn, a);
+    }
+
+    template <typename T1, typename T2, typename T3>
+    inline value cgen::gen_call(func4* fn, const T1& a, const T2& b,
+                                const T3& c) {
+        reg r = argreg(3);
+        m_alloc.flush(r);
+        arg<T3>::fetch(m_emitter, r, c);
+        return gen_call((func3*)fn, a, b);
     }
 
 }

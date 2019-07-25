@@ -30,25 +30,56 @@
 
 namespace ftl {
 
+    template <typename T>
     class arg
     {
-    private:
-        value* m_value;
-        i64    m_const;
-
-        arg();
-
     public:
-        arg(value& v): m_value(&v), m_const() {}
-        arg(i64 v): m_value(NULL), m_const(v) {}
-        void fetch(emitter& e, reg r) const;
+        static void fetch(emitter& e, reg r, const T& val);
     };
 
-    inline void arg::fetch(emitter& e, reg r) const {
-        if (m_value != NULL)
-            e.movr(m_value->bits, r, *m_value);
-        else
-            e.movi(64, r, m_const);
+    template <>
+    inline void arg<i8>::fetch(emitter& e, reg r, const i8& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<i16>::fetch(emitter& e, reg r, const i16& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<i32>::fetch(emitter& e, reg r, const i32& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<i64>::fetch(emitter& e, reg r, const i64& val) {
+        e.movi(64, r, val);
+    }
+
+    template <>
+    inline void arg<u8>::fetch(emitter& e, reg r, const u8& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<u16>::fetch(emitter& e, reg r, const u16& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<u32>::fetch(emitter& e, reg r, const u32& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<u64>::fetch(emitter& e, reg r, const u64& val) {
+        e.movi(64, r, (i64)val);
+    }
+
+    template <>
+    inline void arg<value>::fetch(emitter& e, reg r, const value& val) {
+        e.movr(val.bits, r, val);
     }
 
 }
