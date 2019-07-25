@@ -74,6 +74,7 @@ namespace ftl {
     func cgen::gen_function(const string& name) {
         if (!m_entry.is_placed() || !m_exit.is_placed())
             gen_entry_exit();
+        m_buffer.align(16);
         return func(name, m_buffer);
     }
 
