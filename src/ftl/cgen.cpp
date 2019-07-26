@@ -509,12 +509,10 @@ namespace ftl {
 
     void cgen::gen_cmp(value& dest, i32 val) {
         m_emitter.cmpi(dest.bits, dest, val);
-        dest.mark_dirty();
     }
 
     void cgen::gen_tst(value& dest, i32 val) {
         m_emitter.tsti(dest.bits, dest, val);
-        dest.mark_dirty();
     }
 
     void cgen::gen_imul(value& hi, value& dest, const value& src) {
@@ -573,7 +571,8 @@ namespace ftl {
 
     void cgen::gen_imod(value& dest, const value& src) {
         gen_idiv(dest, src);
-        m_alloc.assign(RDX, &dest);
+        dest.assign(RDX);
+        dest.mark_dirty();
     }
 
     void cgen::gen_udiv(value& dest, const value& src) {
