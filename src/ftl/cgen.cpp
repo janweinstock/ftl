@@ -578,14 +578,15 @@ namespace ftl {
     void cgen::gen_udiv(value& dest, const value& src) {
         m_alloc.fetch(dest, RAX);
         m_alloc.flush(RDX);
-        m_emitter.xorr(dest.bits, RDX, RDX);
+        m_emitter.xorr(32, RDX, RDX);
         m_emitter.divr(dest.bits, src);
         dest.mark_dirty();
     }
 
     void cgen::gen_umod(value& dest, const value& src) {
         gen_udiv(dest, src);
-        m_alloc.assign(RDX, &dest);
+        dest.assign(RDX);
+        dest.mark_dirty();
     }
 
     void cgen::gen_imul(value& dest, i64 val) {
