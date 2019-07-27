@@ -72,6 +72,9 @@ namespace ftl {
         bool is_empty(reg r) const;
         bool is_dirty(reg r) const;
 
+        size_t count_dirty_regs() const;
+        size_t count_active_regs() const;
+
         reg select();
         void assign(reg r, value* val);
         void free(reg r);
@@ -117,6 +120,22 @@ namespace ftl {
         if (is_empty(r))
             return false;
         return m_regmap[r]->is_dirty();
+    }
+
+    inline size_t alloc::count_dirty_regs() const {
+        size_t count = 0;
+        for (auto reg : m_regmap)
+            if (reg != NULL && reg->is_dirty())
+                count++;
+        return count;
+    }
+
+    inline size_t alloc::count_active_regs() const {
+        size_t count = 0;
+        for (auto reg : m_regmap)
+            if (reg != NULL)
+                count++;
+        return count;
     }
 
 }
