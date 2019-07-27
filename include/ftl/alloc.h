@@ -82,6 +82,9 @@ namespace ftl {
         void store(reg r);
         void flush(reg r);
 
+        void store_all_regs();
+        void flush_all_regs();
+
         void store_volatile_regs();
         void flush_volatile_regs();
 

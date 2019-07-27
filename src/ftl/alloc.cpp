@@ -212,6 +212,18 @@ namespace ftl {
             flush(*val);
     }
 
+    void alloc::store_all_regs() {
+        for (auto val : m_regmap)
+            if (val != NULL)
+                store(*val);
+    }
+
+    void alloc::flush_all_regs() {
+        for (auto val : m_regmap)
+            if (val != NULL)
+                flush(*val);
+    }
+
     void alloc::store_volatile_regs() {
         for (reg r : caller_saved_regs)
             store(r);
