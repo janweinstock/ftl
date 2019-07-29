@@ -387,6 +387,205 @@ namespace ftl {
         dest.mark_dirty();
     }
 
+    void cgen::gen_cmovo(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovo(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovno(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovno(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovb(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovb(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovae(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovae(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovz(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovz(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovnz(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovnz(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmove(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmove(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovne(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovne(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovbe(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovbe(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmova(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmova(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovs(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovs(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovns(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovns(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovp(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovp(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovnp(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovnp(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovl(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovl(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovge(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovge(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovle(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovle(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_cmovg(value& dest, const value& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.fetch();
+
+        m_emitter.cmovg(dest.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+
     void cgen::gen_mov(value& dest, const value& src) {
         if (dest == src)
             return;

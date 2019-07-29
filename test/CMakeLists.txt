@@ -22,7 +22,7 @@ include_directories(SYSTEM ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
 set(tests test_hello test_bitops test_emitter test_immops test_iopsmem
     test_shift test_jump test_muldiv test_cgen test_call test_loops test_setcc
-    test_movext)
+    test_movext test_cmov)
 
 foreach(test ${tests})
     add_executable(${test} ${test}.cpp)

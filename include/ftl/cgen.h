@@ -135,6 +135,25 @@ namespace ftl {
         void gen_setle(value& dest);
         void gen_setg(value& dest);
 
+        void gen_cmovo (value& dest, const value& src);
+        void gen_cmovno(value& dest, const value& src);
+        void gen_cmovb (value& dest, const value& src);
+        void gen_cmovae(value& dest, const value& src);
+        void gen_cmovz (value& dest, const value& src);
+        void gen_cmovnz(value& dest, const value& src);
+        void gen_cmove (value& dest, const value& src);
+        void gen_cmovne(value& dest, const value& src);
+        void gen_cmovbe(value& dest, const value& src);
+        void gen_cmova (value& dest, const value& src);
+        void gen_cmovs (value& dest, const value& src);
+        void gen_cmovns(value& dest, const value& src);
+        void gen_cmovp (value& dest, const value& src);
+        void gen_cmovnp(value& dest, const value& src);
+        void gen_cmovl (value& dest, const value& src);
+        void gen_cmovge(value& dest, const value& src);
+        void gen_cmovle(value& dest, const value& src);
+        void gen_cmovg (value& dest, const value& src);
+
         void gen_mov(value& dest, const value& src);
         void gen_add(value& dest, const value& src);
         void gen_or (value& dest, const value& src);
