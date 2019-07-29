@@ -48,6 +48,7 @@ namespace ftl {
         size_t shift(int op, int bits, const rm& dest, u8 imm);
         size_t branch(int op, i32 imm, fixup* fix);
         size_t setcc(int op, const rm& dest);
+        size_t movcc(int op, int bits, const rm& dest, const rm& src);
 
         // disabled
         emitter();
@@ -160,6 +161,25 @@ namespace ftl {
         size_t setge(const rm& dest);
         size_t setle(const rm& dest);
         size_t setg(const rm& dest);
+
+        size_t cmovo(int bits, const rm& dest, const rm& src);
+        size_t cmovno(int bits, const rm& dest, const rm& src);
+        size_t cmovb(int bits, const rm& dest, const rm& src);
+        size_t cmovae(int bits, const rm& dest, const rm& src);
+        size_t cmovz(int bits, const rm& dest, const rm& src);
+        size_t cmovnz(int bits, const rm& dest, const rm& src);
+        size_t cmove(int bits, const rm& dest, const rm& src);
+        size_t cmovne(int bits, const rm& dest, const rm& src);
+        size_t cmovbe(int bits, const rm& dest, const rm& src);
+        size_t cmova(int bits, const rm& dest, const rm& src);
+        size_t cmovs(int bits, const rm& dest, const rm& src);
+        size_t cmovns(int bits, const rm& dest, const rm& src);
+        size_t cmovp(int bits, const rm& dest, const rm& src);
+        size_t cmovnp(int bits, const rm& dest, const rm& src);
+        size_t cmovl(int bits, const rm& dest, const rm& src);
+        size_t cmovge(int bits, const rm& dest, const rm& src);
+        size_t cmovle(int bits, const rm& dest, const rm& src);
+        size_t cmovg(int bits, const rm& dest, const rm& src);
     };
 
 }

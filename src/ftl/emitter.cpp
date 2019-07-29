@@ -70,6 +70,7 @@ namespace ftl {
     };
 
     enum opcode_2bytes {
+        OPCODE2_MOVCC = 0x40,
         OPCODE2_BR32  = 0x80,
         OPCODE2_SET   = 0x90,
         OPCODE2_IMUL  = 0xaf,
@@ -306,6 +307,21 @@ namespace ftl {
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(OPCODE2_SET + op);
         len += modrm((reg)0, dest);
+
+        return len;
+    }
+
+    size_t emitter::movcc(int op, int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 16, "8bit conditional moves not supported");
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
+        FTL_ERROR_ON(dest.is_mem, "cmov destination cannot be memory");
+
+        size_t len = 0;
+
+        len += prefix(bits, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_MOVCC + op);
+        len += modrm(dest.r, src);
 
         return len;
     }
@@ -856,6 +872,78 @@ namespace ftl {
 
     size_t emitter::setg(const rm& dest) {
         return setcc(BRCOND_G, dest);
+    }
+
+    size_t emitter::cmovo(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_O, bits, dest, src);
+    }
+
+    size_t emitter::cmovno(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_NO, bits, dest, src);
+    }
+
+    size_t emitter::cmovb(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_B, bits, dest, src);
+    }
+
+    size_t emitter::cmovae(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_AE, bits, dest, src);
+    }
+
+    size_t emitter::cmovz(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_Z, bits, dest, src);
+    }
+
+    size_t emitter::cmovnz(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_NZ, bits, dest, src);
+    }
+
+    size_t emitter::cmove(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_Z, bits, dest, src);
+    }
+
+    size_t emitter::cmovne(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_NZ, bits, dest, src);
+    }
+
+    size_t emitter::cmovbe(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_BE, bits, dest, src);
+    }
+
+    size_t emitter::cmova(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_A, bits, dest, src);
+    }
+
+    size_t emitter::cmovs(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_S, bits, dest, src);
+    }
+
+    size_t emitter::cmovns(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_NS, bits, dest, src);
+    }
+
+    size_t emitter::cmovp(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_P, bits, dest, src);
+    }
+
+    size_t emitter::cmovnp(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_NP, bits, dest, src);
+    }
+
+    size_t emitter::cmovl(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_L, bits, dest, src);
+    }
+
+    size_t emitter::cmovge(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_GE, bits, dest, src);
+    }
+
+    size_t emitter::cmovle(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_LE, bits, dest, src);
+    }
+
+    size_t emitter::cmovg(int bits, const rm& dest, const rm& src) {
+        return movcc(BRCOND_G, bits, dest, src);
     }
 
 }
