@@ -25,6 +25,7 @@
 
 #include "ftl/fixup.h"
 #include "ftl/cbuf.h"
+#include "ftl/alloc.h"
 
 namespace ftl {
 
@@ -34,6 +35,7 @@ namespace ftl {
         u8* m_location;
         vector<fixup> m_fixups;
         cbuf& m_buffer;
+        alloc& m_alloc;
         string m_name;
 
         void patch();
@@ -51,12 +53,12 @@ namespace ftl {
         u8*  get_address() { return m_location; }
         const u8* get_address() const { return m_location; }
 
-        label(const string& name, cbuf& buf);
+        label(const string& name, cbuf& buf, alloc& al);
         label(label&& other);
         ~label();
 
         void add(const fixup& fix);
-        void place();
+        void place(bool flush = true);
     };
 
 }

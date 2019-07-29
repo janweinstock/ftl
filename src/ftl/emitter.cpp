@@ -167,21 +167,31 @@ namespace ftl {
     }
 
     size_t emitter::modrm(int mod, int reg, int rm) {
+        FTL_ERROR_ON(reg >= NREGS, "invalid value for modrm.r: %d", reg);
+        FTL_ERROR_ON(rm >= NREGS, "invalid value for modrm.rm: %d", rm);
+
         u8 modrm = ((mod & 3) << 6) | ((reg & 7) << 3) | (rm & 7);
         return m_buffer.write(modrm);
     }
 
     size_t emitter::sib(int scale, int index, int base) {
+        FTL_ERROR_ON(scale > 3, "invalid value for sib.scale: %d", scale);
+        FTL_ERROR_ON(index >= NREGS, "invalid value for sib.index: %d", index);
+        FTL_ERROR_ON(base >= NREGS, "invalid value for sib.base: %d", base);
+
         u8 sib = ((scale & 3) << 6) | ((index & 7) << 3) | (base & 7);
         return m_buffer.write(sib);
     }
 
-    size_t emitter::prefix(int bits, reg r, const rm& rm) {
+    size_t emitter::prefix(int bits, reg reg, const rm& rm) {
+        FTL_ERROR_ON(reg >= NREGS, "invalid value for modrm.reg: %d", reg);
+        FTL_ERROR_ON(rm.r >= NREGS, "invalid value for modrm.rm: %d", rm.r);
+
         size_t len = 0;
         if (bits == 16)
             len += m_buffer.write<u8>(PREFIX_16BIT);
-        if (bits == 8 || bits == 64 || r >= R8 || rm.r >= R8)
-            len += rex(bits == 64, r >= R8, false, rm.r >= R8);
+        if (bits == 8 || bits == 64 || reg >= R8 || rm.r >= R8)
+            len += rex(bits == 64, reg >= R8, false, rm.r >= R8);
         return len;
     }
 

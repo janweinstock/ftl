@@ -26,13 +26,13 @@ namespace ftl {
         FTL_ERROR_ON(code != head, "entry code must be written to head");
 
         if (!m_entry.is_placed())
-            m_entry.place();
+            m_entry.place(false);
 
         m_alloc.prologue();
         m_buffer.align(16);
 
         if (!m_exit.is_placed())
-            m_exit.place();
+            m_exit.place(false);
 
         m_alloc.epilogue();
         m_buffer.align(16);
@@ -42,8 +42,8 @@ namespace ftl {
         m_buffer(size),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
-        m_entry("entry", m_buffer),
-        m_exit("exit", m_buffer) {
+        m_entry("entry", m_buffer, m_alloc),
+        m_exit("exit", m_buffer, m_alloc) {
     }
 
     cgen::~cgen() {
@@ -79,15 +79,18 @@ namespace ftl {
     }
 
     void cgen::gen_ret() {
+        m_alloc.flush_all_regs();
         gen_jmp(m_exit, true);
     }
 
     void cgen::gen_ret(i64 val) {
+        m_alloc.flush_all_regs();
         m_emitter.movi(64, RAX, val);
         gen_ret();
     }
 
     void cgen::gen_ret(value& val) {
+        m_alloc.flush_all_regs();
         m_alloc.fetch(val, RAX);
         gen_ret();
     }
@@ -95,6 +98,7 @@ namespace ftl {
     void cgen::gen_jmp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jmpi(offset, &fix);
         l.add(fix);
     }
@@ -102,6 +106,7 @@ namespace ftl {
     void cgen::gen_jo(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jo(offset, &fix);
         l.add(fix);
     }
@@ -109,6 +114,7 @@ namespace ftl {
     void cgen::gen_jno(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jno(offset, &fix);
         l.add(fix);
     }
@@ -116,6 +122,7 @@ namespace ftl {
     void cgen::gen_jb(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jb(offset, &fix);
         l.add(fix);
     }
@@ -123,6 +130,7 @@ namespace ftl {
     void cgen::gen_jae(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jae(offset, &fix);
         l.add(fix);
     }
@@ -130,6 +138,7 @@ namespace ftl {
     void cgen::gen_jz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jz(offset, &fix);
         l.add(fix);
     }
@@ -137,6 +146,7 @@ namespace ftl {
     void cgen::gen_jnz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jnz(offset, &fix);
         l.add(fix);
     }
@@ -144,6 +154,7 @@ namespace ftl {
     void cgen::gen_je(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.je(offset, &fix);
         l.add(fix);
     }
@@ -151,6 +162,7 @@ namespace ftl {
     void cgen::gen_jne(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jne(offset, &fix);
         l.add(fix);
     }
@@ -158,6 +170,7 @@ namespace ftl {
     void cgen::gen_jbe(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jbe(offset, &fix);
         l.add(fix);
     }
@@ -165,6 +178,7 @@ namespace ftl {
     void cgen::gen_ja(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.ja(offset, &fix);
         l.add(fix);
     }
@@ -172,6 +186,7 @@ namespace ftl {
     void cgen::gen_js(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.js(offset, &fix);
         l.add(fix);
     }
@@ -179,6 +194,7 @@ namespace ftl {
     void cgen::gen_jns(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jns(offset, &fix);
         l.add(fix);
     }
@@ -186,6 +202,7 @@ namespace ftl {
     void cgen::gen_jp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jp(offset, &fix);
         l.add(fix);
     }
@@ -193,6 +210,7 @@ namespace ftl {
     void cgen::gen_jnp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jnp(offset, &fix);
         l.add(fix);
     }
@@ -200,6 +218,7 @@ namespace ftl {
     void cgen::gen_jl(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jl(offset, &fix);
         l.add(fix);
     }
@@ -207,6 +226,7 @@ namespace ftl {
     void cgen::gen_jge(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jge(offset, &fix);
         l.add(fix);
     }
@@ -214,6 +234,7 @@ namespace ftl {
     void cgen::gen_jle(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jle(offset, &fix);
         l.add(fix);
     }
@@ -221,6 +242,7 @@ namespace ftl {
     void cgen::gen_jg(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
+        m_alloc.flush_all_regs();
         m_emitter.jg(offset, &fix);
         l.add(fix);
     }
@@ -985,6 +1007,7 @@ namespace ftl {
 
     value cgen::gen_call(func1* fn) {
         m_alloc.flush_volatile_regs();
+        m_alloc.store_all_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
         value ret = m_alloc.new_local("retval", 64, (i64)fn, RAX);

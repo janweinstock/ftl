@@ -229,7 +229,7 @@ namespace ftl {
     }
 
     inline label cgen::gen_label(const string& name) {
-        return label(name, m_buffer);
+        return label(name, m_buffer, m_alloc);
     }
 
     inline value cgen::gen_local_val(const string& name, int bits, reg r) {

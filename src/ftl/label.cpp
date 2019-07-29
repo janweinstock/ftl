@@ -30,10 +30,11 @@ namespace ftl {
     }
 
 
-    label::label(const string& name, cbuf& buffer):
+    label::label(const string& name, cbuf& buffer, alloc& al):
         m_location(NULL),
         m_fixups(),
         m_buffer(buffer),
+        m_alloc(al),
         m_name(name) {
     }
 
@@ -41,6 +42,7 @@ namespace ftl {
         m_location(other.m_location),
         m_fixups(other.m_fixups),
         m_buffer(other.m_buffer),
+        m_alloc(other.m_alloc),
         m_name(other.m_name) {
     }
 
@@ -55,8 +57,10 @@ namespace ftl {
             patch();
     }
 
-    void label::place() {
+    void label::place(bool flush) {
         FTL_ERROR_ON(m_location, "label '%s' has already been placed", name());
+        if (flush)
+            m_alloc.flush_all_regs();
         m_location = m_buffer.get_code_ptr();
         patch();
     }

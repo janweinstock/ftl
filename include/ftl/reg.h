@@ -68,10 +68,12 @@ namespace ftl {
     }
 
     static inline rm regop(reg r) {
+        FTL_ERROR_ON(r >= NREGS, "invalid register id: %d", r);
         return rm(r);
     }
 
     static inline rm memop(reg base, i32 offset) {
+        FTL_ERROR_ON(base >= NREGS, "invalid register id: %d", base);
         return rm(base, offset);
     }
 
