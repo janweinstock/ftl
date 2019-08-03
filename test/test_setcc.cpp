@@ -22,24 +22,42 @@
 
 using namespace ftl;
 
-TEST(muldiv, setcc) {
-    ftl::cbuf code(1 * ftl::KiB);
-    ftl::emitter emitter(code);
+#define MKTEST(name, a, b, op)                                                \
+    TEST(setcc, name ## _ ## a ## _ ## b) {                                   \
+        ftl::cbuf code(4 * ftl::KiB);                                         \
+        ftl::emitter emitter(code);                                           \
+        typedef int (test_func)(int, int);                                    \
+        test_func* name = (test_func*)code.get_code_ptr();                    \
+        emitter.movi(32, RAX, 0);                                             \
+        emitter.cmpr(32, argreg(0), argreg(1));                               \
+        emitter.name(RAX);                                                    \
+        emitter.ret();                                                        \
+        EXPECT_EQ(name(a, b), a op b);                                        \
+    }
 
-    typedef int (test_func)(int, int);
-    test_func* test = (test_func*)code.get_code_ptr();
-    emitter.movi(32, RAX, 0);
-    emitter.cmpr(32, argreg(0), argreg(1));
-    emitter.setz(RAX);
-    emitter.ret();
+MKTEST(sete,  15, 15, ==)
+MKTEST(sete,  15, 27, ==)
+MKTEST(sete,  27, 15, ==)
 
-    EXPECT_EQ(test(1, 1), 1);
-    EXPECT_EQ(test(1, 0), 0);
-    EXPECT_EQ(test(0, 1), 0);
-    EXPECT_EQ(test(0, 0), 1);
-}
+MKTEST(setne, 15, 15, !=)
+MKTEST(setne, 15, 27, !=)
+MKTEST(setne, 27, 15, !=)
 
+MKTEST(setl, 15, 15, <)
+MKTEST(setl, 15, 27, <)
+MKTEST(setl, 27, 15, <)
 
+MKTEST(setle, 15, 15, <=)
+MKTEST(setle, 15, 27, <=)
+MKTEST(setle, 27, 15, <=)
+
+MKTEST(setg, 15, 15, >)
+MKTEST(setg, 15, 27, >)
+MKTEST(setg, 27, 15, >)
+
+MKTEST(setge, 15, 15, >=)
+MKTEST(setge, 15, 27, >=)
+MKTEST(setge, 27, 15, >=)
 
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
