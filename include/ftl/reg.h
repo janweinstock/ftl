@@ -45,7 +45,29 @@ namespace ftl {
         NREGS = 16,
     };
 
-    const char* reg_name(reg r);
+    const array<const char*, NREGS> reg_names = {
+        "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
+        "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15"
+    };
+
+#ifdef linux
+    const array<reg, 6> param_regs = {
+        RDI, RSI, RDX, RCX, R8, R9,
+    };
+
+    const array<reg, 7> callee_saved_regs = {
+        RBX, RSP, RBP, R12, R13, R14, R15,
+    };
+
+    const array<reg, 9> caller_saved_regs = {
+        RAX, RCX, RDX, RSI, RDI, R8, R9, R10, R11,
+    };
+#endif
+
+    static inline reg argreg(unsigned int argno) {
+        FTL_ERROR_ON(argno >= param_regs.size(), "argno out of bounds");
+        return param_regs[argno];
+    }
 
     struct rm {
         bool is_mem;
@@ -75,12 +97,6 @@ namespace ftl {
     static inline rm memop(reg base, i32 offset) {
         FTL_ERROR_ON(base >= NREGS, "invalid register id: %d", base);
         return rm(base, offset);
-    }
-
-    static inline reg argreg(unsigned int argno) {
-        reg sysv[] = { RDI, RSI, RDX, RCX, R8, R9 };
-        FTL_ERROR_ON(argno > FTL_ARRAY_SIZE(sysv), "argno out of bounds");
-        return sysv[argno];
     }
 
 }

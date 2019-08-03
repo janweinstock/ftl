@@ -118,15 +118,6 @@ namespace ftl {
         val.mark_dead();
     }
 
-    // According to SYSV/Linux calling convention
-    static const reg callee_saved_regs[] = {
-        RBP, RBX, RSI, RDI, R12, R13, R14, R15,
-    };
-
-    static const reg caller_saved_regs[] = {
-        RAX, RCX, RDX, RSP, RDI, RSI, R8, R9, R10, R11
-    };
-
     // Never allocate RSP or RBP, since we need them for addressing local and
     // memory variables. Allocate RAX last, since we need it to return values
     // from function calls. RDX gets spoiled in MUL/DIV operations. Prefer

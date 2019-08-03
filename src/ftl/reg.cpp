@@ -18,24 +18,11 @@
 
 #include "ftl/reg.h"
 
-namespace ftl {
-
-    const char* reg_name(reg r) {
-        if (r > R15)
-            return "invalid";
-
-        static const char* names[] = {
-            "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
-            "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15"
-        };
-
-        return names[r];
-    }
-
-}
-
 std::ostream& operator << (std::ostream& os, const ftl::reg& r) {
-    os << ftl::reg_name(r);
+    if (r < ftl::NREGS)
+        os << ftl::reg_names[r];
+    else
+        os << "???";
     return os;
 }
 
