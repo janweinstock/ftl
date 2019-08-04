@@ -45,6 +45,15 @@ namespace ftl {
         NREGS = 16,
     };
 
+    static inline bool reg_valid(reg r) {
+        return r < NREGS;
+    }
+
+    const array<reg, NREGS> all_regs {
+        RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI,
+        R8,  R9,  R10, R11, R12, R13, R14, R15,
+    };
+
     const array<const char*, NREGS> reg_names = {
         "rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi",
         "r8",  "r9",  "r10", "r11", "r12", "r13", "r14", "r15"

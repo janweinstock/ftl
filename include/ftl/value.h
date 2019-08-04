@@ -31,87 +31,53 @@ namespace ftl {
     class value
     {
     private:
-        string m_name;
         alloc& m_allocator;
-
-        enum val_type {
-            VAL_REG    = 0, // value in register and memory
-            VAL_DIRTY  = 1, // value in register differs from memory
-            VAL_MEMORY = 2, // value only held in memory
-            VAL_DEAD   = 3, // value marked end-of-life
-        } m_vt;
-
-        // disabled
-        value(const value&);
-        value& operator = (const value&);
+        string m_name;
+        bool   m_dead;
 
     public:
-        const int bits;
-        const u64 base;
+        int  bits;
+        bool sign;
+        u64  addr;
 
-        reg r;
-        rm  m;
+        rm  mem;
+        reg r() const;
 
-        const char* name()  const { return m_name.c_str(); }
+        const char* name() const { return m_name.c_str(); }
 
-        bool is_reachable() const { return base == 0; }
-        bool is_dead()      const { return m_vt == VAL_DEAD; }
-        bool is_dirty()     const { return m_vt == VAL_DIRTY; }
-        bool is_mem()       const { return m_vt == VAL_MEMORY; }
-        bool is_reg()       const { return m_vt == VAL_REG ||
-                                           m_vt == VAL_DIRTY; }
-        void mark_dead();
-        void mark_clean();
+        bool is_dead()     const { return m_dead; }
+        void mark_dead()         { m_dead = true; }
+
+        bool is_dirty() const;
         void mark_dirty();
 
-        void update_register(reg r);
+        bool is_local() const;
+        bool is_global() const;
 
-        void assign(reg r = NREGS);
-        void fetch(reg r = NREGS);
+        bool is_reg() const;
+        bool is_mem() const;
+
+        reg  assign(reg r = NREGS);
+        reg  fetch(reg r = NREGS);
         void store();
         void flush();
 
-        value(const string& name, int bits, alloc& a, reg r, reg base,
-              i32 offset);
-        value(const string& name, int bits, alloc& a, reg base, i32 offset,
-              u64 addr, bool fits);
+        value(alloc& al, const string& name, int bits, bool sign, u64 addr,
+              reg base, i32 offset);
         value(value&& other);
-        virtual ~value();
-
-        operator const rm() const;
-        value& operator = (value&& other);
+        ~value();
 
         bool operator == (const value& other) const;
+        operator const rm() const;
+
+        value(const value&) = delete;
+        value& operator = (const value&) = delete;
     };
-
-    inline void value::mark_dead() {
-        FTL_ERROR_ON(is_dead(), "operation on dead value");
-        m_vt = VAL_DEAD;
-    }
-
-    inline void value::mark_clean() {
-        FTL_ERROR_ON(is_dead(), "operation on dead value");
-        if (m_vt == VAL_DIRTY)
-            m_vt = VAL_REG;
-    }
-
-    inline void value::mark_dirty() {
-        FTL_ERROR_ON(is_dead(), "operation on dead value");
-        if (m_vt == VAL_REG)
-            m_vt = VAL_DIRTY;
-    }
-
-    inline void value::update_register(reg _r) {
-        FTL_ERROR_ON(is_dead(), "operation on dead value");
-        r = _r;
-        m_vt = (r == NREGS) ? VAL_MEMORY : VAL_REG;
-    }
 
     inline bool value::operator == (const value& other) const {
         return bits == other.bits &&
-               base == other.base &&
-               r == other.r &&
-               m == other.m;
+               sign == other.sign &&
+               addr == other.addr;
     }
 
 }

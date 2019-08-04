@@ -88,7 +88,6 @@ namespace ftl {
         value gen_global_i32(const string& name, void* addr);
         value gen_global_i64(const string& name, void* addr);
 
-        void sync_value(value& val);
         void free_value(value& val);
 
         func gen_function(const string& name);
@@ -233,7 +232,7 @@ namespace ftl {
     }
 
     inline value cgen::gen_local_val(const string& name, int bits, reg r) {
-        return m_alloc.new_local_noinit(name, bits, r);
+        return m_alloc.new_local_noinit(name, bits, true, r);
     }
 
     inline value cgen::gen_local_i8 (const string& name, reg r) {
@@ -254,7 +253,7 @@ namespace ftl {
 
     inline value cgen::gen_local_val(const string& nm, int w, i64 v, reg r) {
         FTL_ERROR_ON(encode_size(v) > w, "initialization value for too large");
-        return m_alloc.new_local(nm, w, v, r);
+        return m_alloc.new_local(nm, w, true, v, r);
     }
 
     inline value cgen::gen_local_i8(const string& name, i8 val, reg r) {
@@ -274,7 +273,7 @@ namespace ftl {
     }
 
     inline value cgen::gen_global_val(const string& nm, int bits, void* addr) {
-        return m_alloc.new_global(nm, bits, (u64)addr);
+        return m_alloc.new_global(nm, bits, true, (u64)addr);
     }
 
     inline value cgen::gen_global_i8(const string& name, void* addr) {
@@ -291,10 +290,6 @@ namespace ftl {
 
     inline value cgen::gen_global_i64(const string& name, void* addr) {
         return gen_global_val(name, 64, addr);
-    }
-
-    inline void cgen::sync_value(value& val) {
-        m_alloc.store(val);
     }
 
     inline void cgen::free_value(value& val) {

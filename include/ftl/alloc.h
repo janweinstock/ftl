@@ -33,20 +33,21 @@ namespace ftl {
     class alloc
     {
     private:
-        emitter& m_emitter;
-        value*   m_regmap[NREGS];
-        u64      m_reguse[NREGS];
-        u64      m_usecnt;
-        u64      m_locals;
-        u64      m_base;
+        struct reginfo {
+            reg          regid;
+            const value* owner;
+            bool         dirty;
+            mutable u64  count;
+        };
 
-        vector<value*> m_values;
+        emitter&         m_emitter;
+        reginfo          m_regmap[NREGS];
+        mutable u64      m_usecnt;
 
-        void validate(const value& val) const;
+        u64              m_locals;
+        u64              m_base;
 
-        // disabled
-        alloc();
-        alloc(const alloc&);
+        vector<value*>   m_values;
 
     public:
         const reg STACK_POINTER = RSP; // base address register for locals
@@ -54,43 +55,45 @@ namespace ftl {
 
         alloc(emitter& e);
         virtual ~alloc();
-
-        u64  get_base_addr() const { return m_base; }
-        void set_base_addr(u64 addr);
-
-        bool is_local(const value& v) const;
-        bool is_global(const value& v) const;
-
-        void register_value(value* v);
-        void unregister_value(value* v);
-
-        value new_local(const string& name, int bits, i64 val, reg r = NREGS);
-        value new_local_noinit(const string& name, int bits, reg r = NREGS);
-        value new_global(const string& name, int bits, u64 addr);
-        void free_value(value& val);
+        alloc() = delete;
+        alloc(const alloc&) = delete;
 
         bool is_empty(reg r) const;
         bool is_dirty(reg r) const;
 
-        size_t count_dirty_regs() const;
-        size_t count_active_regs() const;
+        void mark_dirty(reg r);
+        void mark_clean(reg r);
 
-        reg select();
-        void assign(reg r, value* val);
+        reg  select() const;
+        reg  lookup(const value* val) const;
+        reg  assign(const value* val, reg r = NREGS);
+        reg  fetch(const value* val, reg r = NREGS);
+
         void free(reg r);
-        void use(reg r);
         void store(reg r);
         void flush(reg r);
+
+        u64  get_base_addr() const { return m_base; }
+        void set_base_addr(u64 addr);
+
+        void register_value(value* v);
+        void unregister_value(value* v);
+
+        value new_local_noinit(const string& name, int bits, bool sign,
+                        reg r = NREGS);
+        value new_local(const string& name, int bits, bool sign, i64 val,
+                        reg r = NREGS);
+        value new_global(const string& name, int bits, bool sign, u64 addr);
+        void free_value(value& val);
+
+        size_t count_dirty_regs() const;
+        size_t count_active_regs() const;
 
         void store_all_regs();
         void flush_all_regs();
 
         void store_volatile_regs();
         void flush_volatile_regs();
-
-        void fetch(value& val, reg r = NREGS);
-        void store(value& val);
-        void flush(value& val);
 
         void prologue();
         void epilogue();
@@ -101,44 +104,6 @@ namespace ftl {
     inline void alloc::set_base_addr(u64 addr) {
         FTL_ERROR_ON(m_base, "base address already set");
         m_base = addr;
-    }
-
-    inline bool alloc::is_local(const value& v) const {
-        return v.m.r == STACK_POINTER;
-    }
-
-    inline bool alloc::is_global(const value& v) const {
-        return v.m.r == BASE_REGISTER;
-    }
-
-    inline bool alloc::is_empty(reg r) const {
-        if (m_regmap[r] == NULL)
-            return true;
-        if (m_regmap[r]->is_dead())
-            return true;
-        return false;
-    }
-
-    inline bool alloc::is_dirty(reg r) const {
-        if (is_empty(r))
-            return false;
-        return m_regmap[r]->is_dirty();
-    }
-
-    inline size_t alloc::count_dirty_regs() const {
-        size_t count = 0;
-        for (auto reg : m_regmap)
-            if (reg != NULL && reg->is_dirty())
-                count++;
-        return count;
-    }
-
-    inline size_t alloc::count_active_regs() const {
-        size_t count = 0;
-        for (auto reg : m_regmap)
-            if (reg != NULL)
-                count++;
-        return count;
     }
 
 }

@@ -20,102 +20,44 @@
 
 namespace ftl {
 
-    void alloc::validate(const value& val) const {
-        // Make sure the register value has been assigned to a register and
-        // that it also has been registered to this register in our map.
-        if (val.is_reg()) {
-            FTL_ERROR_ON(val.r == NREGS, "unassigned register value");
-            FTL_ERROR_ON(m_regmap[val.r] != &val, "corrupt register map");
-        }
-
-        // Make sure the memory value has not been assigned to a register and
-        // that our register map has no stall references to it.
-        if (val.is_mem()) {
-            FTL_ERROR_ON(val.r != NREGS, "memory value in register");
-            for (auto v : m_regmap)
-                FTL_ERROR_ON(v == &val, "corrupt register map");
-        }
-
-        if (val.is_dead())
-            FTL_ERROR("attempt to operate on dead value");
-    }
-
     alloc::alloc(emitter& e):
         m_emitter(e),
         m_regmap(),
-        m_reguse(),
         m_usecnt(0),
         m_locals(~0ull),
-        m_base(0) {
-        memset(m_regmap, 0, sizeof(m_regmap));
-        memset(m_reguse, 0, sizeof(m_reguse));
+        m_base(0),
+        m_values() {
+        reset();
     }
 
     alloc::~alloc() {
         // nothing to do
     }
 
-    void alloc::register_value(value* val) {
-        if (stl_contains(m_values, val))
-            FTL_ERROR("attempt to register value %p twice", val);
-        m_values.push_back(val);
+    bool alloc::is_empty(reg r) const {
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        if (m_regmap[r].owner == NULL)
+            return true;
+        if (m_regmap[r].owner->is_dead())
+            return true;
+        return false;
     }
 
-    void alloc::unregister_value(value* val) {
-        if (!stl_contains(m_values, val))
-            FTL_ERROR("attempt to unregister unknown value %p", val);
-        stl_remove_erase(m_values, val);
+    bool alloc::is_dirty(reg r) const {
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        if (is_empty(r))
+            return false;
+        return m_regmap[r].dirty;
     }
 
-    value alloc::new_local(const string& name, int bits, i64 val, reg r) {
-        value v = new_local_noinit(name, bits, r);
-        m_emitter.movi(bits, v.r, val);
-        v.mark_dirty();
-        return v;
+    void alloc::mark_dirty(reg r) {
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        m_regmap[r].dirty = true;
     }
 
-    value alloc::new_local_noinit(const string& name, int bits, reg r) {
-        int idx = ffs(m_locals) - 1;
-        FTL_ERROR_ON(idx < 0, "out of stack frame memory");
-        m_locals &= ~(1 << idx);
-
-        if (r == NREGS)
-            r = select();
-        else
-            flush(r);
-
-        value v(name, bits, *this, r, STACK_POINTER, -idx * sizeof(u64));
-        m_regmap[r] = &v;
-
-        return v;
-    }
-
-    value alloc::new_global(const string& name, int bits, u64 addr) {
-        if (m_base == 0) {
-            m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
-            m_emitter.movi(64, BASE_REGISTER, m_base);
-        }
-
-        i64 offset = addr - m_base;
-        bool fits = fits_i32(offset);
-        value v(name, bits, *this, BASE_REGISTER, offset, addr, fits);
-
-        return v;
-    }
-
-    void alloc::free_value(value& val) {
-        FTL_ERROR_ON(val.is_dead(), "double free value");
-
-        if (is_local(val)) {
-            int idx = -val.m.offset / sizeof(u64);
-            FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
-            m_locals |= (1 << idx);
-        }
-
-        if (val.is_reg())
-            m_regmap[val.r] = NULL;
-
-        val.mark_dead();
+    void alloc::mark_clean(reg r) {
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        m_regmap[r].dirty = false;
     }
 
     // Never allocate RSP or RBP, since we need them for addressing local and
@@ -126,93 +68,212 @@ namespace ftl {
         RBP, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
     };
 
-    reg alloc::select() {
+    reg alloc::select() const {
         // try unused registers first
         for (reg r : alloc_order)
             if (is_empty(r))
                 return r;
 
         // next, try registers that do not need to be flushed
-        for (reg r : alloc_order) {
-            if (!is_dirty(r)) {
-                free(r);
+        for (reg r : alloc_order)
+            if (!is_dirty(r))
                 return r;
-            }
-        }
 
         // pick least recently used
-        reg lru = RAX;
-        u64 min = m_reguse[lru];
+        reg lru = NREGS;
+        u64 min = ~0ull;
         for (reg r : alloc_order) {
-            if (m_reguse[r] < min) {
+            if (m_regmap[r].count < min) {
+                min = m_regmap[r].count;
                 lru = r;
-                min = m_reguse[r];
             }
         }
 
-        flush(lru);
+        FTL_ERROR_ON(lru == NREGS, "failed to select a register");
         return lru;
     }
 
-    void alloc::assign(reg r, value* val) {
-        if (m_regmap[r] == val)
-            return;
+    reg alloc::lookup(const value* val) const {
+        if (val == NULL)
+            return NREGS;
+
+        for (auto info : m_regmap) {
+            if (info.owner == val) {
+                info.count = m_usecnt++;
+                return info.regid;
+            }
+        }
+
+        return NREGS;
+    }
+
+    reg alloc::assign(const value* val, reg r) {
+        FTL_ERROR_ON(!val, "attempt to assign NULL value");
+
+        if (r == NREGS)
+            r = lookup(val);
+        if (r == NREGS)
+            r = select();
+
+        FTL_ERROR_ON(!reg_valid(r), "invalid register selected: %d", r);
+        FTL_ERROR_ON(r == STACK_POINTER, "cannot assign to stack pointer");
+        FTL_ERROR_ON(r == BASE_REGISTER, "cannot assign to base register");
+
+        if (m_regmap[r].owner == val)
+            return r;
 
         flush(r);
 
-        if (val == NULL) {
-            m_regmap[r] = NULL;
-            return;
+        reg curr = lookup(val);
+        if (curr < NREGS)
+            free(curr);
+
+        m_regmap[r].owner = val;
+        m_regmap[r].dirty = false;
+        m_regmap[r].count = m_usecnt++;
+
+        return r;
+    }
+
+    reg alloc::fetch(const value* val, reg r) {
+        reg curr = lookup(val);
+        if ((curr < NREGS) && (curr == r || r == NREGS))
+            return curr;
+
+        r = assign(val, r);
+
+        if (curr < NREGS && curr != r) {
+            m_emitter.movr(val->bits, r, curr);
+        } else {
+            bool can_reach = val->is_local() || fits_i32(val->addr - m_base);
+            if (!can_reach)
+                m_emitter.movi(64, BASE_REGISTER, val->addr);
+            m_emitter.movr(val->bits, r, val->mem);
+            if (!can_reach)
+                m_emitter.movi(64, BASE_REGISTER, m_base);
         }
 
-        if (val->r < NREGS)
-            m_regmap[val->r] = NULL;
-
-        val->update_register(r);
-
-        if (r < NREGS) {
-            m_regmap[r] = val;
-            use(r);
-        }
+        return r;
     }
 
     void alloc::free(reg r) {
-        if (is_empty(r))
-            return;
-
-        FTL_ERROR_ON(is_dirty(r), "attempt to free a dirty register");
-
-        m_regmap[r]->update_register(NREGS);
-        m_regmap[r] = NULL;
-    }
-
-    void alloc::use(reg r) {
-        FTL_ERROR_ON(r == NREGS, "invalid register use");
-        m_reguse[r] = m_usecnt++;
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        m_regmap[r].owner = NULL;
+        m_regmap[r].dirty = false;
+        m_regmap[r].count = 0;
     }
 
     void alloc::store(reg r) {
-        value* val = m_regmap[r];
-        if (val != NULL)
-            store(*val);
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+
+        if (!is_dirty(r))
+            return;
+
+        const value* val = m_regmap[r].owner;
+        FTL_ERROR_ON(val == NULL, "store operation on empty register");
+
+        bool can_reach = val->is_local() || fits_i32(val->addr - m_base);
+        if (!can_reach)
+            m_emitter.movi(64, BASE_REGISTER, val->addr);
+        m_emitter.movr(val->bits, val->mem, r);
+        if (!can_reach)
+            m_emitter.movi(64, BASE_REGISTER, m_base);
     }
 
     void alloc::flush(reg r) {
-        value* val = m_regmap[r];
-        if (val != NULL)
-            flush(*val);
+        FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+        store(r);
+        free(r);
+    }
+
+    void alloc::register_value(value* val) {
+        if (stl_contains(m_values, val))
+            FTL_ERROR("attempt to register value '%s' twice", val->name());
+        m_values.push_back(val);
+    }
+
+    void alloc::unregister_value(value* val) {
+        if (!stl_contains(m_values, val))
+            FTL_ERROR("attempt to unregister unknown value '%s'", val->name());
+        stl_remove_erase(m_values, val);
+    }
+
+    value alloc::new_local_noinit(const string& name, int bits, bool sign,
+                                  reg r) {
+        int idx = ffs(m_locals) - 1;
+        FTL_ERROR_ON(idx < 0, "out of stack frame memory");
+        m_locals &= ~(1ull << idx);
+
+        if (r == NREGS)
+            r = select();
+        flush(r);
+
+        value v(*this, name, bits, sign, 0, STACK_POINTER, -idx * sizeof(u64));
+        assign(&v, r);
+        return v;
+    }
+
+    value alloc::new_local(const string& name, int bits, bool sign, i64 val,
+                           reg r) {
+        value v = new_local_noinit(name, bits, sign, r);
+        r = v.r();
+        m_emitter.movi(bits, r, val);
+        mark_dirty(r);
+        return v;
+    }
+
+    value alloc::new_global(const string& name, int bits, bool sign, u64 addr) {
+        if (m_base == 0) {
+            m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
+            m_emitter.movi(64, BASE_REGISTER, m_base);
+        }
+
+        i32 offset = addr - m_base;
+        value v(*this, name, bits, sign, addr, BASE_REGISTER, offset);
+
+        return v;
+    }
+
+    void alloc::free_value(value& val) {
+        FTL_ERROR_ON(val.is_dead(), "double free value");
+
+        if (val.is_local()) {
+            int idx = -val.mem.offset / sizeof(u64);
+            FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
+            m_locals |= (1 << idx);
+        }
+
+        reg r = lookup(&val);
+        if (r < NREGS)
+            free(r);
+
+        val.mark_dead();
+    }
+
+    size_t alloc::count_dirty_regs() const {
+        size_t count = 0;
+        for (auto reg : m_regmap)
+            if (reg.owner != NULL && reg.dirty)
+                count++;
+        return count;
+    }
+
+    size_t alloc::count_active_regs() const {
+        size_t count = 0;
+        for (auto reg : m_regmap)
+            if (reg.owner != NULL)
+                count++;
+        return count;
     }
 
     void alloc::store_all_regs() {
-        for (auto val : m_regmap)
-            if (val != NULL)
-                store(*val);
+        for (reg r : all_regs)
+            store(r);
     }
 
     void alloc::flush_all_regs() {
-        for (auto val : m_regmap)
-            if (val != NULL)
-                flush(*val);
+        for (reg r : all_regs)
+            flush(r);
     }
 
     void alloc::store_volatile_regs() {
@@ -223,60 +284,6 @@ namespace ftl {
     void alloc::flush_volatile_regs() {
         for (reg r : caller_saved_regs)
             flush(r);
-    }
-
-    void alloc::fetch(value& val, reg r) {
-        validate(val);
-
-        if (r == NREGS)
-            r = val.is_reg() ? val.r : select();
-
-        if (val.is_reg()) { // copy value into r
-            if (val.r == r)
-                return;
-
-            if (is_dirty(r))
-                flush(*m_regmap[r]);
-
-            m_emitter.movr(val.bits, r, val.r);
-
-        } else { // copy value from memory into r
-
-            if (!val.is_reachable())
-                m_emitter.movi(64, val.m.r, val.base);
-            m_emitter.movr(val.bits, r, val.m);
-            if (!val.is_reachable())
-                m_emitter.movi(64, val.m.r, m_base);
-        }
-
-        assign(r, &val);
-    }
-
-    void alloc::store(value& val) {
-        validate(val);
-
-        if (!val.is_dirty())
-            return;
-
-        if (!val.is_reachable())
-            m_emitter.movi(64, val.m.r, val.base);
-        m_emitter.movr(val.bits, val.m, val.r);
-        if (!val.is_reachable())
-            m_emitter.movi(64, val.m.r, m_base);
-
-        val.update_register(val.r);
-    }
-
-    void alloc::flush(value& val) {
-        validate(val);
-
-        if (val.is_mem())
-            return;
-
-        if (val.is_dirty())
-            store(val);
-
-        free(val.r);
     }
 
     void alloc::prologue() {
@@ -313,13 +320,14 @@ namespace ftl {
 
         m_values.clear();
         m_locals = ~0ull;
-
         m_usecnt = 0;
-        for (auto& use : m_reguse)
-            use = 0;
 
-        for (auto& val : m_regmap)
-            val = NULL;
+        for (auto r : all_regs) {
+           m_regmap[r].regid = r;
+           m_regmap[r].owner = NULL;
+           m_regmap[r].dirty = false;
+           m_regmap[r].count = 0;
+       }
     }
 
 }

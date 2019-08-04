@@ -25,63 +25,83 @@ namespace ftl {
         return width == 8 || width == 16 || width == 32 || width == 64;
     }
 
-    void value::assign(reg r) {
-        m_allocator.assign(r == NREGS ? m_allocator.select() : r, this);
+    reg value::r() const {
+        return m_allocator.lookup(this);
     }
 
-    void value::fetch(reg r) {
-        m_allocator.fetch(*this, r);
+    bool value::is_dirty() const {
+        if (!is_reg())
+            return false;
+
+        return m_allocator.is_dirty(r());
+    }
+
+    void value::mark_dirty() {
+        if (is_reg())
+            m_allocator.mark_dirty(r());
+    }
+
+    bool value::is_local() const {
+        return mem.r == m_allocator.STACK_POINTER;
+    }
+
+    bool value::is_global() const {
+        return mem.r == m_allocator.BASE_REGISTER;
+    }
+
+    bool value::is_reg() const {
+        return m_allocator.lookup(this) < NREGS;
+    }
+
+    bool value::is_mem() const {
+        return m_allocator.lookup(this) == NREGS;
+    }
+
+    reg value::assign(reg r) {
+        return m_allocator.assign(this, r);
+    }
+
+    reg value::fetch(reg r) {
+        return m_allocator.fetch(this, r);
     }
 
     void value::store() {
-        m_allocator.store(*this);
+        if (is_reg())
+            m_allocator.store(r());
     }
 
     void value::flush() {
-        m_allocator.flush(*this);
+        if (is_reg())
+            m_allocator.flush(r());
     }
 
-    value::value(const string& nm, int w, alloc& a, reg x, reg breg, i32 off):
-        m_name(nm),
-        m_allocator(a),
-        m_vt(VAL_REG),
-        bits(w),
-        base(0),
-        r(x),
-        m(breg, off) {
-        if (!valid_width(w))
-            FTL_ERROR("value '%s' has invalid bit width %d", name(), w);
-        m_allocator.register_value(this);
-    }
-
-    value::value(const string& nm, int width, alloc& al, reg base, i32 offset,
-                 u64 addr, bool fits):
-        m_name(nm),
+    value::value(alloc& al, const string& nm, int bits, bool sign, u64 addr,
+                 reg base, i32 offset):
         m_allocator(al),
-        m_vt(VAL_MEMORY),
-        bits(width),
-        base(fits ? 0 : addr),
-        r(NREGS),
-        m(base, offset) {
-        if (!valid_width(width))
-            FTL_ERROR("value '%s' has invalid bit width %d", name(), width);
+        m_name(nm),
+        m_dead(false),
+        bits(bits),
+        sign(sign),
+        addr(addr),
+        mem(base, offset) {
+        if (!valid_width(bits))
+            FTL_ERROR("value '%s' has invalid bit width %d", name(), bits);
         m_allocator.register_value(this);
     }
 
     value::value(value&& other):
-        m_name(other.m_name),
         m_allocator(other.m_allocator),
-        m_vt(other.m_vt),
+        m_name(other.m_name),
+        m_dead(other.m_dead),
         bits(other.bits),
-        base(other.base),
-        r(other.r),
-        m(other.m) {
+        sign(other.sign),
+        addr(other.addr),
+        mem(other.mem) {
         m_allocator.register_value(this);
 
-        if (is_reg())
-            m_allocator.assign(r, this);
-
         other.mark_dead();
+        if (other.is_reg())
+            m_allocator.assign(this, other.r());
     }
 
     value::~value() {
@@ -93,25 +113,8 @@ namespace ftl {
     value::operator const rm() const {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
         if (is_mem())
-            return m;
-
-        m_allocator.use(r);
-        return r;
+            return mem;
+        return r();
     }
-
-    value& value::operator = (value&& other) {
-        FTL_ERROR_ON(bits != other.bits, "different value size");
-        FTL_ERROR_ON(base != other.base, "different value address");
-
-        m_vt = other.m_vt;
-        r = other.r;
-        m = other.m;
-
-        if (is_reg())
-            m_allocator.assign(r, this);
-
-        other.m_vt = VAL_DEAD;
-        return *this;
-    };
 
 }

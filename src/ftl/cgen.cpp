@@ -91,7 +91,7 @@ namespace ftl {
 
     void cgen::gen_ret(value& val) {
         m_alloc.flush_all_regs();
-        m_alloc.fetch(val, RAX);
+        m_alloc.fetch(&val, RAX);
         gen_ret();
     }
 
@@ -249,7 +249,7 @@ namespace ftl {
 
     void cgen::gen_seto(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.seto(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -258,7 +258,7 @@ namespace ftl {
 
     void cgen::gen_setno(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setno(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -267,7 +267,7 @@ namespace ftl {
 
     void cgen::gen_setb(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setb(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -276,7 +276,7 @@ namespace ftl {
 
     void cgen::gen_setae(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setae(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -285,7 +285,7 @@ namespace ftl {
 
     void cgen::gen_setz(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setz(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -294,7 +294,7 @@ namespace ftl {
 
     void cgen::gen_setnz(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setnz(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -303,7 +303,7 @@ namespace ftl {
 
     void cgen::gen_sete(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.sete(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -312,7 +312,7 @@ namespace ftl {
 
     void cgen::gen_setne(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setne(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -321,7 +321,7 @@ namespace ftl {
 
     void cgen::gen_setbe(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setbe(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -330,7 +330,7 @@ namespace ftl {
 
     void cgen::gen_seta(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.seta(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -339,7 +339,7 @@ namespace ftl {
 
     void cgen::gen_sets(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.sets(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -348,7 +348,7 @@ namespace ftl {
 
     void cgen::gen_setns(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setns(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -357,7 +357,7 @@ namespace ftl {
 
     void cgen::gen_setp(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setp(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -366,7 +366,7 @@ namespace ftl {
 
     void cgen::gen_setnp(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setnp(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -375,7 +375,7 @@ namespace ftl {
 
     void cgen::gen_setl(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setl(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -384,7 +384,7 @@ namespace ftl {
 
     void cgen::gen_setge(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setge(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -393,7 +393,7 @@ namespace ftl {
 
     void cgen::gen_setle(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setle(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -402,7 +402,7 @@ namespace ftl {
 
     void cgen::gen_setg(value& dest) {
         if (dest.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.setg(dest);
         m_emitter.movzx(dest.bits, 8, dest, dest);
@@ -613,7 +613,7 @@ namespace ftl {
             return;
 
         if (dest.is_mem() && src.is_mem())
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         if (dest.bits > src.bits)
             m_emitter.movzx(dest.bits, src.bits, dest, src);
@@ -639,7 +639,7 @@ namespace ftl {
 
     void cgen::gen_adc(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
-            m_alloc.fetch(dest);
+            dest.fetch();
         m_emitter.adcr(dest.bits, dest, src);
         dest.mark_dirty();
     }
@@ -687,7 +687,7 @@ namespace ftl {
     void cgen::gen_mov(value& dest, i64 val) {
         int immlen = max(encode_size(val), dest.bits);
         if (dest.is_mem() && immlen > 32)
-            m_alloc.assign(m_alloc.select(), &dest);
+            dest.assign();
 
         m_emitter.movi(dest.bits, dest, val);
         dest.mark_dirty();
@@ -737,67 +737,60 @@ namespace ftl {
     }
 
     void cgen::gen_imul(value& hi, value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
+        dest.fetch(RAX);
 
-        if (hi.is_mem() || hi.r != RDX) {
+        if (hi.is_mem() || hi.r() != RDX) {
             m_alloc.flush(RDX);
-            m_alloc.assign(RDX, &hi);
+            m_alloc.assign(&hi, RDX);
         }
 
         m_emitter.imul(dest.bits, src);
-
-        hi.mark_dirty();
-        dest.mark_dirty();
+        m_alloc.mark_dirty(RAX);
+        m_alloc.mark_dirty(RDX);
     }
 
     void cgen::gen_umul(value& hi, value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
+        m_alloc.fetch(&dest, RAX);
 
-        if (hi.is_mem() || hi.r != RDX) {
+        if (hi.is_mem() || hi.r() != RDX) {
             m_alloc.flush(RDX);
-            m_alloc.assign(RDX, &hi);
+            m_alloc.assign(&hi, RDX);
+            m_alloc.mark_dirty(RDX);
         }
 
         m_emitter.mulr(dest.bits, src);
-
-        hi.mark_dirty();
-        dest.mark_dirty();
+        m_alloc.mark_dirty(RAX);
+        m_alloc.mark_dirty(RDX);
     }
 
     void cgen::gen_imul(value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
-        m_alloc.flush(RDX);
-
-        m_emitter.imul(dest.bits, src);
-
-        dest.mark_dirty();
+        value dummy = gen_local_val("imul.hi", dest.bits, RDX);
+        gen_imul(dummy, dest, src);
+        free_value(dummy);
     }
 
     void cgen::gen_umul(value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
-        m_alloc.flush(RDX);
-
-        m_emitter.mulr(dest.bits, src);
-
-        dest.mark_dirty();
+        value dummy = gen_local_val("umul.hi", dest.bits, RDX);
+        gen_umul(dummy, dest, src);
+        free_value(dummy);
     }
 
     void cgen::gen_idiv(value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
+        m_alloc.fetch(&dest, RAX);
         m_alloc.flush(RDX);
         m_emitter.cwd(dest.bits);
         m_emitter.idiv(dest.bits, src);
-        dest.mark_dirty();
+        m_alloc.mark_dirty(RAX);
     }
 
     void cgen::gen_imod(value& dest, const value& src) {
         gen_idiv(dest, src);
-        dest.assign(RDX);
-        dest.mark_dirty();
+        m_alloc.assign(&dest, RDX);
+        m_alloc.mark_dirty(RDX);
     }
 
     void cgen::gen_udiv(value& dest, const value& src) {
-        m_alloc.fetch(dest, RAX);
+        m_alloc.fetch(&dest, RAX);
         m_alloc.flush(RDX);
         m_emitter.xorr(32, RDX, RDX);
         m_emitter.divr(dest.bits, src);
@@ -831,7 +824,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_imul_imm", dest.bits, val);
+        value src = gen_local_val("temp_imul_imm", dest.bits, val);
         gen_imul(dest, src);
         m_alloc.free_value(src);
     }
@@ -853,7 +846,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_idiv_imm", dest.bits, val);
+        value src = gen_local_val("temp_idiv_imm", dest.bits, val);
         gen_idiv(dest, src);
     }
 
@@ -866,7 +859,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_imod_imm", dest.bits, val);
+        value src = gen_local_val("temp_imod_imm", dest.bits, val);
         gen_imod(dest, src);
     }
 
@@ -886,7 +879,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_umul_imm", dest.bits, val);
+        value src = gen_local_val("temp_umul_imm", dest.bits, val);
         gen_umul(dest, src);
         m_alloc.free_value(src);
     }
@@ -903,7 +896,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_udiv_imm", dest.bits, val);
+        value src = gen_local_val("temp_udiv_imm", dest.bits, val);
         gen_udiv(dest, src);
     }
 
@@ -921,7 +914,7 @@ namespace ftl {
             return;
         }
 
-        value src = m_alloc.new_local("temp_umod_imm", dest.bits, val);
+        value src = gen_local_val("temp_umod_imm", dest.bits, val);
         gen_umod(dest, src);
     }
 
@@ -1010,8 +1003,9 @@ namespace ftl {
         m_alloc.store_all_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
-        value ret = m_alloc.new_local("retval", 64, (i64)fn, RAX);
+        value ret = gen_local_val("retval", 64, (i64)fn, RAX);
         m_emitter.call(RAX);
+        m_alloc.mark_dirty(RAX);
 
         return ret;
     }
