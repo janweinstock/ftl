@@ -39,7 +39,7 @@ static func gen_isprime(cgen& code) {
     code.gen_cmp(i, n);
     code.gen_jge(is_prime);
 
-    value r = code.gen_local_i32(0);
+    value r = code.gen_local_i32("r", 0);
     code.gen_add(r, n);
     code.gen_umod(r, i);
     code.gen_tst(r, r);
