@@ -53,6 +53,7 @@ namespace ftl {
         OPCODE_CMP    = 0x38,
         OPCODE_TST    = 0x84,
         OPCODE_MOV    = 0x88,
+        OPCODE_INC    = 0xfe,
         OPCODE_UNARY  = 0xf6,
 
         OPCODE_IMUL8  = 0x6b,
@@ -511,6 +512,14 @@ namespace ftl {
         const rm& op1(dest.is_mem ? dest : src);
         const rm& op2(dest.is_mem ? src : dest);
         return aluop(OPCODE_TST, bits, op1, op2);
+    }
+
+    size_t emitter::incr(int bits, const rm& op) {
+        return aluop(OPCODE_INC, bits, op, (reg)0);
+    }
+
+    size_t emitter::decr(int bits, const rm& op) {
+        return aluop(OPCODE_INC, bits, op, (reg)1);
     }
 
     size_t emitter::notr(int bits, const rm& op) {

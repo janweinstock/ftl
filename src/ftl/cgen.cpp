@@ -918,6 +918,16 @@ namespace ftl {
         gen_umod(dest, src);
     }
 
+    void cgen::gen_inc(value& dest) {
+        m_emitter.incr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
+    void cgen::gen_dec(value& dest) {
+        m_emitter.decr(dest.bits, dest);
+        dest.mark_dirty();
+    }
+
     void cgen::gen_not(value& dest) {
         m_emitter.notr(dest.bits, dest);
         dest.mark_dirty();

@@ -236,6 +236,36 @@ TEST(cgen, rot) {
     test();
 }
 
+TEST(cgen, inc) {
+    u64 global = 42;
+
+    cgen code(4 * KiB);
+    func test = code.gen_function("inc");
+    value a = code.gen_local_i32("a", 42);
+    value b = code.gen_global_i64("b", &global);
+    code.gen_inc(a);
+    code.gen_inc(b);
+    code.gen_ret(a);
+
+    EXPECT_EQ(test(), 43);
+    EXPECT_EQ(global, 43);
+}
+
+TEST(cgen, dec) {
+    u64 global = 42;
+
+    cgen code(4 * KiB);
+    func test = code.gen_function("dec");
+    value a = code.gen_local_i32("a", 42);
+    value b = code.gen_global_i64("b", &global);
+    code.gen_dec(a);
+    code.gen_dec(b);
+    code.gen_ret(a);
+
+    EXPECT_EQ(test(), 41);
+    EXPECT_EQ(global, 41);
+}
+
 extern "C" int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();

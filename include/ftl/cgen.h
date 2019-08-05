@@ -191,6 +191,8 @@ namespace ftl {
         void gen_udiv(value& dest, u64 val);
         void gen_umod(value& dest, u64 val);
 
+        void gen_inc(value& dest);
+        void gen_dec(value& dest);
         void gen_not(value& dest);
         void gen_neg(value& dest);
 
