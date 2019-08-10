@@ -25,12 +25,11 @@ using namespace ftl;
 
 int number;
 
-static func gen_isprime(cgen& code) {
+static func gen_isprime() {
+    func code("is_prime", 4 * KiB);
     label loop = code.gen_label("loop");
     label is_prime = code.gen_label("is_prime");
     label no_prime = code.gen_label("no_prime");
-
-    func isprime = code.gen_function("isprime");
 
     value n = code.gen_global_i32("n", &number);
     value i = code.gen_local_i32("i", 2);
@@ -58,12 +57,11 @@ static func gen_isprime(cgen& code) {
     code.free_value(i);
     code.free_value(n);
 
-    return isprime;
+    return code;
 }
 
 int main() {
-    cgen code(4 * KiB);
-    func isprime = gen_isprime(code);
+    func isprime = gen_isprime();
 
     std::cout << "prime numbers <" << N << std::endl;
     for (number = 2; number < N; number++)

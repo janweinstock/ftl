@@ -29,7 +29,7 @@ typedef u64 (entry_func_u16)(u16);
 typedef u64 (entry_func_u32)(u32);
 
 TEST(mov, zeroext) {
-    cgen cgen(4 * KiB);
+    func cgen("zeroext", 4 * KiB);
     entry_func_u8* f1 = (entry_func_u8*)cgen.get_cbuffer().get_code_ptr();
     cgen.get_emitter().movi(64, RAX, -1);
     cgen.get_emitter().movzx(64, 8, RAX, argreg(0));
@@ -66,7 +66,7 @@ typedef i64 (entry_func_i16)(i16);
 typedef i64 (entry_func_i32)(i32);
 
 TEST(mov, signext) {
-    cgen cgen(4 * KiB);
+    func cgen("signext", 4 * KiB);
     entry_func_i8* f1 = (entry_func_i8*)cgen.get_cbuffer().get_code_ptr();
     cgen.get_emitter().movi(64, RAX, -1);
     cgen.get_emitter().movsx(64, 8, RAX, argreg(0));

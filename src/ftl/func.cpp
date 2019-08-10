@@ -16,86 +16,129 @@
  *                                                                            *
  ******************************************************************************/
 
-#include "ftl/cgen.h"
+#include "ftl/func.h"
 
 namespace ftl {
 
-    void cgen::gen_entry_exit() {
-        u8* head = m_buffer.get_code_entry();
-        u8* code = m_buffer.get_code_ptr();
-        FTL_ERROR_ON(code != head, "entry code must be written to head");
+    void func::gen_prologue_epilogue() {
+        for (reg r : callee_saved_regs)
+            m_emitter.push(r);
 
-        if (!m_entry.is_placed())
-            m_entry.place(false);
+        // Our stack pointer should be 16 byte aligned to allow us calling
+        // functions from generated code. So far, our stack frame has 8 bytes
+        // (return address) + register spill (8 registers = 64 bytes) + local
+        // storage (64 * 8 = 512 bytes). So we need an extra 8 bytes dummy
+        // stack storage to reach alignment.
+        i32 frame_size = 64 * sizeof(u64) + 8;
 
-        m_alloc.prologue();
+        m_emitter.subi(64, m_alloc.STACK_POINTER, frame_size);
+        m_emitter.movr(64, m_alloc.BASE_REGISTER, argreg(1));
+        m_emitter.jmpr(argreg(0));
         m_buffer.align(16);
 
-        if (!m_exit.is_placed())
-            m_exit.place(false);
+        m_emitter.addi(64, m_alloc.STACK_POINTER, frame_size);
+        for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)
+            m_emitter.pop(callee_saved_regs[i-1]);
 
-        m_alloc.epilogue();
+        m_emitter.ret();
         m_buffer.align(16);
+
+        m_code = m_buffer.get_code_ptr();
     }
 
-    cgen::cgen(size_t size):
-        m_buffer(size),
+    func::func(const string& nm, size_t bufsz):
+        m_name(nm),
+        m_bufptr(new cbuf(bufsz)),
+        m_buffer(*m_bufptr),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
-        m_entry("entry", m_buffer, m_alloc),
-        m_exit("exit", m_buffer, m_alloc) {
+        m_head(m_buffer.get_code_entry()),
+        m_code(m_buffer.get_code_ptr()),
+        m_entry(nm + ".entry", m_buffer, m_alloc, m_head),
+        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + 32) {
+        if (m_code == m_head)
+            gen_prologue_epilogue();
     }
 
-    cgen::~cgen() {
-        // nothing to do
+    func::func(const string& nm, cbuf& buffer):
+        m_name(nm),
+        m_bufptr(NULL),
+        m_buffer(buffer),
+        m_emitter(m_buffer),
+        m_alloc(m_emitter),
+        m_head(m_buffer.get_code_entry()),
+        m_code(m_buffer.get_code_ptr()),
+        m_entry(nm + ".entry", m_buffer, m_alloc, m_head),
+        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + 32) {
+        if (m_code == m_head)
+            gen_prologue_epilogue();
     }
 
-    void cgen::reset() {
-        m_alloc.reset();
-        m_buffer.reset();
-        gen_entry_exit();
+    func::func(func&& other):
+        m_name(other.m_name),
+        m_bufptr(other.m_bufptr),
+        m_buffer(other.m_buffer),
+        m_emitter(std::move(other.m_emitter)),
+        m_alloc(std::move(other.m_alloc)),
+        m_head(other.m_head),
+        m_code(other.m_code),
+        m_entry(std::move(other.m_entry)),
+        m_exit(std::move(other.m_exit)) {
+        other.m_bufptr = NULL;
     }
 
-    void cgen::set_base_ptr_stack() {
+    func::~func() {
+        if (m_bufptr)
+            delete m_bufptr;
+    }
+
+    i64 func::exec() {
+        return exec((void*)m_alloc.get_base_addr());
+    }
+
+    i64 func::exec(void* data) {
+        typedef i64 func_t (void* code, void* data);
+        func_t* fn = (func_t*)m_head;
+        return fn(m_code, data);
+    }
+
+    void func::set_base_ptr(void* ptr) {
+        m_alloc.set_base_addr((u64)ptr);
+    }
+
+    void func::set_base_ptr_stack() {
         int dummy;
         set_base_ptr(&dummy);
     }
 
-    void cgen::set_base_ptr_heap() {
+    void func::set_base_ptr_heap() {
         int* dummy = new int;
         set_base_ptr(dummy);
         delete dummy;
     }
 
-    void cgen::set_base_ptr_code() {
+    void func::set_base_ptr_code() {
         set_base_ptr(m_buffer.get_code_ptr());
     }
 
-    func cgen::gen_function(const string& name) {
-        if (!m_entry.is_placed() || !m_exit.is_placed())
-            gen_entry_exit();
-        m_buffer.align(16);
-        return func(name, m_buffer);
-    }
-
-    void cgen::gen_ret() {
+    void func::gen_ret() {
         m_alloc.flush_all_regs();
         gen_jmp(m_exit, true);
     }
 
-    void cgen::gen_ret(i64 val) {
+    void func::gen_ret(i64 val) {
         m_alloc.flush_all_regs();
         m_emitter.movi(64, RAX, val);
         gen_ret();
     }
 
-    void cgen::gen_ret(value& val) {
+    void func::gen_ret(value& val) {
         m_alloc.flush_all_regs();
         m_alloc.fetch(&val, RAX);
         gen_ret();
     }
 
-    void cgen::gen_jmp(label& l, bool far) {
+    void func::gen_jmp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -103,7 +146,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jo(label& l, bool far) {
+    void func::gen_jo(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -111,7 +154,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jno(label& l, bool far) {
+    void func::gen_jno(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -119,7 +162,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jb(label& l, bool far) {
+    void func::gen_jb(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -127,7 +170,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jae(label& l, bool far) {
+    void func::gen_jae(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -135,7 +178,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jz(label& l, bool far) {
+    void func::gen_jz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -143,7 +186,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jnz(label& l, bool far) {
+    void func::gen_jnz(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -151,7 +194,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_je(label& l, bool far) {
+    void func::gen_je(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -159,7 +202,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jne(label& l, bool far) {
+    void func::gen_jne(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -167,7 +210,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jbe(label& l, bool far) {
+    void func::gen_jbe(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -175,7 +218,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_ja(label& l, bool far) {
+    void func::gen_ja(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -183,7 +226,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_js(label& l, bool far) {
+    void func::gen_js(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -191,7 +234,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jns(label& l, bool far) {
+    void func::gen_jns(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -199,7 +242,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jp(label& l, bool far) {
+    void func::gen_jp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -207,7 +250,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jnp(label& l, bool far) {
+    void func::gen_jnp(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -215,7 +258,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jl(label& l, bool far) {
+    void func::gen_jl(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -223,7 +266,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jge(label& l, bool far) {
+    void func::gen_jge(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -231,7 +274,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jle(label& l, bool far) {
+    void func::gen_jle(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -239,7 +282,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_jg(label& l, bool far) {
+    void func::gen_jg(label& l, bool far) {
         fixup fix;
         i32 offset = far ? 128 : 0;
         m_alloc.flush_all_regs();
@@ -247,7 +290,7 @@ namespace ftl {
         l.add(fix);
     }
 
-    void cgen::gen_seto(value& dest) {
+    void func::gen_seto(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -256,7 +299,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setno(value& dest) {
+    void func::gen_setno(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -265,7 +308,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setb(value& dest) {
+    void func::gen_setb(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -274,7 +317,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setae(value& dest) {
+    void func::gen_setae(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -283,7 +326,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setz(value& dest) {
+    void func::gen_setz(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -292,7 +335,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setnz(value& dest) {
+    void func::gen_setnz(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -301,7 +344,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_sete(value& dest) {
+    void func::gen_sete(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -310,7 +353,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setne(value& dest) {
+    void func::gen_setne(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -319,7 +362,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setbe(value& dest) {
+    void func::gen_setbe(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -328,7 +371,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_seta(value& dest) {
+    void func::gen_seta(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -337,7 +380,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_sets(value& dest) {
+    void func::gen_sets(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -346,7 +389,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setns(value& dest) {
+    void func::gen_setns(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -355,7 +398,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setp(value& dest) {
+    void func::gen_setp(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -364,7 +407,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setnp(value& dest) {
+    void func::gen_setnp(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -373,7 +416,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setl(value& dest) {
+    void func::gen_setl(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -382,7 +425,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setge(value& dest) {
+    void func::gen_setge(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -391,7 +434,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setle(value& dest) {
+    void func::gen_setle(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -400,7 +443,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_setg(value& dest) {
+    void func::gen_setg(value& dest) {
         if (dest.is_mem())
             dest.assign();
 
@@ -409,7 +452,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovo(value& dest, const value& src) {
+    void func::gen_cmovo(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -420,7 +463,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovno(value& dest, const value& src) {
+    void func::gen_cmovno(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -431,7 +474,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovb(value& dest, const value& src) {
+    void func::gen_cmovb(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -442,7 +485,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovae(value& dest, const value& src) {
+    void func::gen_cmovae(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -453,7 +496,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovz(value& dest, const value& src) {
+    void func::gen_cmovz(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -464,7 +507,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovnz(value& dest, const value& src) {
+    void func::gen_cmovnz(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -475,7 +518,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmove(value& dest, const value& src) {
+    void func::gen_cmove(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -486,7 +529,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovne(value& dest, const value& src) {
+    void func::gen_cmovne(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -497,7 +540,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovbe(value& dest, const value& src) {
+    void func::gen_cmovbe(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -508,7 +551,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmova(value& dest, const value& src) {
+    void func::gen_cmova(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -519,7 +562,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovs(value& dest, const value& src) {
+    void func::gen_cmovs(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -530,7 +573,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovns(value& dest, const value& src) {
+    void func::gen_cmovns(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -541,7 +584,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovp(value& dest, const value& src) {
+    void func::gen_cmovp(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -552,7 +595,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovnp(value& dest, const value& src) {
+    void func::gen_cmovnp(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -563,7 +606,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovl(value& dest, const value& src) {
+    void func::gen_cmovl(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -574,7 +617,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovge(value& dest, const value& src) {
+    void func::gen_cmovge(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -585,7 +628,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovle(value& dest, const value& src) {
+    void func::gen_cmovle(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -596,7 +639,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmovg(value& dest, const value& src) {
+    void func::gen_cmovg(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -608,7 +651,7 @@ namespace ftl {
     }
 
 
-    void cgen::gen_mov(value& dest, const value& src) {
+    void func::gen_mov(value& dest, const value& src) {
         if (dest == src)
             return;
 
@@ -623,68 +666,68 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_add(value& dest, const value& src) {
+    void func::gen_add(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.addr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_or(value& dest, const value& src) {
+    void func::gen_or(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.orr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_adc(value& dest, const value& src) {
+    void func::gen_adc(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.adcr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_sbb(value& dest, const value& src) {
+    void func::gen_sbb(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.sbbr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_and(value& dest, const value& src) {
+    void func::gen_and(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.andr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_sub(value& dest, const value& src) {
+    void func::gen_sub(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.subr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_xor(value& dest, const value& src) {
+    void func::gen_xor(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.xorr(dest.bits, dest, src);
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmp(value& dest, const value& src) {
+    void func::gen_cmp(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.cmpr(dest.bits, dest, src);
     }
 
-    void cgen::gen_tst(value& dest, const value& src) {
+    void func::gen_tst(value& dest, const value& src) {
         if (dest.is_mem() && src.is_mem())
             dest.fetch();
         m_emitter.tstr(dest.bits, dest, src);
     }
 
-    void cgen::gen_mov(value& dest, i64 val) {
+    void func::gen_mov(value& dest, i64 val) {
         int immlen = max(encode_size(val), dest.bits);
         if (dest.is_mem() && immlen > 32)
             dest.assign();
@@ -693,50 +736,50 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_add(value& dest, i32 val) {
+    void func::gen_add(value& dest, i32 val) {
         m_emitter.addi(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_or(value& dest, i32 val) {
+    void func::gen_or(value& dest, i32 val) {
         m_emitter.ori(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_adc(value& dest, i32 val) {
+    void func::gen_adc(value& dest, i32 val) {
         m_emitter.adci(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_sbb(value& dest, i32 val) {
+    void func::gen_sbb(value& dest, i32 val) {
         m_emitter.sbbi(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_and(value& dest, i32 val) {
+    void func::gen_and(value& dest, i32 val) {
         m_emitter.andi(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_sub(value& dest, i32 val) {
+    void func::gen_sub(value& dest, i32 val) {
         m_emitter.subi(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_xor(value& dest, i32 val) {
+    void func::gen_xor(value& dest, i32 val) {
         m_emitter.xori(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
-    void cgen::gen_cmp(value& dest, i32 val) {
+    void func::gen_cmp(value& dest, i32 val) {
         m_emitter.cmpi(dest.bits, dest, val);
     }
 
-    void cgen::gen_tst(value& dest, i32 val) {
+    void func::gen_tst(value& dest, i32 val) {
         m_emitter.tsti(dest.bits, dest, val);
     }
 
-    void cgen::gen_imul(value& hi, value& dest, const value& src) {
+    void func::gen_imul(value& hi, value& dest, const value& src) {
         dest.fetch(RAX);
 
         if (hi.is_mem() || hi.r() != RDX) {
@@ -749,7 +792,7 @@ namespace ftl {
         m_alloc.mark_dirty(RDX);
     }
 
-    void cgen::gen_umul(value& hi, value& dest, const value& src) {
+    void func::gen_umul(value& hi, value& dest, const value& src) {
         m_alloc.fetch(&dest, RAX);
 
         if (hi.is_mem() || hi.r() != RDX) {
@@ -763,19 +806,19 @@ namespace ftl {
         m_alloc.mark_dirty(RDX);
     }
 
-    void cgen::gen_imul(value& dest, const value& src) {
+    void func::gen_imul(value& dest, const value& src) {
         value dummy = gen_local_val("imul.hi", dest.bits, RDX);
         gen_imul(dummy, dest, src);
         free_value(dummy);
     }
 
-    void cgen::gen_umul(value& dest, const value& src) {
+    void func::gen_umul(value& dest, const value& src) {
         value dummy = gen_local_val("umul.hi", dest.bits, RDX);
         gen_umul(dummy, dest, src);
         free_value(dummy);
     }
 
-    void cgen::gen_idiv(value& dest, const value& src) {
+    void func::gen_idiv(value& dest, const value& src) {
         m_alloc.fetch(&dest, RAX);
         m_alloc.flush(RDX);
         m_emitter.cwd(dest.bits);
@@ -783,13 +826,13 @@ namespace ftl {
         m_alloc.mark_dirty(RAX);
     }
 
-    void cgen::gen_imod(value& dest, const value& src) {
+    void func::gen_imod(value& dest, const value& src) {
         gen_idiv(dest, src);
         m_alloc.assign(&dest, RDX);
         m_alloc.mark_dirty(RDX);
     }
 
-    void cgen::gen_udiv(value& dest, const value& src) {
+    void func::gen_udiv(value& dest, const value& src) {
         m_alloc.fetch(&dest, RAX);
         m_alloc.flush(RDX);
         m_emitter.xorr(32, RDX, RDX);
@@ -797,13 +840,13 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_umod(value& dest, const value& src) {
+    void func::gen_umod(value& dest, const value& src) {
         gen_udiv(dest, src);
         dest.assign(RDX);
         dest.mark_dirty();
     }
 
-    void cgen::gen_imul(value& dest, i64 val) {
+    void func::gen_imul(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
 
         if (val == 0) {
@@ -829,7 +872,7 @@ namespace ftl {
         m_alloc.free_value(src);
     }
 
-    void cgen::gen_idiv(value& dest, i64 val) {
+    void func::gen_idiv(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
         FTL_ERROR_ON(val == 0, "division by zero");
 
@@ -850,7 +893,7 @@ namespace ftl {
         gen_idiv(dest, src);
     }
 
-    void cgen::gen_imod(value& dest, i64 val) {
+    void func::gen_imod(value& dest, i64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
         FTL_ERROR_ON(val == 0, "division by zero");
 
@@ -863,7 +906,7 @@ namespace ftl {
         gen_imod(dest, src);
     }
 
-    void cgen::gen_umul(value& dest, u64 val) {
+    void func::gen_umul(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
 
         if (val == 0) {
@@ -884,7 +927,7 @@ namespace ftl {
         m_alloc.free_value(src);
     }
 
-    void cgen::gen_udiv(value& dest, u64 val) {
+    void func::gen_udiv(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
         FTL_ERROR_ON(val == 0, "division by zero");
 
@@ -900,7 +943,7 @@ namespace ftl {
         gen_udiv(dest, src);
     }
 
-    void cgen::gen_umod(value& dest, u64 val) {
+    void func::gen_umod(value& dest, u64 val) {
         FTL_ERROR_ON(encode_size(val) > dest.bits, "immediate too large");
         FTL_ERROR_ON(val == 0, "division by zero");
 
@@ -918,57 +961,57 @@ namespace ftl {
         gen_umod(dest, src);
     }
 
-    void cgen::gen_inc(value& dest) {
+    void func::gen_inc(value& dest) {
         m_emitter.incr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_dec(value& dest) {
+    void func::gen_dec(value& dest) {
         m_emitter.decr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_not(value& dest) {
+    void func::gen_not(value& dest) {
         m_emitter.notr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_neg(value& dest) {
+    void func::gen_neg(value& dest) {
         m_emitter.negr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_shl(value& dest, value& src) {
+    void func::gen_shl(value& dest, value& src) {
         src.fetch(RCX);
         m_emitter.shlr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_shr(value& dest, value& src) {
+    void func::gen_shr(value& dest, value& src) {
         src.fetch(RCX);
         m_emitter.shrr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_sha(value& dest, value& src) {
+    void func::gen_sha(value& dest, value& src) {
         src.fetch(RCX);
         m_emitter.sarr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_rol(value& dest, value& src) {
+    void func::gen_rol(value& dest, value& src) {
         src.fetch(RCX);
         m_emitter.rolr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_ror(value& dest, value& src) {
+    void func::gen_ror(value& dest, value& src) {
         src.fetch(RCX);
         m_emitter.rorr(dest.bits, dest);
         dest.mark_dirty();
     }
 
-    void cgen::gen_shl(value& dest, u8 shift) {
+    void func::gen_shl(value& dest, u8 shift) {
         if (shift == 0)
             return;
 
@@ -976,7 +1019,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_shr(value& dest, u8 shift) {
+    void func::gen_shr(value& dest, u8 shift) {
         if (shift == 0)
             return;
 
@@ -984,7 +1027,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_sha(value& dest, u8 shift) {
+    void func::gen_sha(value& dest, u8 shift) {
         if (shift == 0)
             return;
 
@@ -992,7 +1035,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_rol(value& dest, u8 shift) {
+    void func::gen_rol(value& dest, u8 shift) {
         if (shift == 0)
             return;
 
@@ -1000,7 +1043,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    void cgen::gen_ror(value& dest, u8 shift) {
+    void func::gen_ror(value& dest, u8 shift) {
         if (shift == 0)
             return;
 
@@ -1008,7 +1051,7 @@ namespace ftl {
         dest.mark_dirty();
     }
 
-    value cgen::gen_call(func1* fn) {
+    value func::gen_call(func1* fn) {
         m_alloc.flush_volatile_regs();
         m_alloc.store_all_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());

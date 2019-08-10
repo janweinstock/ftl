@@ -54,7 +54,9 @@ namespace ftl {
         const reg BASE_REGISTER = RBX; // base address register for globals
 
         alloc(emitter& e);
-        virtual ~alloc();
+        alloc(alloc&&) = default;
+        ~alloc();
+
         alloc() = delete;
         alloc(const alloc&) = delete;
 

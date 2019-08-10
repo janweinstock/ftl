@@ -40,11 +40,6 @@ namespace ftl {
 
         void patch();
 
-        // disabled
-        label();
-        label(const label&);
-        label& operator = (const label&);
-
     public:
         const char* name() const { return m_name.c_str(); }
 
@@ -53,12 +48,17 @@ namespace ftl {
         u8*  get_address() { return m_location; }
         const u8* get_address() const { return m_location; }
 
-        label(const string& name, cbuf& buf, alloc& al);
+        label(const string& name, cbuf& buf, alloc& al, u8* location = NULL);
         label(label&& other);
         ~label();
 
+        label() = delete;
+        label(const label&) = delete;
+        label& operator = (const label&) = delete;
+
         void add(const fixup& fix);
         void place(bool flush = true);
+        void place(u8* location, bool flush);
     };
 
 }

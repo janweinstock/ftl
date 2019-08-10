@@ -25,16 +25,15 @@ using namespace ftl;
 TEST(cgen, simple) {
     int val = 40;
 
-    cgen cgen(4 * KiB);
-    func fn = cgen.gen_function("fn");
-    value a = cgen.gen_local_i32("a", 2);
-    value b = cgen.gen_global_i32("b", &val);
-    value c = cgen.gen_local_i32("c", -2);
-    cgen.gen_add(a, b);
-    cgen.gen_sub(b, c);
-    cgen.gen_ret(a);
+    func test("simple", 4 * KiB);
+    value a = test.gen_local_i32("a", 2);
+    value b = test.gen_global_i32("b", &val);
+    value c = test.gen_local_i32("c", -2);
+    test.gen_add(a, b);
+    test.gen_sub(b, c);
+    test.gen_ret(a);
 
-    int ret = fn();
+    int ret = test();
 
     EXPECT_EQ(ret, 42);
     EXPECT_EQ(val, 42);
@@ -44,17 +43,16 @@ TEST(cgen, jump) {
     int a = 40;
     int b = 42;
 
-    cgen cgen(4 * KiB);
-    label less = cgen.gen_label("less");
-    func maxfn = cgen.gen_function("maxfn");
+    func maxfn("maxfn", 4 * KiB);
+    label less = maxfn.gen_label("less");
 
-    value va = cgen.gen_global_i32("a", &a);
-    value vb = cgen.gen_global_i32("b", &b);
-    cgen.gen_cmp(va, vb);
-    cgen.gen_jl(less);
-    cgen.gen_ret(va);
+    value va = maxfn.gen_global_i32("a", &a);
+    value vb = maxfn.gen_global_i32("b", &b);
+    maxfn.gen_cmp(va, vb);
+    maxfn.gen_jl(less);
+    maxfn.gen_ret(va);
     less.place();
-    cgen.gen_ret(vb);
+    maxfn.gen_ret(vb);
 
     int ret = maxfn();
     int ref = max(a, b);
@@ -68,19 +66,19 @@ TEST(cgen, func) {
     int c = 17;
     int d = 11;
 
-    cgen cgen(4 * KiB);
+    cbuf buffer(4 * KiB);
 
-    func addfn = cgen.gen_function("addfn");
-    value va = cgen.gen_local_i32("va", a);
-    value vb = cgen.gen_local_i32("vb", b);
-    cgen.gen_add(va, vb);
-    cgen.gen_ret(va);
+    func addfn = func("addfn", buffer);
+    value va = addfn.gen_local_i32("va", a);
+    value vb = addfn.gen_local_i32("vb", b);
+    addfn.gen_add(va, vb);
+    addfn.gen_ret(va);
 
-    func subfn = cgen.gen_function("subfn");
-    value vc = cgen.gen_local_i32("vc", c);
-    value vd = cgen.gen_local_i32("vd", d);
-    cgen.gen_sub(vc, vd);
-    cgen.gen_ret(vc);
+    func subfn("subfn", buffer);
+    value vc = subfn.gen_local_i32("vc", c);
+    value vd = subfn.gen_local_i32("vd", d);
+    subfn.gen_sub(vc, vd);
+    subfn.gen_ret(vc);
 
     int add = addfn();
     int sub = subfn();
@@ -103,28 +101,28 @@ TEST(cgen, muldiv) {
     int a = 16;
     int b = -5;
 
-    cgen code(4 * KiB);
+    cbuf buffer(4 * KiB);
 
-    func test_val = code.gen_function("test_val");
-    value vb = code.gen_global_i32("vb", &b);
-    value vx = code.gen_local_i32("vx", a);
-    value vy = code.gen_local_i32("vy", a);
-    value vz = code.gen_local_i32("vz", a);
-    code.gen_imul(vx, vb);
-    code.gen_idiv(vy, vb);
-    code.gen_imod(vz, vb);
-    code.gen_call(test_muldiv, vx, vy, vz);
-    code.gen_ret();
+    func test_val("test_val", buffer);
+    value vb = test_val.gen_global_i32("vb", &b);
+    value vx = test_val.gen_local_i32("vx", a);
+    value vy = test_val.gen_local_i32("vy", a);
+    value vz = test_val.gen_local_i32("vz", a);
+    test_val.gen_imul(vx, vb);
+    test_val.gen_idiv(vy, vb);
+    test_val.gen_imod(vz, vb);
+    test_val.gen_call(test_muldiv, vx, vy, vz);
+    test_val.gen_ret();
 
-    func test_imm = code.gen_function("test_imm");
-    value vx2 = code.gen_local_i32("vx2", a);
-    value vy2 = code.gen_local_i32("vy2", a);
-    value vz2 = code.gen_local_i32("vz2", a);
-    code.gen_imul(vx2, b);
-    code.gen_idiv(vy2, b);
-    code.gen_imod(vz2, b);
-    code.gen_call(test_muldiv, vx2, vy2, vz2);
-    code.gen_ret();
+    func test_imm("test_imm", buffer);
+    value vx2 = test_imm.gen_local_i32("vx2", a);
+    value vy2 = test_imm.gen_local_i32("vy2", a);
+    value vz2 = test_imm.gen_local_i32("vz2", a);
+    test_imm.gen_imul(vx2, b);
+    test_imm.gen_idiv(vy2, b);
+    test_imm.gen_imod(vz2, b);
+    test_imm.gen_call(test_muldiv, vx2, vy2, vz2);
+    test_imm.gen_ret();
 
     test_val();
     test_imm();
@@ -144,28 +142,28 @@ TEST(cgen, umuldiv) {
     int a = 16;
     int b = 5;
 
-    cgen code(4 * KiB);
+    cbuf buffer(4 * KiB);
 
-    func test_val = code.gen_function("test_val");
-    value vb = code.gen_global_i32("vb", &b);
-    value vx = code.gen_local_i32("vx", a);
-    value vy = code.gen_local_i32("vy", a);
-    value vz = code.gen_local_i32("vz", a);
-    code.gen_umul(vx, vb);
-    code.gen_udiv(vy, vb);
-    code.gen_umod(vz, vb);
-    code.gen_call(test_umuldiv, vx, vy, vz);
-    code.gen_ret();
+    func test_val("test_val", buffer);
+    value vb = test_val.gen_global_i32("vb", &b);
+    value vx = test_val.gen_local_i32("vx", a);
+    value vy = test_val.gen_local_i32("vy", a);
+    value vz = test_val.gen_local_i32("vz", a);
+    test_val.gen_umul(vx, vb);
+    test_val.gen_udiv(vy, vb);
+    test_val.gen_umod(vz, vb);
+    test_val.gen_call(test_umuldiv, vx, vy, vz);
+    test_val.gen_ret();
 
-    func test_imm = code.gen_function("test_imm");
-    value vx2 = code.gen_local_i32("vx2", a);
-    value vy2 = code.gen_local_i32("vy2", a);
-    value vz2 = code.gen_local_i32("vz2", a);
-    code.gen_umul(vx2, b);
-    code.gen_udiv(vy2, b);
-    code.gen_umod(vz2, b);
-    code.gen_call(test_umuldiv, vx2, vy2, vz2);
-    code.gen_ret();
+    func test_imm("test_imm", buffer);
+    value vx2 = test_imm.gen_local_i32("vx2", a);
+    value vy2 = test_imm.gen_local_i32("vy2", a);
+    value vz2 = test_imm.gen_local_i32("vz2", a);
+    test_imm.gen_umul(vx2, b);
+    test_imm.gen_udiv(vy2, b);
+    test_imm.gen_umod(vz2, b);
+    test_imm.gen_call(test_umuldiv, vx2, vy2, vz2);
+    test_imm.gen_ret();
 
     test_val();
     test_imm();
@@ -178,15 +176,13 @@ i64 test_notneg(void* ptr, i64 a, i64 b) {
 }
 
 TEST(cgen, notneg) {
-    cgen code(4 * KiB);
-
-    func test = code.gen_function("test");
-    value va = code.gen_local_i64("va", 42);
-    value vb = code.gen_local_i64("vb", 42);
-    code.gen_not(va);
-    code.gen_neg(vb);
-    code.gen_call(test_notneg, va, vb);
-    code.gen_ret();
+    func test("test", 4 * KiB);
+    value va = test.gen_local_i64("va", 42);
+    value vb = test.gen_local_i64("vb", 42);
+    test.gen_not(va);
+    test.gen_neg(vb);
+    test.gen_call(test_notneg, va, vb);
+    test.gen_ret();
 
     test();
 }
@@ -199,17 +195,15 @@ i64 test_shift(void* ptr, i64 a, i64 b, i64 c) {
 }
 
 TEST(cgen, shift) {
-    cgen code(4 * KiB);
-
-    func test = code.gen_function("test");
-    value a = code.gen_local_i64("a", 42);
-    value b = code.gen_local_i64("b", 42);
-    value c = code.gen_local_i64("c", -42);
-    code.gen_shl(a, 4);
-    code.gen_shr(b, 2);
-    code.gen_sha(c, 2);
-    code.gen_call(test_shift, a, b, c);
-    code.gen_ret();
+    func test("test", 4 * KiB);
+    value a = test.gen_local_i64("a", 42);
+    value b = test.gen_local_i64("b", 42);
+    value c = test.gen_local_i64("c", -42);
+    test.gen_shl(a, 4);
+    test.gen_shr(b, 2);
+    test.gen_sha(c, 2);
+    test.gen_call(test_shift, a, b, c);
+    test.gen_ret();
 
     test();
 }
@@ -223,9 +217,7 @@ i64 test_rot(void* ptr, i64 op1, i64 op2) {
 }
 
 TEST(cgen, rot) {
-    cgen code(4 * KiB);
-
-    func test = code.gen_function("test");
+    func code("test", 4 * KiB);
     value a = code.gen_local_i8("a", 42);
     value b = code.gen_local_i8("b", 42);
     code.gen_rol(a, 3);
@@ -233,36 +225,34 @@ TEST(cgen, rot) {
     code.gen_call(test_rot, a, b);
     code.gen_ret();
 
-    test();
+    code();
 }
 
 TEST(cgen, inc) {
     u64 global = 42;
 
-    cgen code(4 * KiB);
-    func test = code.gen_function("inc");
+    func code("inc", 4 * KiB);
     value a = code.gen_local_i32("a", 42);
     value b = code.gen_global_i64("b", &global);
     code.gen_inc(a);
     code.gen_inc(b);
     code.gen_ret(a);
 
-    EXPECT_EQ(test(), 43);
+    EXPECT_EQ(code(), 43);
     EXPECT_EQ(global, 43);
 }
 
 TEST(cgen, dec) {
     u64 global = 42;
 
-    cgen code(4 * KiB);
-    func test = code.gen_function("dec");
+    func code("dec", 4 * KiB);
     value a = code.gen_local_i32("a", 42);
     value b = code.gen_global_i64("b", &global);
     code.gen_dec(a);
     code.gen_dec(b);
     code.gen_ret(a);
 
-    EXPECT_EQ(test(), 41);
+    EXPECT_EQ(code(), 41);
     EXPECT_EQ(global, 41);
 }
 

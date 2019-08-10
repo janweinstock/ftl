@@ -24,8 +24,7 @@ using namespace ftl;
 
 #define MKTEST(op, op1, op2, cop)                                             \
     TEST(cmov, op ## _ ## op1 ## _ ## op2) {                                  \
-        cgen code(4 * KiB);                                                   \
-        func test = code.gen_function("test");                                \
+        func code("test");                                                    \
         int res = ~0;                                                         \
         value r = code.gen_global_i32("r", &res);                             \
         value a = code.gen_local_i32("a", op1);                               \
@@ -34,7 +33,7 @@ using namespace ftl;
         code.gen_##op(r, b);                                                  \
         r.flush();                                                            \
         code.gen_ret();                                                       \
-        test();                                                               \
+        code();                                                               \
         EXPECT_EQ(res, (op1 cop op2) ? op2 : ~0);                             \
     }
 

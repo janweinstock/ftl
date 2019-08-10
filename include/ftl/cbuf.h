@@ -35,10 +35,6 @@ namespace ftl {
 
         size_t write(const void* ptr, size_t sz);
 
-        // disabled
-        cbuf();
-        cbuf(const cbuf&);
-
     public:
         const u8* get_code_entry() const { return m_code_head; }
         const u8* get_code_ptr()   const { return m_code_ptr; }
@@ -52,6 +48,9 @@ namespace ftl {
 
         cbuf(size_t size);
         virtual ~cbuf();
+
+        cbuf() = delete;
+        cbuf(const cbuf&) = delete;
 
         void reset(u8* addr);
         void reset();

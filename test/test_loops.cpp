@@ -32,10 +32,10 @@ TEST(loops, simple) {
     i64 sum = 0;
     std::stringstream ss;
 
-    cgen code(4 * KiB);
+
+    func code("fn");
     code.set_base_ptr(&ss);
 
-    func fn = code.gen_function("fn");
     value i = code.gen_local_i32("i", 0);
     value s = code.gen_global_i64("sum", &sum);
 
@@ -54,7 +54,7 @@ TEST(loops, simple) {
     code.free_value(s);
     code.free_value(i);
 
-    fn();
+    code();
 
     EXPECT_EQ(ss.str(), "0123456789");
     EXPECT_EQ(sum, 45);

@@ -50,13 +50,13 @@ namespace ftl {
         size_t setcc(int op, const rm& dest);
         size_t movcc(int op, int bits, const rm& dest, const rm& src);
 
-        // disabled
-        emitter();
-        emitter(const emitter&);
-
     public:
         emitter(cbuf& buffer);
-        virtual ~emitter();
+        emitter(emitter&& other) = default;
+        ~emitter();
+
+        emitter() = delete;
+        emitter(const emitter&) = delete;
 
         size_t ret();
 

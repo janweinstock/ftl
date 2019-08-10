@@ -30,8 +30,8 @@ namespace ftl {
     }
 
 
-    label::label(const string& name, cbuf& buffer, alloc& al):
-        m_location(NULL),
+    label::label(const string& name, cbuf& buffer, alloc& al, u8* location):
+        m_location(location),
         m_fixups(),
         m_buffer(buffer),
         m_alloc(al),
