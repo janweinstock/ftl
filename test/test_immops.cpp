@@ -51,7 +51,8 @@ typedef int (entry_func)(void);
     MAKE_TEST_ARGSET(op, cop, bits, RAX)                                      \
     MAKE_TEST_ARGSET(op, cop, bits, RCX)                                      \
     MAKE_TEST_ARGSET(op, cop, bits, R10)                                      \
-    MAKE_TEST_ARGSET(op, cop, bits, R11)
+    MAKE_TEST_ARGSET(op, cop, bits, R11)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R13)
 
 // repeat the test set using all support bit widths
 #define MAKE_TEST_SET(op, cop)                                                \
