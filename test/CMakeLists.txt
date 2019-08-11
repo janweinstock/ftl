@@ -17,8 +17,6 @@
  ##############################################################################
 
 find_package(GTest "1.8.0" REQUIRED)
-find_package(GMock "1.8.0" REQUIRED)
-include_directories(SYSTEM ${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
 set(tests
     test_hello
@@ -39,11 +37,9 @@ set(tests
 
 foreach(test ${tests})
     add_executable(${test} ${test}.cpp)
-    add_dependencies(${test} ftl)
-    target_link_libraries(${test} ${GTEST_LIBRARIES})
-    target_link_libraries(${test} ${GMOCK_LIBRARIES})
-    target_link_libraries(${test} ftl)
-    target_link_libraries(${test} -pthread)
+    add_dependencies(${test} ftl GTest::GTest)
+    target_include_directories(${test} SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
+    target_link_libraries(${test} ftl ${GTEST_LIBRARIES} -pthread)
     add_test(NAME ${test} COMMAND ${test} ${CMAKE_CURRENT_SOURCE_DIR})
     set_tests_properties(${test} PROPERTIES TIMEOUT 30)
 endforeach()
