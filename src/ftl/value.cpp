@@ -112,9 +112,16 @@ namespace ftl {
 
     value::operator const rm() const {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
-        if (is_mem())
-            return mem;
-        return r();
+
+        reg curr = r();
+        if (curr < NREGS)
+            return curr;
+
+        i64 offset = addr - m_allocator.get_base_addr();
+        if (mem.r == m_allocator.BASE_REGISTER && !fits_i32(offset))
+            FTL_ERROR("cannot encode %s as a direct memory operand", name());
+
+        return mem;
     }
 
 }
