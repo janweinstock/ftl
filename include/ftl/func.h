@@ -66,7 +66,7 @@ namespace ftl {
         static const size_t PLSIZE = 32;
 
         func(const string& name, size_t bufsz = 4 * KiB);
-        func(const string& name, cbuf& buffer);
+        func(const string& name, cbuf& buffer, void* dataptr = NULL);
         func(func&& other);
         ~func();
 
@@ -79,10 +79,10 @@ namespace ftl {
         i64 operator () ()           { return exec(); }
         i64 operator () (void* data) { return exec(data); }
 
-        void set_base_ptr(void* ptr);
-        void set_base_ptr_stack();
-        void set_base_ptr_heap();
-        void set_base_ptr_code();
+        void set_data_ptr(void* ptr);
+        void set_data_ptr_stack();
+        void set_data_ptr_heap();
+        void set_data_ptr_code();
 
         label gen_label(const string& name);
 
@@ -333,6 +333,12 @@ namespace ftl {
         m_alloc.flush(r);
         arg<T3>::fetch(m_emitter, r, c);
         return gen_call((func3*)fn, a, b);
+    }
+
+    static inline i64 invoke(const cbuf& buffer, void* code, void* data) {
+        typedef i64 func_t (void* code, void* data);
+        func_t* fn = (func_t*)buffer.get_code_entry();
+        return fn(code, data);
     }
 
 }

@@ -64,7 +64,7 @@ namespace ftl {
             gen_prologue_epilogue();
     }
 
-    func::func(const string& nm, cbuf& buffer):
+    func::func(const string& nm, cbuf& buffer, void* dataptr):
         m_name(nm),
         m_bufptr(NULL),
         m_buffer(buffer),
@@ -76,6 +76,8 @@ namespace ftl {
         m_exit(nm + ".exit", m_buffer, m_alloc, m_head + PLSIZE) {
         if (m_code == m_head)
             gen_prologue_epilogue();
+        if (dataptr != NULL)
+            set_data_ptr(dataptr);
     }
 
     func::func(func&& other):
@@ -101,28 +103,26 @@ namespace ftl {
     }
 
     i64 func::exec(void* data) {
-        typedef i64 func_t (void* code, void* data);
-        func_t* fn = (func_t*)m_head;
-        return fn(m_code, data);
+        return invoke(m_buffer, m_code, data);
     }
 
-    void func::set_base_ptr(void* ptr) {
+    void func::set_data_ptr(void* ptr) {
         m_alloc.set_base_addr((u64)ptr);
     }
 
-    void func::set_base_ptr_stack() {
+    void func::set_data_ptr_stack() {
         int dummy;
-        set_base_ptr(&dummy);
+        set_data_ptr(&dummy);
     }
 
-    void func::set_base_ptr_heap() {
+    void func::set_data_ptr_heap() {
         int* dummy = new int;
-        set_base_ptr(dummy);
+        set_data_ptr(dummy);
         delete dummy;
     }
 
-    void func::set_base_ptr_code() {
-        set_base_ptr(m_buffer.get_code_ptr());
+    void func::set_data_ptr_code() {
+        set_data_ptr(m_buffer.get_code_ptr());
     }
 
     void func::gen_ret() {

@@ -33,7 +33,7 @@ i64 test1(void* bptr) {
 
 TEST(call, test1) {
     func code("test", 4 * KiB);
-    code.set_base_ptr(&test1_called);
+    code.set_data_ptr(&test1_called);
 
     value ret = code.gen_call(test1);
     code.gen_ret(ret);
@@ -53,7 +53,7 @@ i64 test3(void* bptr, i64 val1, i64 val2, i64 val3) {
 
 TEST(call, test3) {
     func code("test", 4 * KiB);
-    code.set_base_ptr(&test1_called);
+    code.set_data_ptr(&test1_called);
 
     value op1 = code.gen_local_i64("op1", 1, argreg(1));
     value op2 = code.gen_local_i64("op2", 10, argreg(2));
