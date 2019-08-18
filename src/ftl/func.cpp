@@ -36,6 +36,10 @@ namespace ftl {
         m_emitter.jmpr(argreg(0));
         m_buffer.align(16);
 
+        size_t plsz = m_buffer.get_code_ptr() - m_buffer.get_code_entry();
+        FTL_ERROR_ON(PLSIZE != plsz, "invalid PLSIZE = %zu should be %zu",
+                     PLSIZE, plsz);
+
         m_emitter.addi(64, m_alloc.STACK_POINTER, frame_size);
         for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)
             m_emitter.pop(callee_saved_regs[i-1]);
@@ -55,7 +59,7 @@ namespace ftl {
         m_head(m_buffer.get_code_entry()),
         m_code(m_buffer.get_code_ptr()),
         m_entry(nm + ".entry", m_buffer, m_alloc, m_head),
-        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + 32) {
+        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + PLSIZE) {
         if (m_code == m_head)
             gen_prologue_epilogue();
     }
@@ -69,7 +73,7 @@ namespace ftl {
         m_head(m_buffer.get_code_entry()),
         m_code(m_buffer.get_code_ptr()),
         m_entry(nm + ".entry", m_buffer, m_alloc, m_head),
-        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + 32) {
+        m_exit(nm + ".exit", m_buffer, m_alloc, m_head + PLSIZE) {
         if (m_code == m_head)
             gen_prologue_epilogue();
     }
