@@ -57,6 +57,8 @@ namespace ftl {
         bool is_reg() const;
         bool is_mem() const;
 
+        bool is_directly_addressable() const;
+
         reg  assign(reg r = NREGS);
         reg  fetch(reg r = NREGS);
         void store();

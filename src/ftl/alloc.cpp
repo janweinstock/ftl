@@ -136,6 +136,8 @@ namespace ftl {
     }
 
     reg alloc::fetch(const value* val, reg r) {
+        FTL_ERROR_ON(!val, "attempt to fetch NULL value");
+
         reg curr = lookup(val);
         if ((curr < NREGS) && (curr == r || r == NREGS))
             return curr;
@@ -145,12 +147,13 @@ namespace ftl {
         if (curr < NREGS && curr != r) {
             m_emitter.movr(val->bits, r, curr);
         } else {
-            bool can_reach = val->is_local() || fits_i32(val->addr - m_base);
-            if (!can_reach)
+            if (!val->is_directly_addressable()) {
                 m_emitter.movi(64, BASE_REGISTER, val->addr);
-            m_emitter.movr(val->bits, r, val->mem);
-            if (!can_reach)
+                m_emitter.movr(val->bits, r, memop(BASE_REGISTER, 0));
                 m_emitter.movi(64, BASE_REGISTER, m_base);
+            } else {
+                m_emitter.movr(val->bits, r, val->mem);
+            }
         }
 
         return r;
@@ -172,12 +175,13 @@ namespace ftl {
         const value* val = m_regmap[r].owner;
         FTL_ERROR_ON(val == NULL, "store operation on empty register");
 
-        bool can_reach = val->is_local() || fits_i32(val->addr - m_base);
-        if (!can_reach)
+        if (!val->is_directly_addressable()) {
             m_emitter.movi(64, BASE_REGISTER, val->addr);
-        m_emitter.movr(val->bits, val->mem, r);
-        if (!can_reach)
+            m_emitter.movr(val->bits, memop(BASE_REGISTER, 0), r);
             m_emitter.movi(64, BASE_REGISTER, m_base);
+        } else {
+            m_emitter.movr(val->bits, val->mem, r);
+        }
     }
 
     void alloc::flush(reg r) {

@@ -30,15 +30,17 @@ namespace ftl {
     }
 
     bool value::is_dirty() const {
-        if (!is_reg())
+        reg curr = r();
+        if (!reg_valid(curr))
             return false;
 
-        return m_allocator.is_dirty(r());
+        return m_allocator.is_dirty(curr);
     }
 
     void value::mark_dirty() {
-        if (is_reg())
-            m_allocator.mark_dirty(r());
+        reg curr = r();
+        if (reg_valid(curr))
+            m_allocator.mark_dirty(curr);
     }
 
     bool value::is_local() const {
@@ -57,6 +59,12 @@ namespace ftl {
         return m_allocator.lookup(this) == NREGS;
     }
 
+    bool value::is_directly_addressable() const {
+        if (is_local())
+            return true;
+        return fits_i32(addr - m_allocator.get_base_addr());
+    }
+
     reg value::assign(reg r) {
         return m_allocator.assign(this, r);
     }
@@ -66,13 +74,15 @@ namespace ftl {
     }
 
     void value::store() {
-        if (is_reg())
-            m_allocator.store(r());
+        reg curr = r();
+        if (reg_valid(curr))
+            m_allocator.store(curr);
     }
 
     void value::flush() {
-        if (is_reg())
-            m_allocator.flush(r());
+        reg curr = r();
+        if (reg_valid(curr))
+            m_allocator.flush(curr);
     }
 
     value::value(alloc& al, const string& nm, int bits, bool sign, u64 addr,
@@ -114,11 +124,10 @@ namespace ftl {
         FTL_ERROR_ON(is_dead(), "operation on dead value");
 
         reg curr = r();
-        if (curr < NREGS)
+        if (reg_valid(curr))
             return curr;
 
-        i64 offset = addr - m_allocator.get_base_addr();
-        if (mem.r == m_allocator.BASE_REGISTER && !fits_i32(offset))
+        if (!is_directly_addressable())
             FTL_ERROR("cannot encode %s as a direct memory operand", name());
 
         return mem;
