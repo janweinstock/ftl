@@ -39,6 +39,36 @@ TEST(bitops, fits) {
     EXPECT_TRUE(fits_i8(val4));
 }
 
+TEST(bitops, encode_size) {
+    EXPECT_EQ(encode_size(127),  8);
+    EXPECT_EQ(encode_size(127u), 8);
+    EXPECT_EQ(encode_size(128), 16);
+    EXPECT_EQ(encode_size(128u), 8);
+
+    EXPECT_EQ(encode_size<i32>(127),  8);
+    EXPECT_EQ(encode_size<i64>(127),  8);
+    EXPECT_EQ(encode_size<u32>(127),  8);
+    EXPECT_EQ(encode_size<u64>(127),  8);
+
+    EXPECT_EQ(encode_size<i32>(127u), 8);
+    EXPECT_EQ(encode_size<i64>(127u), 8);
+    EXPECT_EQ(encode_size<u32>(127u), 8);
+    EXPECT_EQ(encode_size<u64>(127u), 8);
+
+    EXPECT_EQ(encode_size<i32>(128), 16);
+    EXPECT_EQ(encode_size<u32>(128),  8);
+    EXPECT_EQ(encode_size<i64>(128), 16);
+    EXPECT_EQ(encode_size<u64>(128),  8);
+
+    EXPECT_EQ(encode_size<i32>(128u), 16);
+    EXPECT_EQ(encode_size<u32>(128u),  8);
+    EXPECT_EQ(encode_size<i64>(128u), 16);
+    EXPECT_EQ(encode_size<u64>(128u),  8);
+
+    EXPECT_EQ(encode_size<i64>(0x80000000), 64);
+    EXPECT_EQ(encode_size<u64>(0x80000000), 32);
+}
+
 TEST(bitops, pow2) {
     EXPECT_FALSE(is_pow2(0));
     EXPECT_FALSE(is_pow2(255));

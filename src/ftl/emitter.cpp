@@ -373,7 +373,7 @@ namespace ftl {
         if (imm == 0 && dest.is_reg())
             return xorr(bits, dest, dest);
 
-        int immlen = max(encode_size(imm), bits);
+        int immlen = max(min(encode_size(imm), encode_size<u64>(imm)), bits);
         FTL_ERROR_ON(bits > 64, "requested operation too wide");
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
         FTL_ERROR_ON(dest.is_mem && immlen > 32, "immediate operand too big");
