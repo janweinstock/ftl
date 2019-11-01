@@ -16,7 +16,8 @@ before_script:
         cmake -DCMAKE_BUILD_TYPE=$BUILD \
               -DCMAKE_INSTALL_PREFIX=.. \
               -DFTL_BUILD_TESTS=ON      \
-              -DFTL_BUILD_EXAMPLES=ON
+              -DFTL_BUILD_EXAMPLES=ON   \
+              ../../..
 
 script:
     - make -j 4 && ctest --output-on-failure && make install
