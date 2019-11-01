@@ -185,14 +185,18 @@ namespace ftl {
     }
 
     size_t emitter::prefix(int bits, reg reg, const rm& rm) {
+        return prefix(bits, bits, reg, rm);
+    }
+
+    size_t emitter::prefix(int dbits, int sbits, reg reg, const rm& rm) {
         FTL_ERROR_ON(reg >= NREGS, "invalid value for modrm.reg: %d", reg);
         FTL_ERROR_ON(rm.r >= NREGS, "invalid value for modrm.rm: %d", rm.r);
 
         size_t len = 0;
-        if (bits == 16)
+        if (dbits == 16)
             len += m_buffer.write<u8>(PREFIX_16BIT);
-        if (bits == 8 || bits == 64 || reg >= R8 || rm.r >= R8)
-            len += rex(bits == 64, reg >= R8, false, rm.r >= R8);
+        if (dbits == 8 || dbits == 64 || sbits == 8 || reg >= R8 || rm.r >= R8)
+            len += rex(dbits == 64, reg >= R8, false, rm.r >= R8);
         return len;
     }
 
@@ -656,7 +660,7 @@ namespace ftl {
             return movr(sbits, dest, src);
 
         size_t len = 0;
-        len += prefix(dbits, dest.r, src);
+        len += prefix(dbits, sbits, dest.r, src);
 
         u8 opcode = OPCODE2_MOVZX;
         if (sbits == 16)
@@ -677,7 +681,7 @@ namespace ftl {
            FTL_ERROR("destination must be register");
 
         size_t len = 0;
-        len += prefix(dbits, dest.r, src);
+        len += prefix(dbits, sbits, dest.r, src);
 
         switch (sbits) {
         case 32:

@@ -40,6 +40,7 @@ namespace ftl {
         size_t modrm(int mod, int reg, int rm);
         size_t sib(int scale, int index, int base);
 
+        size_t prefix(int dbits, int sbits, reg r, const rm& rm);
         size_t prefix(int bits, reg r, const rm& rm);
         size_t modrm(reg r, const rm& rm);
 
