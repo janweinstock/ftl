@@ -16,42 +16,37 @@
  #                                                                            #
  ##############################################################################
 
+cmake_minimum_required(VERSION 3.8)
 project(ftl)
-cmake_minimum_required(VERSION 3.5)
 
-option(BUILD_TESTS "Build unit tests, requires GTest and GMock >= 1.8.0" ON)
-option(BUILD_EXAMPLES "Build example programs" ON)
-
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Werror")
-
-set(src "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
+option(FTL_BUILD_TESTS "Build unit tests" OFF)
+option(FTL_BUILD_EXAMPLES "Build example programs" OFF)
 
 set(sources
-    "${src}/ftl/utils.cpp"
-    "${src}/ftl/reg.cpp"
-    "${src}/ftl/cbuf.cpp"
-    "${src}/ftl/emitter.cpp"
-    "${src}/ftl/label.cpp"
-    "${src}/ftl/value.cpp"
-    "${src}/ftl/alloc.cpp"
-    "${src}/ftl/func.cpp")
+    "src/ftl/utils.cpp"
+    "src/ftl/reg.cpp"
+    "src/ftl/cbuf.cpp"
+    "src/ftl/emitter.cpp"
+    "src/ftl/label.cpp"
+    "src/ftl/value.cpp"
+    "src/ftl/alloc.cpp"
+    "src/ftl/func.cpp")
 
 add_library(ftl ${sources})
+target_compile_options(ftl PRIVATE -Wall -Werror)
+target_compile_features(ftl PUBLIC cxx_std_11)
+target_include_directories(ftl PUBLIC include)
 
-target_include_directories(ftl PUBLIC ${inc})
+install(TARGETS ftl
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        INCLUDES DESTINATION include)
 
-install(TARGETS ftl DESTINATION lib)
-install(DIRECTORY ${inc}/ DESTINATION include)
-
-if(BUILD_TESTS)
+if(FTL_BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif()
 
-if(BUILD_EXAMPLES)
+if(FTL_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
