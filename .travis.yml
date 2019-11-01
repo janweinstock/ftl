@@ -13,9 +13,9 @@ env:
 before_script:
     - mkdir -p BUILD/$BUILD/BUILD && cd BUILD/$BUILD/BUILD
     - |
-        cmake -DCMAKE_BUILD_TYPE=$BUILD
-              -DCMAKE_INSTALL_PREFIX=..
-              -DFTL_BUILD_TESTS=ON
+        cmake -DCMAKE_BUILD_TYPE=$BUILD \
+              -DCMAKE_INSTALL_PREFIX=.. \
+              -DFTL_BUILD_TESTS=ON      \
               -DFTL_BUILD_EXAMPLES=ON
 
 script:
