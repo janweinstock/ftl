@@ -16,7 +16,7 @@
  #                                                                            #
  ##############################################################################
 
-find_package(GTest "1.8.0" REQUIRED)
+add_subdirectory(googletest EXCLUDE_FROM_ALL)
 
 set(tests
     test_hello
@@ -37,9 +37,7 @@ set(tests
 
 foreach(test ${tests})
     add_executable(${test} ${test}.cpp)
-    add_dependencies(${test} ftl GTest::GTest)
-    target_include_directories(${test} SYSTEM PRIVATE ${GTEST_INCLUDE_DIRS})
-    target_link_libraries(${test} ftl ${GTEST_LIBRARIES} -pthread)
+    target_link_libraries(${test} ftl gtest gtest_main)
     add_test(NAME ${test} COMMAND ${test} ${CMAKE_CURRENT_SOURCE_DIR})
     set_tests_properties(${test} PROPERTIES TIMEOUT 30)
 endforeach()

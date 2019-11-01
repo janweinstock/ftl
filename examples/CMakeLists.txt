@@ -17,13 +17,11 @@
  ##############################################################################
 
 add_executable(fibonacci fibonacci.cpp)
-add_dependencies(fibonacci ftl)
 target_link_libraries(fibonacci ftl)
 install(TARGETS fibonacci DESTINATION examples)
 install(FILES fibonacci.cpp DESTINATION examples)
 
 add_executable(prime prime.cpp)
-add_dependencies(prime ftl)
 target_link_libraries(prime ftl)
 install(TARGETS prime DESTINATION examples)
 install(FILES prime.cpp DESTINATION examples)

@@ -36,11 +36,10 @@ add_library(ftl ${sources})
 target_compile_options(ftl PRIVATE -Wall -Werror)
 target_compile_features(ftl PUBLIC cxx_std_11)
 target_include_directories(ftl PUBLIC include)
+set_target_properties(ftl PROPERTIES DEBUG_POSTFIX "d")
 
-install(TARGETS ftl
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        INCLUDES DESTINATION include)
+install(TARGETS ftl DESTINATION lib)
+install(DIRECTORY include/ DESTINATION include)
 
 if(FTL_BUILD_TESTS)
     enable_testing()
