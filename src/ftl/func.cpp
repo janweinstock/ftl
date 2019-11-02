@@ -1055,6 +1055,46 @@ namespace ftl {
         dest.mark_dirty();
     }
 
+    void func::gen_zxt(value& dest, value& src) {
+        gen_zxt(dest, src, dest.bits, src.bits);
+    }
+
+    void func::gen_zxt(value& dest, value& src, int dbits, int sbits) {
+        FTL_ERROR_ON(dbits < sbits, "target width too narrow");
+
+        if (dest != src) {
+            dest.assign();
+            m_emitter.movzx(dbits, sbits, dest, src);
+        } else {
+            reg r = m_alloc.select();
+            m_alloc.flush(r);
+            m_emitter.movzx(dbits, sbits, r, src);
+            dest.assign(r);
+        }
+
+        dest.mark_dirty();
+    }
+
+    void func::gen_sxt(value& dest, value& src) {
+        gen_sxt(dest, src, dest.bits, src.bits);
+    }
+
+    void func::gen_sxt(value& dest, value& src, int dbits, int sbits) {
+        FTL_ERROR_ON(dbits < sbits, "target width too narrow");
+
+        if (dest != src) {
+            dest.assign();
+            m_emitter.movsx(dbits, sbits, dest, src);
+        } else {
+            reg r = m_alloc.select();
+            m_alloc.flush(r);
+            m_emitter.movsx(dbits, sbits, r, src);
+            dest.assign(r);
+        }
+
+        dest.mark_dirty();
+    }
+
     void func::gen_fence(bool sync_loads, bool sync_stores) {
         if (sync_loads && sync_stores)
             m_emitter.mfence();

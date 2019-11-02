@@ -70,6 +70,8 @@ namespace ftl {
         ~value();
 
         bool operator == (const value& other) const;
+        bool operator != (const value& other) const;
+
         operator const rm() const;
 
         value(const value&) = delete;
@@ -80,6 +82,10 @@ namespace ftl {
         return bits == other.bits &&
                sign == other.sign &&
                addr == other.addr;
+    }
+
+    inline bool value::operator != (const value& other) const {
+        return !operator == (other);
     }
 
 }
