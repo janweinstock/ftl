@@ -67,6 +67,8 @@ namespace ftl {
 
         OPCODE_BRANCH = 0x70,
 
+        OPCODE_FENCE  = 0xae,
+
         OPCODE_ESCAPE = 0x0f,
     };
 
@@ -703,6 +705,30 @@ namespace ftl {
         }
 
         len += modrm(dest.r, src);
+        return len;
+    }
+
+    size_t emitter::lfence() {
+        size_t len = 0;
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE_FENCE);
+        len += modrm(MODRM_DIRECT, 5, 0);
+        return len;
+    }
+
+    size_t emitter::sfence() {
+        size_t len = 0;
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE_FENCE);
+        len += modrm(MODRM_DIRECT, 7, 0);
+        return len;
+    }
+
+    size_t emitter::mfence() {
+        size_t len = 0;
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE_FENCE);
+        len += modrm(MODRM_DIRECT, 6, 0);
         return len;
     }
 

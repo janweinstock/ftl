@@ -33,6 +33,7 @@ set(tests
     test_setcc
     test_movext
     test_cmov
+    test_fence
 )
 
 foreach(test ${tests})
