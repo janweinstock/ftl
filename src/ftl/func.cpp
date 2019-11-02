@@ -1055,6 +1055,15 @@ namespace ftl {
         dest.mark_dirty();
     }
 
+    void func::gen_fence(bool sync_loads, bool sync_stores) {
+        if (sync_loads && sync_stores)
+            m_emitter.mfence();
+        else if (sync_loads)
+            m_emitter.lfence();
+        else if (sync_stores)
+            m_emitter.sfence();
+    }
+
     value func::gen_call(func1* fn) {
         m_alloc.flush_volatile_regs();
         m_alloc.store_all_regs();

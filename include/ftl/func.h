@@ -224,6 +224,8 @@ namespace ftl {
         void gen_rol(value& dest, u8 shift);
         void gen_ror(value& dest, u8 shift);
 
+        void gen_fence(bool sync_loads = true, bool sync_stores = true);
+
         typedef i64 (func1)(void* bptr);
         typedef i64 (func2)(void* bptr, i64 arg1);
         typedef i64 (func3)(void* bptr, i64 arg1, i64 arg2);
