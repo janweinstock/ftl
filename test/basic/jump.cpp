@@ -20,17 +20,37 @@
 
 #include "ftl.h"
 
-int fortytwo() {
-    return 42;
+using namespace ftl;
+
+typedef i32 (entry_func)(void);
+
+TEST(jump, jmpi) {
+    ftl::cbuf code(1 * ftl::KiB);
+    ftl::emitter emitter(code);
+    entry_func* fn = (entry_func*)code.get_code_ptr();
+
+    emitter.movi(32, RAX, 0);
+    emitter.jmpi(5 + 1);
+    EXPECT_EQ(emitter.movi(32, RAX, 41), 5);
+    EXPECT_EQ(emitter.ret(), 1);
+    emitter.movi(32, RAX, 42);
+    emitter.ret();
+
+    EXPECT_EQ(fn(), 42);
 }
 
-TEST(hello, fortytwo) {
-    EXPECT_EQ(42, fortytwo());
-    EXPECT_EQ(50, fortytwo() + 8);
-    EXPECT_GT(99, fortytwo());
-}
+TEST(jump, jmpr) {
+    ftl::cbuf code(1 * ftl::KiB);
+    ftl::emitter emitter(code);
+    entry_func* fn = (entry_func*)code.get_code_ptr();
 
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    EXPECT_EQ(emitter.movi(32, RAX, 0), 2); // should be "xor rax, rax"
+    EXPECT_EQ(emitter.movi(64, R8, (i64)fn + 2 + 10 + 3 + 5 + 1), 10);
+    EXPECT_EQ(emitter.jmpr(R8), 3);
+    EXPECT_EQ(emitter.movi(32, RAX, 41), 5);
+    EXPECT_EQ(emitter.ret(), 1);
+    emitter.movi(32, RAX, 42);
+    emitter.ret();
+
+    EXPECT_EQ(fn(), 42);
 }

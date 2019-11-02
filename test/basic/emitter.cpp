@@ -159,8 +159,3 @@ TEST(emitter, negr) {
 
     EXPECT_EQ(fn(), -val);
 }
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

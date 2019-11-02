@@ -20,47 +20,12 @@
 
 #include "ftl.h"
 
-using namespace ftl;
-
-i64 append(void* ptr, i64 val) {
-    std::stringstream* ss = (std::stringstream*)ptr;
-    *ss << val;
-    return val;
+int fortytwo() {
+    return 42;
 }
 
-TEST(loops, simple) {
-    i64 sum = 0;
-    std::stringstream ss;
-
-
-    func code("fn");
-    code.set_data_ptr(&ss);
-
-    value i = code.gen_local_i32("i", 0);
-    value s = code.gen_global_i64("sum", &sum);
-
-    label loop = code.gen_label("loop");
-    loop.place();
-
-    value r = code.gen_call(append, i);
-    code.gen_add(s, r);
-    code.free_value(r);
-
-    code.gen_add(i, 1);
-    code.gen_cmp(i, 10);
-    code.gen_jl(loop);
-    code.gen_ret();
-
-    code.free_value(s);
-    code.free_value(i);
-
-    code();
-
-    EXPECT_EQ(ss.str(), "0123456789");
-    EXPECT_EQ(sum, 45);
-}
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST(hello, fortytwo) {
+    EXPECT_EQ(42, fortytwo());
+    EXPECT_EQ(50, fortytwo() + 8);
+    EXPECT_GT(99, fortytwo());
 }

@@ -65,8 +65,3 @@ TEST(call, test3) {
 
     EXPECT_EQ(result, 111);
 }
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

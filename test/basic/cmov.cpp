@@ -60,8 +60,3 @@ MKTEST(cmovg, 27, 15, >)
 MKTEST(cmovge, 15, 15, >=)
 MKTEST(cmovge, 15, 27, >=)
 MKTEST(cmovge, 27, 15, >=)
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

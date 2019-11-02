@@ -58,8 +58,3 @@ MKTEST(setg, 27, 15, >)
 MKTEST(setge, 15, 15, >=)
 MKTEST(setge, 15, 27, >=)
 MKTEST(setge, 27, 15, >=)
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

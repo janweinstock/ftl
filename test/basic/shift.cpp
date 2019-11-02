@@ -88,8 +88,3 @@ MAKE_TEST_SET(shri, >>)
 
 MAKE_TEST_SET(shlr, <<)
 MAKE_TEST_SET(shrr, >>)
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

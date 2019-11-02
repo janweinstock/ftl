@@ -255,8 +255,3 @@ TEST(cgen, dec) {
     EXPECT_EQ(code(), 41);
     EXPECT_EQ(global, 41);
 }
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

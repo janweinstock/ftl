@@ -24,38 +24,41 @@ using namespace ftl;
 
 typedef i32 (entry_func)(void);
 
-TEST(jump, jmpi) {
+TEST(fence, lfence) {
     ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
     entry_func* fn = (entry_func*)code.get_code_ptr();
 
+    emitter.lfence();
     emitter.movi(32, RAX, 0);
-    emitter.jmpi(5 + 1);
-    EXPECT_EQ(emitter.movi(32, RAX, 41), 5);
-    EXPECT_EQ(emitter.ret(), 1);
-    emitter.movi(32, RAX, 42);
     emitter.ret();
 
-    EXPECT_EQ(fn(), 42);
+    int res = fn();
+    EXPECT_EQ(res, 0);
 }
 
-TEST(jump, jmpr) {
+TEST(fence, sfence) {
     ftl::cbuf code(1 * ftl::KiB);
     ftl::emitter emitter(code);
     entry_func* fn = (entry_func*)code.get_code_ptr();
 
-    EXPECT_EQ(emitter.movi(32, RAX, 0), 2); // should be "xor rax, rax"
-    EXPECT_EQ(emitter.movi(64, R8, (i64)fn + 2 + 10 + 3 + 5 + 1), 10);
-    EXPECT_EQ(emitter.jmpr(R8), 3);
-    EXPECT_EQ(emitter.movi(32, RAX, 41), 5);
-    EXPECT_EQ(emitter.ret(), 1);
-    emitter.movi(32, RAX, 42);
+    emitter.sfence();
+    emitter.movi(32, RAX, 0);
     emitter.ret();
 
-    EXPECT_EQ(fn(), 42);
+    int res = fn();
+    EXPECT_EQ(res, 0);
 }
 
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+TEST(fence, mfence) {
+    ftl::cbuf code(1 * ftl::KiB);
+    ftl::emitter emitter(code);
+    entry_func* fn = (entry_func*)code.get_code_ptr();
+
+    emitter.mfence();
+    emitter.movi(32, RAX, 0);
+    emitter.ret();
+
+    int res = fn();
+    EXPECT_EQ(res, 0);
 }

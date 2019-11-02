@@ -101,8 +101,3 @@ TEST(bitops, log2i) {
     EXPECT_EQ(log2i(16384), 14);
     EXPECT_EQ(log2i(32768), 15);
 }
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

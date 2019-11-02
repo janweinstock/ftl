@@ -22,48 +22,40 @@
 
 using namespace ftl;
 
-typedef i32 (entry_func)(void);
-
-TEST(fence, lfence) {
-    ftl::cbuf code(1 * ftl::KiB);
-    ftl::emitter emitter(code);
-    entry_func* fn = (entry_func*)code.get_code_ptr();
-
-    emitter.lfence();
-    emitter.movi(32, RAX, 0);
-    emitter.ret();
-
-    int res = fn();
-    EXPECT_EQ(res, 0);
+i64 append(void* ptr, i64 val) {
+    std::stringstream* ss = (std::stringstream*)ptr;
+    *ss << val;
+    return val;
 }
 
-TEST(fence, sfence) {
-    ftl::cbuf code(1 * ftl::KiB);
-    ftl::emitter emitter(code);
-    entry_func* fn = (entry_func*)code.get_code_ptr();
+TEST(loops, simple) {
+    i64 sum = 0;
+    std::stringstream ss;
 
-    emitter.sfence();
-    emitter.movi(32, RAX, 0);
-    emitter.ret();
 
-    int res = fn();
-    EXPECT_EQ(res, 0);
-}
+    func code("fn");
+    code.set_data_ptr(&ss);
 
-TEST(fence, mfence) {
-    ftl::cbuf code(1 * ftl::KiB);
-    ftl::emitter emitter(code);
-    entry_func* fn = (entry_func*)code.get_code_ptr();
+    value i = code.gen_local_i32("i", 0);
+    value s = code.gen_global_i64("sum", &sum);
 
-    emitter.mfence();
-    emitter.movi(32, RAX, 0);
-    emitter.ret();
+    label loop = code.gen_label("loop");
+    loop.place();
 
-    int res = fn();
-    EXPECT_EQ(res, 0);
-}
+    value r = code.gen_call(append, i);
+    code.gen_add(s, r);
+    code.free_value(r);
 
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    code.gen_add(i, 1);
+    code.gen_cmp(i, 10);
+    code.gen_jl(loop);
+    code.gen_ret();
+
+    code.free_value(s);
+    code.free_value(i);
+
+    code();
+
+    EXPECT_EQ(ss.str(), "0123456789");
+    EXPECT_EQ(sum, 45);
 }

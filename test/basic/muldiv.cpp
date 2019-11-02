@@ -148,8 +148,3 @@ TEST(muldiv, mod) {
     EXPECT_EQ(mod(27, 27), 27 % 27);
     EXPECT_EQ(mod(30, 11), 30 % 11);
 }
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}

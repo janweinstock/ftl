@@ -16,5 +16,25 @@
  #                                                                            #
  ##############################################################################
 
-add_subdirectory(googletest EXCLUDE_FROM_ALL)
-add_subdirectory(basic)
+macro(basic_test nm)
+    add_executable(${nm} ${nm}.cpp)
+    target_link_libraries(${nm} ftl gtest gtest_main)
+    add_test(NAME basic/${nm} COMMAND $<TARGET_FILE:${nm}>)
+    set_tests_properties(basic/${nm} PROPERTIES TIMEOUT 30)
+endmacro()
+
+basic_test(hello)
+basic_test(bitops)
+basic_test(emitter)
+basic_test(immops)
+basic_test(iopsmem)
+basic_test(shift)
+basic_test(jump)
+basic_test(muldiv)
+basic_test(cgen)
+basic_test(call)
+basic_test(loops)
+basic_test(setcc)
+basic_test(movext)
+basic_test(cmov)
+basic_test(fence)

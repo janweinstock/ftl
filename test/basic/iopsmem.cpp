@@ -22,37 +22,36 @@
 
 typedef int (entry_func)(void);
 
-#define MAKE_TEST(op, cop, bits, reg, op1, op2)                               \
-    TEST(immops, op ## bits ## _ ## reg ## _ ## op1 ## _ ## op2) {            \
-        ftl::i64 val1 = (ftl::i64)(op1);                                      \
+#define MAKE_TEST(op, cop, bits, reg, offset, op1, op2)                       \
+    TEST(iopsmem, op ## bits ## _ ## reg ## _ ## op1) {                       \
+        ftl::i##bits orig = (ftl::i##bits)(op1);                              \
+        ftl::i##bits val1 = (ftl::i##bits)(op1);                              \
         ftl::i##bits val2 = (ftl::i##bits)(ftl::i32)(op2);                    \
+        ftl::u64 addr = (ftl::u64)&val1 - offset;                             \
         ftl::cbuf code(1 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         entry_func* fn = (entry_func*)code.get_code_ptr();                    \
-        emitter.movi(64, ftl::reg, val1);                                     \
-        emitter.op(bits, ftl::reg, val2);                                     \
-        emitter.movr(bits, ftl::RAX, ftl::reg);                               \
+        emitter.movi(64, ftl::reg, addr);                                     \
+        emitter.op(bits, ftl::memop(ftl::reg, offset), val2);                 \
         emitter.ret();                                                        \
-        ftl::i##bits res = (ftl::i##bits)fn();                                \
-        ftl::i##bits ref = (ftl::i##bits)(val1 cop val2);                     \
-        EXPECT_EQ(res, ref);                                                  \
+        fn();                                                                 \
+        ftl::i##bits ref = (ftl::i##bits)(orig cop val2);                     \
+        EXPECT_EQ(val1, ref);                                                 \
     }
 
 // repeat the test set using various parameters (large, negative, zero...)
 #define MAKE_TEST_ARGSET(op, cop, bits, reg)                                  \
-    MAKE_TEST(op, cop, bits, reg, 0x000000001, 0x00000000)                    \
-    MAKE_TEST(op, cop, bits, reg, 0x000000000, 0x00000001)                    \
-    MAKE_TEST(op, cop, bits, reg, 0x012345678, 0xfedcba98)                    \
-    MAKE_TEST(op, cop, bits, reg, 0x0000101ff, 0x000011ff)
+    MAKE_TEST(op, cop, bits, reg, 0, 1, 1)                                    \
+    MAKE_TEST(op, cop, bits, reg, 127, 0xffff1111, 0x0)                       \
+    MAKE_TEST(op, cop, bits, reg, 0xffffff, 55, -1024)                        \
+    MAKE_TEST(op, cop, bits, reg, 0, 0xfedcba98, 0x12345678)
 
-
-// repeat the test set using various (volatile / caller-saved!) registers
+// repeat the test set using various (volatile / caller-saved!) base registers
 #define MAKE_TEST_REGSET(op, cop, bits)                                       \
     MAKE_TEST_ARGSET(op, cop, bits, RAX)                                      \
-    MAKE_TEST_ARGSET(op, cop, bits, RCX)                                      \
-    MAKE_TEST_ARGSET(op, cop, bits, R10)                                      \
-    MAKE_TEST_ARGSET(op, cop, bits, R11)                                      \
-    MAKE_TEST_ARGSET(op, cop, bits, R13)
+    MAKE_TEST_ARGSET(op, cop, bits, RDX)                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R9 )                                      \
+    MAKE_TEST_ARGSET(op, cop, bits, R11)
 
 // repeat the test set using all support bit widths
 #define MAKE_TEST_SET(op, cop)                                                \
@@ -68,8 +67,3 @@ MAKE_TEST_SET(andi, &)
 MAKE_TEST_SET(xori, ^)
 
 // ToDo: test adc, sbb and cmp
-
-extern "C" int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
