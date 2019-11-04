@@ -784,28 +784,19 @@ namespace ftl {
     }
 
     void func::gen_imul(value& hi, value& dest, const value& src) {
-        dest.fetch(RAX);
-
-        if (hi.is_mem() || hi.r() != RDX) {
-            m_alloc.flush(RDX);
-            m_alloc.assign(&hi, RDX);
-        }
-
+        m_alloc.fetch(&dest, RAX);
+        m_alloc.flush(RDX);
         m_emitter.imul(dest.bits, src);
+        m_alloc.assign(&hi, RDX);
         m_alloc.mark_dirty(RAX);
         m_alloc.mark_dirty(RDX);
     }
 
     void func::gen_umul(value& hi, value& dest, const value& src) {
         m_alloc.fetch(&dest, RAX);
-
-        if (hi.is_mem() || hi.r() != RDX) {
-            m_alloc.flush(RDX);
-            m_alloc.assign(&hi, RDX);
-            m_alloc.mark_dirty(RDX);
-        }
-
+        m_alloc.flush(RDX);
         m_emitter.mulr(dest.bits, src);
+        m_alloc.assign(&hi, RDX);
         m_alloc.mark_dirty(RAX);
         m_alloc.mark_dirty(RDX);
     }
