@@ -24,12 +24,7 @@ namespace ftl {
         for (reg r : callee_saved_regs)
             m_emitter.push(r);
 
-        // Our stack pointer should be 16 byte aligned to allow us calling
-        // functions from generated code. So far, our stack frame has 8 bytes
-        // (return address) + register spill (8 registers = 64 bytes) + local
-        // storage (64 * 8 = 512 bytes). So we need an extra 8 bytes dummy
-        // stack storage to reach alignment.
-        i32 frame_size = 64 * sizeof(u64) + 8;
+        i32 frame_size = 64 * sizeof(u64);
 
         m_emitter.subi(64, m_alloc.STACK_POINTER, frame_size);
         m_emitter.movr(64, m_alloc.BASE_REGISTER, argreg(1));
