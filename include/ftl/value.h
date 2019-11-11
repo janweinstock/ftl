@@ -81,7 +81,8 @@ namespace ftl {
     inline bool value::operator == (const value& other) const {
         return bits == other.bits &&
                sign == other.sign &&
-               addr == other.addr;
+               addr == other.addr &&
+               mem  == other.mem;
     }
 
     inline bool value::operator != (const value& other) const {
