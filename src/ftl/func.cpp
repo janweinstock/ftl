@@ -726,6 +726,14 @@ namespace ftl {
         m_emitter.tstr(dest.bits, dest, src);
     }
 
+    void func::gen_xchg(value& dest, value& src) {
+        if (dest.is_mem())
+            dest.fetch();
+        m_emitter.xchg(dest.bits, dest, src);
+        dest.mark_dirty();
+        src.mark_dirty();
+    }
+
     void func::gen_mov(value& dest, i64 val) {
         int immlen = max(encode_size(val), dest.bits);
         if (dest.is_mem() && immlen > 32)

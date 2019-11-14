@@ -179,6 +179,7 @@ namespace ftl {
         void gen_xor(value& dest, const value& src);
         void gen_cmp(value& dest, const value& src);
         void gen_tst(value& dest, const value& src);
+        void gen_xchg(value& dest, value& src);
 
         void gen_mov(value& dest, i64 val);
         void gen_add(value& dest, i32 val);

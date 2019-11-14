@@ -255,3 +255,21 @@ TEST(cgen, dec) {
     EXPECT_EQ(code(), 41);
     EXPECT_EQ(global, 41);
 }
+
+TEST(cgen, xchg) {
+    u64 global1 = 11;
+    u64 global2 = 22;
+
+    func code("xchg", 4 * KiB);
+    value a = code.gen_global_i64("a", &global1);
+    value b = code.gen_global_i64("b", &global2);
+
+    code.gen_xchg(a, b);
+    code.gen_ret();
+
+    code();
+
+    EXPECT_EQ(global1, 22);
+    EXPECT_EQ(global2, 11);
+
+}

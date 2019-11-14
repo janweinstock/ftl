@@ -52,6 +52,7 @@ namespace ftl {
         OPCODE_XOR    = 0x30,
         OPCODE_CMP    = 0x38,
         OPCODE_TST    = 0x84,
+        OPCODE_XCHG   = 0x86,
         OPCODE_MOV    = 0x88,
         OPCODE_INC    = 0xfe,
         OPCODE_UNARY  = 0xf6,
@@ -267,7 +268,7 @@ namespace ftl {
         u8 opcode = op;
         if (bits > 8)
             opcode += 1;
-        if (src.is_mem)
+        if (src.is_mem && op != OPCODE_XCHG)
             opcode += 2;
 
         size_t len = 0;
@@ -518,6 +519,12 @@ namespace ftl {
         const rm& op1(dest.is_mem ? dest : src);
         const rm& op2(dest.is_mem ? src : dest);
         return aluop(OPCODE_TST, bits, op1, op2);
+    }
+
+    size_t emitter::xchg(int bits, const rm& dest, const rm& src) {
+        if (dest == src)
+            return 0;
+        return aluop(OPCODE_XCHG, bits, dest, src);
     }
 
     size_t emitter::incr(int bits, const rm& op) {

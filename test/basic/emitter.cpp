@@ -159,3 +159,16 @@ TEST(emitter, negr) {
 
     EXPECT_EQ(fn(), -val);
 }
+
+TEST(emitter, xchg) {
+    cbuf code(1 * KiB);
+    emitter emitter(code);
+
+    entry_func* fn = (entry_func*)code.get_code_ptr();
+    emitter.movi(32, RAX, 7);
+    emitter.movi(32, RCX, 5);
+    emitter.xchg(32, RAX, RCX);
+    emitter.ret();
+
+    EXPECT_EQ(fn(), 5);
+}
