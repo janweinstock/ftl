@@ -230,6 +230,7 @@ namespace ftl {
         void gen_sxt(value& dest, value& src);
         void gen_sxt(value& dest, value& src, int dbits, int sbits);
 
+        void gen_cmpxchg(value& dest, value& src, value& cmpv);
         void gen_fence(bool sync_loads = true, bool sync_stores = true);
 
         typedef i64 (func1)(void* bptr);

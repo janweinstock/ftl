@@ -122,6 +122,8 @@ namespace ftl {
         size_t movzx(int dbits, int sbits, const rm& dest, const rm& src);
         size_t movsx(int dbits, int sbits, const rm& dest, const rm& src);
 
+        size_t cmpxchg(int bits, const rm& dest, const rm& src);
+
         size_t lfence();
         size_t sfence();
         size_t mfence();

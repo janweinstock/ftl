@@ -74,12 +74,13 @@ namespace ftl {
     };
 
     enum opcode_2bytes {
-        OPCODE2_MOVCC = 0x40,
-        OPCODE2_BR32  = 0x80,
-        OPCODE2_SET   = 0x90,
-        OPCODE2_IMUL  = 0xaf,
-        OPCODE2_MOVZX = 0xb6,
-        OPCODE2_MOVSX = 0xbe,
+        OPCODE2_MOVCC   = 0x40,
+        OPCODE2_BR32    = 0x80,
+        OPCODE2_SET     = 0x90,
+        OPCODE2_IMUL    = 0xaf,
+        OPCODE2_CMPXCHG = 0xb0,
+        OPCODE2_MOVZX   = 0xb6,
+        OPCODE2_MOVSX   = 0xbe,
     };
 
     enum opcode_imm {
@@ -660,12 +661,10 @@ namespace ftl {
 
     size_t emitter::movzx(int dbits, int sbits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(dbits < sbits, "source wider than destination");
-        FTL_ERROR_ON(dbits == sbits, "attempt to extend to same width");
-
         if (dest.is_mem)
            FTL_ERROR("destination must be register");
 
-        if (sbits == 32)
+        if (sbits == dbits || sbits == 32)
             return movr(sbits, dest, src);
 
         size_t len = 0;
@@ -684,10 +683,12 @@ namespace ftl {
 
     size_t emitter::movsx(int dbits, int sbits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(dbits < sbits, "source wider than destination");
-        FTL_ERROR_ON(dbits == sbits, "attempt to extend to same width");
 
         if (dest.is_mem)
            FTL_ERROR("destination must be register");
+
+        if (dbits == sbits)
+            return movr(dbits, dest, src);
 
         size_t len = 0;
         len += prefix(dbits, sbits, dest.r, src);
@@ -712,6 +713,27 @@ namespace ftl {
         }
 
         len += modrm(dest.r, src);
+        return len;
+    }
+
+    size_t emitter::cmpxchg(int bits, const rm& dest, const rm& src) {
+        if (src.is_mem)
+            FTL_ERROR("source operand must not be in memory");
+        FTL_ERROR_ON(bits > 64, "requested operation too wide");
+
+        u8 opcode = OPCODE2_CMPXCHG;
+        if (bits > 8)
+            opcode += 1;
+
+        size_t len = 0;
+        if (dest.is_mem)
+            len += lock();
+
+        len += prefix(bits, src.r, dest);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(opcode);
+        len += modrm(src.r, dest);
+
         return len;
     }
 

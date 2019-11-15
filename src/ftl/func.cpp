@@ -133,7 +133,7 @@ namespace ftl {
 
     void func::gen_ret(value& val) {
         m_alloc.flush_all_regs();
-        m_alloc.fetch(&val, RAX);
+        m_emitter.movsx(64, val.bits, RAX, val);
         gen_ret();
     }
 
@@ -1087,6 +1087,14 @@ namespace ftl {
         }
 
         dest.mark_dirty();
+    }
+
+    void func::gen_cmpxchg(value& dest, value& src, value& cmpv) {
+        dest.flush();
+        src.fetch();
+        cmpv.fetch(RAX);
+
+        m_emitter.cmpxchg(dest.bits, dest, src);
     }
 
     void func::gen_fence(bool sync_loads, bool sync_stores) {
