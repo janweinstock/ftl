@@ -36,8 +36,8 @@ TEST(emitter, mov) {
     emitter emitter(code);
 
     emitter.movi(64, RAX, 0ll);
-    emitter.movi(64, R15, 42ll);
-    emitter.movr(64, RAX, R15);
+    emitter.movi(64, R11, 42ll);
+    emitter.movr(64, RAX, R11);
     emitter.ret();
 
     entry_func* fn = (entry_func*)code.get_code_entry();
