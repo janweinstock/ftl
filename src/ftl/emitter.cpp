@@ -378,9 +378,6 @@ namespace ftl {
     }
 
     size_t emitter::movi(int bits, const rm& dest, i64 imm) {
-        if (imm == 0 && dest.is_reg())
-            return xorr(bits, dest, dest);
-
         int immlen = max(min(encode_size(imm), encode_size<u64>(imm)), bits);
         FTL_ERROR_ON(bits > 64, "requested operation too wide");
         FTL_ERROR_ON(immlen > bits, "immediate operand too big");
@@ -411,14 +408,10 @@ namespace ftl {
     }
 
     size_t emitter::addi(int bits, const rm& dest, i32 imm) {
-        if (imm == 0)
-            return 0;
         return immop(OPCODE_IMM_ADD, bits, dest, imm);
     }
 
     size_t emitter::ori(int bits, const rm& dest, i32 imm) {
-        if(imm == 0)
-            return 0;
         return immop(OPCODE_IMM_OR, bits, dest, imm);
     }
 

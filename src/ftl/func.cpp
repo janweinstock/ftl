@@ -739,16 +739,29 @@ namespace ftl {
         if (dest.is_mem() && immlen > 32)
             dest.assign();
 
-        m_emitter.movi(dest.bits, dest, val);
+        if (val == 0 && dest.is_reg())
+            m_emitter.xorr(dest.bits, dest, dest);
+        else
+            m_emitter.movi(dest.bits, dest, val);
+
         dest.mark_dirty();
     }
 
     void func::gen_add(value& dest, i32 val) {
-        m_emitter.addi(dest.bits, dest, val);
+        switch (val) {
+        case  0: return;
+        case  1: m_emitter.incr(dest.bits, dest); break;
+        case -1: m_emitter.decr(dest.bits, dest); break;
+        default: m_emitter.addi(dest.bits, dest, val); break;
+        }
+
         dest.mark_dirty();
     }
 
     void func::gen_or(value& dest, i32 val) {
+        if (val == 0)
+            return;
+
         m_emitter.ori(dest.bits, dest, val);
         dest.mark_dirty();
     }
@@ -764,12 +777,24 @@ namespace ftl {
     }
 
     void func::gen_and(value& dest, i32 val) {
-        m_emitter.andi(dest.bits, dest, val);
+        if (val == -1)
+            return;
+
+        if (val == 0 && dest.is_reg())
+            m_emitter.xorr(dest.bits, dest, dest);
+        else
+            m_emitter.andi(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
     void func::gen_sub(value& dest, i32 val) {
-        m_emitter.subi(dest.bits, dest, val);
+        switch (val) {
+        case  0: return;
+        case  1: m_emitter.decr(dest.bits, dest); break;
+        case -1: m_emitter.incr(dest.bits, dest); break;
+        default: m_emitter.subi(dest.bits, dest, val); break;
+        }
+
         dest.mark_dirty();
     }
 
