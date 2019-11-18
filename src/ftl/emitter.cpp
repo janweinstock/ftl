@@ -54,6 +54,7 @@ namespace ftl {
         OPCODE_TST    = 0x84,
         OPCODE_XCHG   = 0x86,
         OPCODE_MOV    = 0x88,
+        OPCODE_LEA    = 0x8d,
         OPCODE_INC    = 0xfe,
         OPCODE_UNARY  = 0xf6,
 
@@ -519,6 +520,19 @@ namespace ftl {
         if (dest == src)
             return 0;
         return aluop(OPCODE_XCHG, bits, dest, src);
+    }
+
+    size_t emitter::lear(int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dest.is_mem, "destination must be register");
+        FTL_ERROR_ON(!src.is_mem, "source must be memory");
+        FTL_ERROR_ON(bits <= 16, "8bit lea not supported");
+
+        size_t len = 0;
+        len += prefix(bits, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_LEA);
+        len += modrm(dest.r, src);
+
+        return len;
     }
 
     size_t emitter::incr(int bits, const rm& op) {
