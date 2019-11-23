@@ -182,6 +182,8 @@ namespace ftl {
         } else {
             m_emitter.movr(val->bits, val->mem, r);
         }
+
+        mark_clean(r);
     }
 
     void alloc::flush(reg r) {
