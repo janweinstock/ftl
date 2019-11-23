@@ -273,3 +273,21 @@ TEST(cgen, xchg) {
     EXPECT_EQ(global2, 11);
 
 }
+
+TEST(code, mov32_64) {
+    u64 global = 0x180000000;
+
+    // make sure mov 64bit value to 32bit value uses zero extension
+    func code("mov32_64", 4 * KiB);
+    value a = code.gen_global_i64("a", &global);
+    value b = code.gen_local_i32("b", ftl::RAX);
+    a.fetch();
+    code.gen_mov(b, a);
+    code.free_value(a);
+    code.free_value(b);
+    code.gen_ret();
+
+    i64 res = code();
+
+    EXPECT_EQ(res, 0x80000000);
+}

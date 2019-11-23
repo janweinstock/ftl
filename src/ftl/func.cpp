@@ -657,10 +657,10 @@ namespace ftl {
         if (dest.is_mem() && src.is_mem())
             dest.assign();
 
-        if (dest.bits > src.bits)
+        if (dest.bits > src.bits && src.bits < 32)
             m_emitter.movzx(dest.bits, src.bits, dest, src);
         else
-            m_emitter.movr(dest.bits, dest, src);
+            m_emitter.movr(min(dest.bits, src.bits), dest, src);
 
         dest.mark_dirty();
     }
