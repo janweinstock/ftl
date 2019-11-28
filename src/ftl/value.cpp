@@ -127,8 +127,12 @@ namespace ftl {
         if (reg_valid(curr))
             return curr;
 
-        if (!is_directly_addressable())
-            FTL_ERROR("cannot encode %s as a direct memory operand", name());
+        if (!is_directly_addressable()) {
+            reg base = m_allocator.select();
+            m_allocator.flush(base);
+            m_allocator.get_emitter().movi(64, base, addr);
+            return memop(base, 0);
+        }
 
         return mem;
     }

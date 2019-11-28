@@ -169,9 +169,10 @@ namespace ftl {
             m_emitter.movr(val->bits, r, curr);
         } else {
             if (!val->is_directly_addressable()) {
-                m_emitter.movi(64, BASE_REGISTER, val->addr);
-                m_emitter.movr(val->bits, r, memop(BASE_REGISTER, 0));
-                m_emitter.movi(64, BASE_REGISTER, m_base);
+                reg base = select();
+                flush(base);
+                m_emitter.movi(64, base, val->addr);
+                m_emitter.movr(val->bits, r, memop(base, 0));
             } else {
                 m_emitter.movr(val->bits, r, val->mem);
             }
@@ -197,9 +198,10 @@ namespace ftl {
         FTL_ERROR_ON(val == NULL, "store operation on empty register");
 
         if (!val->is_directly_addressable()) {
-            m_emitter.movi(64, BASE_REGISTER, val->addr);
-            m_emitter.movr(val->bits, memop(BASE_REGISTER, 0), r);
-            m_emitter.movi(64, BASE_REGISTER, m_base);
+            reg base = select();
+            flush(base);
+            m_emitter.movi(64, base, val->addr);
+            m_emitter.movr(val->bits, memop(base, 0), r);
         } else {
             m_emitter.movr(val->bits, val->mem, r);
         }

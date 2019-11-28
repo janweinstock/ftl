@@ -68,6 +68,8 @@ namespace ftl {
         const vector<reg>& get_blacklist() const { return m_blacklist; }
         vector<reg> get_blacklist() { return m_blacklist; }
 
+        emitter& get_emitter() const { return m_emitter; }
+
         bool is_empty(reg r) const;
         bool is_dirty(reg r) const;
 

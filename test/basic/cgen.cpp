@@ -291,3 +291,33 @@ TEST(code, mov32_64) {
 
     EXPECT_EQ(res, 0x80000000);
 }
+
+TEST(code, far_variables) {
+    u64 global1 = 42;
+    u64 global2 = 24;
+
+    func code("far_variables", 4 * KiB);
+    code.set_data_ptr((void*)4); // forces use of extra base address register
+
+    value a = code.gen_global_i64("a", &global1);
+    value b = code.gen_global_i64("b", &global2);
+    value t = code.gen_local_i64("t");
+
+    EXPECT_FALSE(a.is_directly_addressable());
+    EXPECT_FALSE(b.is_directly_addressable());
+
+    code.gen_mov(t, a);
+    code.gen_mov(a, b);
+    code.gen_mov(b, t);
+
+    code.gen_ret();
+
+    code.free_value(a);
+    code.free_value(b);
+    code.free_value(t);
+
+    code();
+
+    EXPECT_EQ(global1, 24);
+    EXPECT_EQ(global2, 42);
+}
