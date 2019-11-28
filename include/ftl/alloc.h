@@ -48,6 +48,7 @@ namespace ftl {
         u64              m_base;
 
         vector<value*>   m_values;
+        vector<reg>      m_blacklist;
 
     public:
         const reg STACK_POINTER = RSP; // base address register for locals
@@ -59,6 +60,13 @@ namespace ftl {
 
         alloc() = delete;
         alloc(const alloc&) = delete;
+
+        void blacklist(reg r);
+        void unblacklist(reg r);
+        bool is_blacklisted(reg r) const;
+
+        const vector<reg>& get_blacklist() const { return m_blacklist; }
+        vector<reg> get_blacklist() { return m_blacklist; }
 
         bool is_empty(reg r) const;
         bool is_dirty(reg r) const;
@@ -96,9 +104,6 @@ namespace ftl {
 
         void store_volatile_regs();
         void flush_volatile_regs();
-
-        void prologue();
-        void epilogue();
 
         void reset();
     };

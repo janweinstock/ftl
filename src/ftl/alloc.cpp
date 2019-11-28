@@ -26,12 +26,27 @@ namespace ftl {
         m_usecnt(0),
         m_locals(~0ull),
         m_base(0),
-        m_values() {
+        m_values(),
+        m_blacklist() {
         reset();
     }
 
     alloc::~alloc() {
         // nothing to do
+    }
+
+    void alloc::blacklist(reg r) {
+        if (!is_blacklisted(r))
+            m_blacklist.push_back(r);
+    }
+
+    void alloc::unblacklist(reg r) {
+        if (is_blacklisted(r))
+            stl_remove_erase(m_blacklist, r);
+    }
+
+    bool alloc::is_blacklisted(reg r) const {
+        return stl_contains(m_blacklist, r);
     }
 
     bool alloc::is_empty(reg r) const {
@@ -64,25 +79,31 @@ namespace ftl {
     // memory variables. Allocate RAX last, since we need it to return values
     // from function calls. RDX gets spoiled in MUL/DIV operations. Prefer
     // registers which are callee saved and not used for function arguments.
-    static const reg alloc_order[] = {
+    static const array<reg, 14> alloc_order = {
         RBP, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
     };
 
     reg alloc::select() const {
+        vector<reg> regs;
+        std::copy_if(alloc_order.begin(), alloc_order.end(),
+                     std::back_inserter(regs), [this](reg r) -> bool {
+            return !is_blacklisted(r);
+        });
+
         // try unused registers first
-        for (reg r : alloc_order)
+        for (reg r : regs)
             if (is_empty(r))
                 return r;
 
         // next, try registers that do not need to be flushed
-        for (reg r : alloc_order)
+        for (reg r : regs)
             if (!is_dirty(r))
                 return r;
 
         // pick least recently used
         reg lru = NREGS;
         u64 min = ~0ull;
-        for (reg r : alloc_order) {
+        for (reg r : regs) {
             if (m_regmap[r].count < min) {
                 min = m_regmap[r].count;
                 lru = r;
@@ -290,34 +311,6 @@ namespace ftl {
     void alloc::flush_volatile_regs() {
         for (reg r : caller_saved_regs)
             flush(r);
-    }
-
-    void alloc::prologue() {
-        for (reg r : callee_saved_regs)
-            m_emitter.push(r);
-
-        // Our stack pointer should be 16 byte aligned to allow us calling
-        // functions from generated code. So far, our stack frame has 8 bytes
-        // (return address) + register spill (8 registers = 64 bytes) + local
-        // storage (64 * 8 = 512 bytes). So we need an extra 8 bytes dummy
-        // stack storage to reach alignment.
-        i32 frame_size = 64 * sizeof(u64) + 8;
-        m_emitter.subi(64, STACK_POINTER, frame_size);
-
-        if (m_base)
-            m_emitter.movi(64, BASE_REGISTER, m_base);
-
-        m_emitter.jmpr(RDI);
-    }
-
-    void alloc::epilogue() {
-        i32 frame_size = 64 * sizeof(u64) + 8;
-        m_emitter.addi(64, STACK_POINTER, frame_size);
-
-        for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)
-            m_emitter.pop(callee_saved_regs[i-1]);
-
-        m_emitter.ret();
     }
 
     void alloc::reset() {
