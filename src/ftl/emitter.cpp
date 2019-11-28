@@ -379,18 +379,29 @@ namespace ftl {
     }
 
     size_t emitter::movi(int bits, const rm& dest, i64 imm) {
-        int immlen = max(min(encode_size(imm), encode_size<u64>(imm)), bits);
-        FTL_ERROR_ON(bits > 64, "requested operation too wide");
-        FTL_ERROR_ON(immlen > bits, "immediate operand too big");
-        FTL_ERROR_ON(dest.is_mem && immlen > 32, "immediate operand too big");
-
         size_t len = 0;
-        len += prefix(bits, (reg)0, dest);
+        int immlen = 0;
 
-        if (dest.is_reg()) {
-            u8 opcode = (bits == 8) ? OPCODE_MOVIR : (OPCODE_MOVIR + 8);
-            len += m_buffer.write<u8>(opcode + (dest.r & 7));
+        if (dest.is_reg() && bits == 64 && encode_size(imm) < 64) {
+            immlen = 32;
+            len += prefix(bits, (reg)0, dest);
+            len += m_buffer.write<u8>(OPCODE_MOVIRM + 1);
+            len += modrm((reg)0, dest);
+        } else if (dest.is_reg() && bits == 64 && encode_size<u64>(imm) < 64) {
+            immlen = bits = 32;
+            len += prefix(bits, (reg)0, dest);
+            len += m_buffer.write<u8>(OPCODE_MOVIR + 8 + (dest.r & 7));
+        } else if (dest.is_reg()) {
+            if (bits < 32)
+                bits = 32;
+            immlen = bits;
+            len += prefix(bits, (reg)0, dest);
+            len += m_buffer.write<u8>(OPCODE_MOVIR + 8 + (dest.r & 7));
         } else {
+            immlen = bits;
+            if (immlen == 64 && encode_size(imm) < 64)
+                immlen = 32;
+            FTL_ERROR_ON(immlen > 32, "immediate too big to move to memory");
             u8 opcode = (bits == 8) ? OPCODE_MOVIRM : (OPCODE_MOVIRM + 1);
             len += m_buffer.write<u8>(opcode);
             len += modrm((reg)0, dest);
