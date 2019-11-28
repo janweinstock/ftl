@@ -63,7 +63,7 @@ namespace ftl {
         label&   get_prologue()  { return m_entry; }
         label&   get_epilogue()  { return m_exit; }
 
-        static const size_t PLSIZE = 32;
+        static const size_t PLSIZE = 64;
 
         func(const string& name, size_t bufsz = 4 * KiB);
         func(const string& name, cbuf& buffer, void* dataptr = NULL);

@@ -29,7 +29,7 @@ namespace ftl {
         m_emitter.subi(64, m_alloc.STACK_POINTER, frame_size);
         m_emitter.movr(64, m_alloc.BASE_REGISTER, argreg(1));
         m_emitter.jmpr(argreg(0));
-        m_buffer.align(16);
+        m_buffer.align(PLSIZE);
 
         size_t plsz = m_buffer.get_code_ptr() - m_buffer.get_code_entry();
         FTL_ERROR_ON(PLSIZE != plsz, "invalid PLSIZE = %zu should be %zu",
@@ -40,7 +40,7 @@ namespace ftl {
             m_emitter.pop(callee_saved_regs[i-1]);
 
         m_emitter.ret();
-        m_buffer.align(16);
+        m_buffer.align(PLSIZE);
 
         m_code = m_buffer.get_code_ptr();
     }
