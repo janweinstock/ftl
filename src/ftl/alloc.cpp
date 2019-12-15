@@ -139,6 +139,7 @@ namespace ftl {
         FTL_ERROR_ON(!reg_valid(r), "invalid register selected: %d", r);
         FTL_ERROR_ON(r == STACK_POINTER, "cannot assign to stack pointer");
         FTL_ERROR_ON(r == BASE_REGISTER, "cannot assign to base register");
+        FTL_ERROR_ON(is_blacklisted(r), "cannot assign to blacklist register");
 
         if (m_regmap[r].owner == val)
             return r;
@@ -264,7 +265,7 @@ namespace ftl {
     }
 
     void alloc::free_value(value& val) {
-        FTL_ERROR_ON(val.is_dead(), "double free value");
+        FTL_ERROR_ON(val.is_dead(), "double free value %s", val.name());
 
         if (val.is_local()) {
             int idx = -val.mem.offset / sizeof(u64);
