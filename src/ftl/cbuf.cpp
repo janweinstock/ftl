@@ -20,39 +20,46 @@
 
 namespace ftl {
 
+    const char* out_of_memory::what() const noexcept {
+        return "ftl::out_of_memory";
+    }
+
     static const u8 NOP = 0x90;
 
     u8* cbuf::align(size_t boundary) {
-        size_t mask = boundary - 1;
-        u8* ptr = m_code_ptr + mask;
-        ptr = (u8*)((u64)ptr & ~mask);
-
-        FTL_ERROR_ON(ptr >= m_code_end, "out of code memory");
+        const size_t mask = boundary - 1;
+        const u8* ptr = (u8*)((u64)(m_code_ptr + mask) & ~mask);
+        const size_t count = ptr - m_code_ptr;
 
         // fill the padding with NOPs to help disassemblers
-        memset(m_code_ptr, NOP, ptr - m_code_ptr);
-        return m_code_ptr = ptr;
+        for (size_t i = 0; i < count; i++)
+            write(NOP);
+
+        FTL_ERROR_ON((size_t)m_code_ptr % boundary, "cannot align to %zu", boundary);
+        FTL_ERROR_ON(m_code_ptr != ptr, "failed to fill alignment");
+
+        return m_code_ptr;
     }
 
-    cbuf::cbuf(size_t size):
-        m_size(size),
-        m_code_head(NULL),
-        m_code_ptr(NULL),
-        m_code_end(NULL) {
+    cbuf::cbuf(size_t cap):
+        m_capacity(cap),
+        m_code_head(nullptr),
+        m_code_ptr(nullptr),
+        m_code_end(nullptr) {
         int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
         int flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-        m_code_ptr = m_code_head = (u8*)mmap(NULL, size, prot, flags, -1, 0);
-        m_code_end = m_code_head + m_size;
+        m_code_ptr = m_code_head = (u8*)mmap(NULL, cap, prot, flags, -1, 0);
+        m_code_end = m_code_head + m_capacity;
 
-        memset(m_code_head, NOP, m_size);
+        memset(m_code_head, NOP, m_capacity);
 
         FTL_ERROR_ON(m_code_head == MAP_FAILED, "mmap: %s", strerror(errno));
     }
 
     cbuf::~cbuf() {
         if (m_code_head) {
-            munmap(m_code_head, m_size);
+            munmap(m_code_head, m_capacity);
         }
     }
 

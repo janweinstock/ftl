@@ -47,7 +47,7 @@ namespace ftl {
     }
 
     label::~label() {
-        if (!is_placed() && !m_fixups.empty())
+        if (!is_placed() && !m_fixups.empty() && !std::uncaught_exception())
             FTL_ERROR("unplaced label '%s'", name());
     }
 

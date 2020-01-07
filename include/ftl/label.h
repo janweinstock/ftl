@@ -43,7 +43,7 @@ namespace ftl {
     public:
         const char* name() const { return m_name.c_str(); }
 
-        bool is_placed() const { return m_location != NULL; }
+        bool is_placed() const { return m_location != nullptr; }
 
         u8*  get_address() { return m_location; }
         const u8* get_address() const { return m_location; }

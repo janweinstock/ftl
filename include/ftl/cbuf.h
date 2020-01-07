@@ -24,10 +24,18 @@
 
 namespace ftl {
 
+    class out_of_memory: public std::exception
+    {
+    public:
+        out_of_memory() noexcept {};
+        virtual ~out_of_memory() noexcept {}
+        virtual const char* what() const noexcept;
+    };
+
     class cbuf
     {
     private:
-        size_t m_size;
+        size_t m_capacity;
 
         u8* m_code_head;
         u8* m_code_ptr;
@@ -42,11 +50,16 @@ namespace ftl {
         u8* get_code_entry() { return m_code_head; }
         u8* get_code_ptr()   { return m_code_ptr; }
 
+        size_t size() const { return m_code_ptr - m_code_head; }
         size_t size_remaining() const { return m_code_end - m_code_ptr; }
+        size_t capacity() const { return m_capacity; }
+
+        bool is_empty() const { return m_code_ptr == m_code_head; }
+        bool is_full() const { return m_code_ptr >= m_code_end; }
 
         u8* align(size_t boundary);
 
-        cbuf(size_t size);
+        cbuf(size_t capacity);
         virtual ~cbuf();
 
         cbuf() = delete;
@@ -60,10 +73,12 @@ namespace ftl {
     };
 
     inline size_t cbuf::write(const void* ptr, size_t sz) {
-        FTL_ERROR_ON(m_code_ptr + sz > m_code_end, "out of code memory");
-        memcpy(m_code_ptr, ptr, sz);
-        m_code_ptr += sz;
-        return sz;
+        size_t n = min(sz, size_remaining());
+        memcpy(m_code_ptr, ptr, n);
+        m_code_ptr += n;
+        if (n != sz)
+            throw out_of_memory();
+        return n;
     }
 
     template <typename T>

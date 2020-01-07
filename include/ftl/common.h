@@ -32,6 +32,7 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <exception>
 #include <type_traits>
 
 #include <unistd.h>
