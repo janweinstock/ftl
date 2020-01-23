@@ -6,9 +6,21 @@ language: c++
 compiler:
     - gcc
 
+addons:
+    coverity_scan:
+        project:
+            name: "janweinstock/ftl"
+            description: "An x86 code generator library for dynamic binary translation"
+        notification_email: "jan.weinstock@rwth-aachen.de"
+        build_command: "make"
+        branch_pattern: "coverity"
+
 env:
-    - BUILD=DEBUG
-    - BUILD=RELEASE
+    global:
+        - secure: "YX+OQSgucPkX+xVf/+IrWPa11vyCPsMt7dvPHMhi5cA0QrH4n7gMhVBSwACC7QGFgU2BxrFvCjmZpThincN6VQ/dt0i+rBhmOW/+JJQJzkCeVslW9IDore5VdbxMUd6JLSOg0tx6wcA2KPKvoc4optCjOteQWuKTdjaLROwhzp0="
+    jobs:
+        - BUILD=DEBUG
+        - BUILD=RELEASE
 
 before_script:
     - mkdir -p BUILD/$BUILD/BUILD && cd BUILD/$BUILD/BUILD
@@ -20,4 +32,5 @@ before_script:
               ../../..
 
 script:
-    - make -j 4 && ctest --output-on-failure && make install
+    - make -j 4 && ctest --output-on-failure
+
