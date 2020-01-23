@@ -7,3 +7,5 @@ executable code on-the-fly at runtime.
 
 
 [![Build Status](https://travis-ci.org/janweinstock/ftl.svg?branch=master)](https://travis-ci.org/janweinstock/ftl)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/20251/badge.svg)](https://scan.coverity.com/projects/janweinstock-ftl)
+
