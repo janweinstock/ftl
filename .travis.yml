@@ -17,7 +17,7 @@ addons:
 
 env:
     global:
-        - secure: "YX+OQSgucPkX+xVf/+IrWPa11vyCPsMt7dvPHMhi5cA0QrH4n7gMhVBSwACC7QGFgU2BxrFvCjmZpThincN6VQ/dt0i+rBhmOW/+JJQJzkCeVslW9IDore5VdbxMUd6JLSOg0tx6wcA2KPKvoc4optCjOteQWuKTdjaLROwhzp0="
+        - secure: "M9LvhMh0Jw5yyN0zLHoPxbhxh7i5FCmwphD1TOKG9KRgSUedVEExA6+VGi4nYc63yTPeQFPDKFKw/QSAg6rIdIrjxj6qILvn2l2VRHdT12MAJXViBUHC5Rm4p0h2t59SBPfd1VXWYXPQwNDfzRQUPj/YzFQQdMjQvvxafX71y6GdoI/oj97WGwhdAHslxqXaexSn7shmfo8mux9gHkGNDQQmeqLK+x6xMo/db0zbwzG3RoeqJdSe5MXZxGokj0l+La5aFdefxc9S2li+N/pXc+h0rUNKXJGDR++awYw3wZNOmy/PtTSxKsL+5abXkTe54KJAHARD/m2VFVbNEV564NQLwFz0YHXKoow2L0VK9gCXp2xdHWno27FL5gpFnp+zTM5c0iPeS7DwWSDGOL31wse5m6GVdBfZmQZYZbVNRUr1XloRy2VU6hty58wbbycRI79SGu9GfHabGtTzPPwMfeYFUHSkxHc3H5Mkurpc9f2gOALNhW3w+FvwVS0M/1OxW35tvGrCTUhHfcbJesqxjW/a11/+yVzWsh9vQrAha8GvNmZHd2a+yVr/6GD7jciQsbQTXMBVITgHYJkBQqf+dBvqvfaOYFiLIEwzqPZlXYIKulIswhNHf8qQhTXrgtsGvZo0Bt/B/rkK+i7ZvhEnS9KUbPNNxduw7wRADFNrKD4="
     jobs:
         - BUILD=DEBUG
         - BUILD=RELEASE
