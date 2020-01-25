@@ -129,30 +129,30 @@ namespace ftl {
         size_t sfence();
         size_t mfence();
 
-        size_t call(u8* fn, fixup* fix = NULL);
+        size_t call(u8* fn, fixup* fix = nullptr);
         size_t call(const rm& dest);
 
-        size_t jmpi(i32 offset, fixup* fix = NULL);
+        size_t jmpi(i32 offset, fixup* fix = nullptr);
         size_t jmpr(const rm& dest);
 
-        size_t jo(i32 offset, fixup* fix = NULL);
-        size_t jno(i32 offset, fixup* fix = NULL);
-        size_t jb(i32 offset, fixup* fix = NULL);
-        size_t jae(i32 offset, fixup* fix = NULL);
-        size_t jz(i32 offset, fixup* fix = NULL);
-        size_t jnz(i32 offset, fixup* fix = NULL);
-        size_t je(i32 offset, fixup* fix = NULL);
-        size_t jne(i32 offset, fixup* fix = NULL);
-        size_t jbe(i32 offset, fixup* fix = NULL);
-        size_t ja(i32 offset, fixup* fix = NULL);
-        size_t js(i32 offset, fixup* fix = NULL);
-        size_t jns(i32 offset, fixup* fix = NULL);
-        size_t jp(i32 offset, fixup* fix = NULL);
-        size_t jnp(i32 offset, fixup* fix = NULL);
-        size_t jl(i32 offset, fixup* fix = NULL);
-        size_t jge(i32 offset, fixup* fix = NULL);
-        size_t jle(i32 offset, fixup* fix = NULL);
-        size_t jg(i32 offset, fixup* fix = NULL);
+        size_t jo(i32 offset, fixup* fix = nullptr);
+        size_t jno(i32 offset, fixup* fix = nullptr);
+        size_t jb(i32 offset, fixup* fix = nullptr);
+        size_t jae(i32 offset, fixup* fix = nullptr);
+        size_t jz(i32 offset, fixup* fix = nullptr);
+        size_t jnz(i32 offset, fixup* fix = nullptr);
+        size_t je(i32 offset, fixup* fix = nullptr);
+        size_t jne(i32 offset, fixup* fix = nullptr);
+        size_t jbe(i32 offset, fixup* fix = nullptr);
+        size_t ja(i32 offset, fixup* fix = nullptr);
+        size_t js(i32 offset, fixup* fix = nullptr);
+        size_t jns(i32 offset, fixup* fix = nullptr);
+        size_t jp(i32 offset, fixup* fix = nullptr);
+        size_t jnp(i32 offset, fixup* fix = nullptr);
+        size_t jl(i32 offset, fixup* fix = nullptr);
+        size_t jge(i32 offset, fixup* fix = nullptr);
+        size_t jle(i32 offset, fixup* fix = nullptr);
+        size_t jg(i32 offset, fixup* fix = nullptr);
 
         size_t seto(const rm& dest);
         size_t setno(const rm& dest);

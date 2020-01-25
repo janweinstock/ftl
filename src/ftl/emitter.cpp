@@ -780,7 +780,7 @@ namespace ftl {
     }
 
     size_t emitter::call(u8* fn, fixup* fix) {
-        if ((fn == NULL) && (fix != NULL))
+        if (fn == nullptr && fix != nullptr)
             fn = m_buffer.get_code_ptr();
 
         i64 offset = fn - m_buffer.get_code_ptr() - 5;

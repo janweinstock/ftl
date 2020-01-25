@@ -66,7 +66,7 @@ namespace ftl {
         static const size_t PLSIZE = 64;
 
         func(const string& name, size_t bufsz = 4 * KiB);
-        func(const string& name, cbuf& buffer, void* dataptr = NULL);
+        func(const string& name, cbuf& buffer, void* dataptr = nullptr);
         func(func&& other);
         ~func();
 

@@ -51,7 +51,7 @@ namespace ftl {
 
     bool alloc::is_empty(reg r) const {
         FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
-        if (m_regmap[r].owner == NULL)
+        if (m_regmap[r].owner == nullptr)
             return true;
         if (m_regmap[r].owner->is_dead())
             return true;
@@ -115,7 +115,7 @@ namespace ftl {
     }
 
     reg alloc::lookup(const value* val) const {
-        if (val == NULL)
+        if (val == nullptr)
             return NREGS;
 
         for (auto info : m_regmap) {
@@ -129,7 +129,7 @@ namespace ftl {
     }
 
     reg alloc::assign(const value* val, reg r) {
-        FTL_ERROR_ON(!val, "attempt to assign NULL value");
+        FTL_ERROR_ON(!val, "attempt to assign nullptr value");
 
         if (r == NREGS)
             r = lookup(val);
@@ -158,7 +158,7 @@ namespace ftl {
     }
 
     reg alloc::fetch(const value* val, reg r) {
-        FTL_ERROR_ON(!val, "attempt to fetch NULL value");
+        FTL_ERROR_ON(!val, "attempt to fetch nullptr value");
 
         reg curr = lookup(val);
         if ((curr < NREGS) && (curr == r || r == NREGS))
@@ -186,7 +186,7 @@ namespace ftl {
     void alloc::free(reg r) {
         FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
 
-        m_regmap[r].owner = NULL;
+        m_regmap[r].owner = nullptr;
         m_regmap[r].dirty = false;
         m_regmap[r].count = 0;
     }
@@ -198,7 +198,7 @@ namespace ftl {
             return;
 
         const value* val = m_regmap[r].owner;
-        FTL_ERROR_ON(val == NULL, "store operation on empty register");
+        FTL_ERROR_ON(val == nullptr, "store operation on empty register");
 
         if (val->is_scratch())
             return;
@@ -305,7 +305,7 @@ namespace ftl {
     size_t alloc::count_dirty_regs() const {
         size_t count = 0;
         for (auto reg : m_regmap)
-            if (reg.owner != NULL && reg.dirty)
+            if (reg.owner != nullptr && reg.dirty)
                 count++;
         return count;
     }
@@ -313,7 +313,7 @@ namespace ftl {
     size_t alloc::count_active_regs() const {
         size_t count = 0;
         for (auto reg : m_regmap)
-            if (reg.owner != NULL)
+            if (reg.owner != nullptr)
                 count++;
         return count;
     }
@@ -348,7 +348,7 @@ namespace ftl {
 
         for (auto r : all_regs) {
            m_regmap[r].regid = r;
-           m_regmap[r].owner = NULL;
+           m_regmap[r].owner = nullptr;
            m_regmap[r].dirty = false;
            m_regmap[r].count = 0;
        }

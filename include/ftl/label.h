@@ -48,7 +48,7 @@ namespace ftl {
         u8*  get_address() { return m_location; }
         const u8* get_address() const { return m_location; }
 
-        label(const string& name, cbuf& buf, alloc& al, u8* location = NULL);
+        label(const string& name, cbuf& buf, alloc& al, u8* location = nullptr);
         label(label&& other);
         ~label();
 

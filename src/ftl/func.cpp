@@ -61,7 +61,7 @@ namespace ftl {
 
     func::func(const string& nm, cbuf& buffer, void* dataptr):
         m_name(nm),
-        m_bufptr(NULL),
+        m_bufptr(nullptr),
         m_buffer(buffer),
         m_emitter(m_buffer),
         m_alloc(m_emitter),
@@ -71,7 +71,7 @@ namespace ftl {
         m_exit(nm + ".exit", m_buffer, m_alloc, m_head + PLSIZE) {
         if (m_code == m_head)
             gen_prologue_epilogue();
-        if (dataptr != NULL)
+        if (dataptr != nullptr)
             set_data_ptr(dataptr);
     }
 
@@ -85,7 +85,7 @@ namespace ftl {
         m_code(other.m_code),
         m_entry(std::move(other.m_entry)),
         m_exit(std::move(other.m_exit)) {
-        other.m_bufptr = NULL;
+        other.m_bufptr = nullptr;
     }
 
     func::~func() {
