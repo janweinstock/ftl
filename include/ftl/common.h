@@ -38,10 +38,6 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#define FTL_PAGE_SIZE        (4096)
-#define FTL_PAGE_MASK(addr)  ((addr) & ~(FTL_PAGE_SIZE - 1))
-#define FTL_PAGE_ROUND(addr) (FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1))
-
 #define FTL_ARRAY_SIZE(a)    (sizeof(a) / sizeof((a)[0]))
 
 namespace ftl {
@@ -68,6 +64,16 @@ namespace ftl {
     using std::vector;
     using std::array;
     using std::stringstream;
+
+    const size_t FTL_PAGE_SIZE = 4096;
+
+    constexpr size_t FTL_PAGE_MASK(size_t addr) {
+        return (addr) & ~(FTL_PAGE_SIZE - 1);
+    }
+
+    constexpr size_t FTL_PAGE_ROUND(size_t addr) {
+        return FTL_PAGE_MASK(addr + FTL_PAGE_SIZE - 1);
+    }
 
 }
 

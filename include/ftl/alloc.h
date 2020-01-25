@@ -91,11 +91,12 @@ namespace ftl {
         void register_value(value* v);
         void unregister_value(value* v);
 
-        value new_local_noinit(const string& name, int bits, bool sign,
-                        reg r = NREGS);
-        value new_local(const string& name, int bits, bool sign, i64 val,
-                        reg r = NREGS);
-        value new_global(const string& name, int bits, bool sign, u64 addr);
+        value new_local_noinit(const string& name, int bits, reg r = NREGS);
+        value new_local(const string& name, int bits, i64 val, reg r = NREGS);
+        value new_global(const string& name, int bits, u64 addr);
+        value new_scratch_noinit(const string& name, int bits, reg r = NREGS);
+        value new_scratch(const string& name, int bits, i64 val, reg r = NREGS);
+
         void free_value(value& val);
 
         size_t count_dirty_regs() const;

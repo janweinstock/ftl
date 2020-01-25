@@ -39,3 +39,5 @@ basic_test(movext)
 basic_test(cmov)
 basic_test(fence)
 basic_test(atomic)
+basic_test(scratch)
+

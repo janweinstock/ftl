@@ -104,6 +104,18 @@ namespace ftl {
         value gen_global_i32(const string& name, void* addr);
         value gen_global_i64(const string& name, void* addr);
 
+        value gen_scratch_val(const string& name, int bits, reg r = NREGS);
+        value gen_scratch_i8 (const string& name, reg r = NREGS);
+        value gen_scratch_i16(const string& name, reg r = NREGS);
+        value gen_scratch_i32(const string& name, reg r = NREGS);
+        value gen_scratch_i64(const string& name, reg r = NREGS);
+
+        value gen_scratch_val(const string& nm, int bits, i64 v, reg r = NREGS);
+        value gen_scratch_i8 (const string& nm, i8  val, reg r = NREGS);
+        value gen_scratch_i16(const string& nm, i16 val, reg r = NREGS);
+        value gen_scratch_i32(const string& nm, i32 val, reg r = NREGS);
+        value gen_scratch_i64(const string& nm, i64 val, reg r = NREGS);
+
         void free_value(value& val);
 
         func gen_function(const string& name);
@@ -255,7 +267,7 @@ namespace ftl {
     }
 
     inline value func::gen_local_val(const string& name, int bits, reg r) {
-        return m_alloc.new_local_noinit(name, bits, true, r);
+        return m_alloc.new_local_noinit(name, bits, r);
     }
 
     inline value func::gen_local_i8 (const string& name, reg r) {
@@ -275,8 +287,8 @@ namespace ftl {
     }
 
     inline value func::gen_local_val(const string& nm, int w, i64 v, reg r) {
-        FTL_ERROR_ON(encode_size(v) > w, "initialization value for too large");
-        return m_alloc.new_local(nm, w, true, v, r);
+        FTL_ERROR_ON(encode_size(v) > w, "initialization value too large");
+        return m_alloc.new_local(nm, w, v, r);
     }
 
     inline value func::gen_local_i8(const string& name, i8 val, reg r) {
@@ -296,7 +308,7 @@ namespace ftl {
     }
 
     inline value func::gen_global_val(const string& nm, int bits, void* addr) {
-        return m_alloc.new_global(nm, bits, true, (u64)addr);
+        return m_alloc.new_global(nm, bits, (u64)addr);
     }
 
     inline value func::gen_global_i8(const string& name, void* addr) {
@@ -313,6 +325,47 @@ namespace ftl {
 
     inline value func::gen_global_i64(const string& name, void* addr) {
         return gen_global_val(name, 64, addr);
+    }
+
+    inline value func::gen_scratch_val(const string& name, int bits, reg r) {
+        return m_alloc.new_scratch_noinit(name, bits, r);
+    }
+
+    inline value func::gen_scratch_i8 (const string& name, reg r) {
+        return gen_scratch_val(name, 8, r);
+    }
+
+    inline value func::gen_scratch_i16(const string& name, reg r) {
+        return gen_scratch_val(name, 16, r);
+    }
+
+    inline value func::gen_scratch_i32(const string& name, reg r) {
+        return gen_scratch_val(name, 32, r);
+    }
+
+    inline value func::gen_scratch_i64(const string& name, reg r) {
+        return gen_scratch_val(name, 64, r);
+    }
+
+    inline value func::gen_scratch_val(const string& nm, int w, i64 v, reg r) {
+        FTL_ERROR_ON(encode_size(v) > w, "initialization value too large");
+        return m_alloc.new_scratch(nm, w, v, r);
+    }
+
+    inline value func::gen_scratch_i8(const string& name, i8 val, reg r) {
+        return gen_scratch_val(name, 8, val, r);
+    }
+
+    inline value func::gen_scratch_i16(const string& name, i16 val, reg r) {
+        return gen_scratch_val(name, 16, val, r);
+    }
+
+    inline value func::gen_scratch_i32(const string& name, i32 val, reg r) {
+        return gen_scratch_val(name, 32, val, r);
+    }
+
+    inline value func::gen_scratch_i64(const string& name, i64 val, reg r) {
+        return gen_scratch_val(name, 64, val, r);
     }
 
     inline void func::free_value(value& val) {

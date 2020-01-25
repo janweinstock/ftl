@@ -132,8 +132,8 @@ namespace ftl {
     }
 
     void func::gen_ret(value& val) {
-        m_alloc.flush_all_regs();
         m_emitter.movsx(64, val.bits, RAX, val);
+        m_alloc.flush_all_regs();
         gen_ret();
     }
 

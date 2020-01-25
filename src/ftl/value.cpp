@@ -51,6 +51,10 @@ namespace ftl {
         return mem.r == m_allocator.BASE_REGISTER;
     }
 
+    bool value::is_scratch() const {
+        return mem.r == NREGS;
+    }
+
     bool value::is_reg() const {
         return m_allocator.lookup(this) < NREGS;
     }
@@ -126,6 +130,8 @@ namespace ftl {
         reg curr = r();
         if (reg_valid(curr))
             return curr;
+
+        FTL_ERROR_ON(is_scratch(), "attempt to get address of scratch value");
 
         if (!is_directly_addressable()) {
             reg base = m_allocator.select();

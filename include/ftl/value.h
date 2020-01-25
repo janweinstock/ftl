@@ -45,14 +45,15 @@ namespace ftl {
 
         const char* name() const { return m_name.c_str(); }
 
-        bool is_dead()     const { return m_dead; }
-        void mark_dead()         { m_dead = true; }
+        bool is_dead() const;
+        void mark_dead() { m_dead = true; }
 
         bool is_dirty() const;
         void mark_dirty();
 
         bool is_local() const;
         bool is_global() const;
+        bool is_scratch() const;
 
         bool is_reg() const;
         bool is_mem() const;
@@ -77,6 +78,10 @@ namespace ftl {
         value(const value&) = delete;
         value& operator = (const value&) = delete;
     };
+
+    inline bool value::is_dead() const {
+        return m_dead || (is_scratch() && r() == NREGS);
+    }
 
     inline bool value::operator == (const value& other) const {
         return bits == other.bits &&

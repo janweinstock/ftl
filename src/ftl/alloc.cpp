@@ -169,6 +169,7 @@ namespace ftl {
         if (curr < NREGS && curr != r) {
             m_emitter.movr(val->bits, r, curr);
         } else {
+            FTL_ERROR_ON(val->is_scratch(), "attempt to fetch scratch value");
             if (!val->is_directly_addressable()) {
                 reg base = select();
                 flush(base);
@@ -184,6 +185,7 @@ namespace ftl {
 
     void alloc::free(reg r) {
         FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
+
         m_regmap[r].owner = NULL;
         m_regmap[r].dirty = false;
         m_regmap[r].count = 0;
@@ -197,6 +199,9 @@ namespace ftl {
 
         const value* val = m_regmap[r].owner;
         FTL_ERROR_ON(val == NULL, "store operation on empty register");
+
+        if (val->is_scratch())
+            return;
 
         if (!val->is_directly_addressable()) {
             reg base = select();
@@ -228,39 +233,56 @@ namespace ftl {
         stl_remove_erase(m_values, val);
     }
 
-    value alloc::new_local_noinit(const string& name, int bits, bool sign,
-                                  reg r) {
+    value alloc::new_local_noinit(const string& name, int bits, reg r) {
         int idx = ffs(m_locals) - 1;
         FTL_ERROR_ON(idx < 0, "out of stack frame memory");
         m_locals &= ~(1ull << idx);
 
         if (r == NREGS)
             r = select();
-        flush(r);
 
-        value v(*this, name, bits, sign, 0, STACK_POINTER, -idx * sizeof(u64));
+        value v(*this, name, bits, true, 0, STACK_POINTER, -idx * sizeof(u64));
+
+        flush(r);
         assign(&v, r);
+
         return v;
     }
 
-    value alloc::new_local(const string& name, int bits, bool sign, i64 val,
-                           reg r) {
-        value v = new_local_noinit(name, bits, sign, r);
+    value alloc::new_local(const string& name, int bits, i64 val, reg r) {
+        value v = new_local_noinit(name, bits, r);
         r = v.r();
         m_emitter.movi(bits, r, val);
         mark_dirty(r);
         return v;
     }
 
-    value alloc::new_global(const string& name, int bits, bool sign, u64 addr) {
+    value alloc::new_global(const string& name, int bits, u64 addr) {
         if (m_base == 0) {
             m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
             m_emitter.movi(64, BASE_REGISTER, m_base);
         }
 
         i32 offset = addr - m_base;
-        value v(*this, name, bits, sign, addr, BASE_REGISTER, offset);
+        value v(*this, name, bits, true, addr, BASE_REGISTER, offset);
+        return v;
+    }
 
+    value alloc::new_scratch_noinit(const string& name, int bits, reg r) {
+        if (r == NREGS)
+            r = select();
+        flush(r);
+
+        value v(*this, name, bits, true, ~0ull, NREGS, 0);
+        assign(&v, r);
+        return v;
+    }
+
+    value alloc::new_scratch(const string& name, int bits, i64 val, reg r) {
+        value v = new_scratch_noinit(name, bits, r);
+        r = v.r();
+        m_emitter.movi(bits, r, val);
+        mark_dirty(r);
         return v;
     }
 
