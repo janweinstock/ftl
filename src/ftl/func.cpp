@@ -1136,7 +1136,7 @@ namespace ftl {
         m_alloc.store_all_regs();
         m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
 
-        value ret = gen_local_val("retval", 64, (i64)fn, RAX);
+        value ret = gen_scratch_i64("retval", (i64)fn, RAX);
         m_emitter.call(RAX);
         m_alloc.mark_dirty(RAX);
 
