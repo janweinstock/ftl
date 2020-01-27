@@ -30,55 +30,63 @@
 
 namespace ftl {
 
-    template <typename T>
     class arg
     {
     public:
-        static void fetch(emitter& e, reg r, const T& val);
+        template <typename T>
+        static void fetch(emitter& e, reg r, T* ptr);
+
+        static void fetch(emitter& e, reg r, i8  val);
+        static void fetch(emitter& e, reg r, i16 val);
+        static void fetch(emitter& e, reg r, i32 val);
+        static void fetch(emitter& e, reg r, i64 val);
+
+        static void fetch(emitter& e, reg r, u8  val);
+        static void fetch(emitter& e, reg r, u16 val);
+        static void fetch(emitter& e, reg r, u32 val);
+        static void fetch(emitter& e, reg r, u64 val);
+
+        static void fetch(emitter& e, reg r, const value& val);
     };
 
-    template <>
-    inline void arg<i8>::fetch(emitter& e, reg r, const i8& val) {
+    template <typename T>
+    inline void arg::fetch(emitter& e, reg r, T* ptr) {
+        arg::fetch(e, r, reinterpret_cast<uintptr_t>(ptr));
+    }
+
+    inline void arg::fetch(emitter& e, reg r, i8 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<i16>::fetch(emitter& e, reg r, const i16& val) {
+    inline void arg::fetch(emitter& e, reg r, i16 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<i32>::fetch(emitter& e, reg r, const i32& val) {
+    inline void arg::fetch(emitter& e, reg r, i32 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<i64>::fetch(emitter& e, reg r, const i64& val) {
+    inline void arg::fetch(emitter& e, reg r, i64 val) {
         e.movi(64, r, val);
     }
 
-    template <>
-    inline void arg<u8>::fetch(emitter& e, reg r, const u8& val) {
+    inline void arg::fetch(emitter& e, reg r, u8 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<u16>::fetch(emitter& e, reg r, const u16& val) {
+    inline void arg::fetch(emitter& e, reg r, u16 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<u32>::fetch(emitter& e, reg r, const u32& val) {
+    inline void arg::fetch(emitter& e, reg r, u32 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<u64>::fetch(emitter& e, reg r, const u64& val) {
+    inline void arg::fetch(emitter& e, reg r, u64 val) {
         e.movi(64, r, (i64)val);
     }
 
-    template <>
-    inline void arg<value>::fetch(emitter& e, reg r, const value& val) {
+    inline void arg::fetch(emitter& e, reg r, const value& val) {
         e.movr(val.bits, r, val);
     }
 

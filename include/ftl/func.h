@@ -376,7 +376,7 @@ namespace ftl {
     inline value func::gen_call(func2* fn, const T1& a) {
         reg r = argreg(1);
         m_alloc.flush(r);
-        arg<T1>::fetch(m_emitter, r, a);
+        arg::fetch(m_emitter, r, a);
         return gen_call((func1*)fn);
     }
 
@@ -384,7 +384,7 @@ namespace ftl {
     inline value func::gen_call(func3* fn, const T1& a, const T2& b) {
         reg r = argreg(2);
         m_alloc.flush(r);
-        arg<T2>::fetch(m_emitter, r, b);
+        arg::fetch(m_emitter, r, b);
         return gen_call((func2*)fn, a);
     }
 
@@ -393,7 +393,7 @@ namespace ftl {
                                 const T3& c) {
         reg r = argreg(3);
         m_alloc.flush(r);
-        arg<T3>::fetch(m_emitter, r, c);
+        arg::fetch(m_emitter, r, c);
         return gen_call((func3*)fn, a, b);
     }
 
