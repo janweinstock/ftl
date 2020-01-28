@@ -245,21 +245,28 @@ namespace ftl {
         void gen_cmpxchg(value& dest, value& src, value& cmpv);
         void gen_fence(bool sync_loads = true, bool sync_stores = true);
 
-        typedef i64 (func1)(void* bptr);
-        typedef i64 (func2)(void* bptr, i64 arg1);
-        typedef i64 (func3)(void* bptr, i64 arg1, i64 arg2);
-        typedef i64 (func4)(void* bptr, i64 arg1, i64 arg2, i64 arg3);
+        template <typename FUNC>
+        value gen_call(FUNC* fn);
 
-        value gen_call(func1* fn);
+        template <typename FUNC, typename T1>
+        value gen_call(FUNC* fn, const T1& arg1);
 
-        template <typename T1>
-        value gen_call(func2* fn, const T1& a);
+        template <typename FUNC, typename T1, typename T2>
+        value gen_call(FUNC* fn, const T1& arg1, const T2& arg2);
 
-        template <typename T1, typename T2>
-        value gen_call(func3* fn, const T1& a, const T2& b);
+        template <typename FUNC, typename T1, typename T2, typename T3>
+        value gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                       const T3& arg3);
 
-        template <typename T1, typename T2, typename T3>
-        value gen_call(func4* fn, const T1& a, const T2& b, const T3& c);
+        template <typename FUNC, typename T1, typename T2, typename T3,
+                  typename T4>
+        value gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                       const T3& arg3, const T4& arg4);
+
+        template <typename FUNC, typename T1, typename T2, typename T3,
+                  typename T4, typename T5>
+        value gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                       const T3& arg3, const T4& arg4, const T5& arg5);
     };
 
     inline label func::gen_label(const string& name) {
@@ -372,29 +379,63 @@ namespace ftl {
         m_alloc.free_value(val);
     }
 
-    template <typename T1>
-    inline value func::gen_call(func2* fn, const T1& a) {
+    template <typename FUNC>
+    inline value func::gen_call(FUNC* fn) {
+        m_alloc.flush_volatile_regs();
+        m_alloc.store_all_regs();
+        m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
+
+        value ret = gen_scratch_i64("retval", (i64)fn, RAX);
+        m_emitter.call(RAX);
+        m_alloc.mark_dirty(RAX);
+
+        return ret;
+    }
+
+    template <typename FUNC, typename T1>
+    inline value func::gen_call(FUNC* fn, const T1& arg1) {
         reg r = argreg(1);
         m_alloc.flush(r);
-        arg::fetch(m_emitter, r, a);
-        return gen_call((func1*)fn);
+        arg::fetch(m_emitter, r, arg1);
+        return gen_call(fn);
     }
 
-    template <typename T1, typename T2>
-    inline value func::gen_call(func3* fn, const T1& a, const T2& b) {
+    template <typename FUNC, typename T1, typename T2>
+    inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2) {
         reg r = argreg(2);
         m_alloc.flush(r);
-        arg::fetch(m_emitter, r, b);
-        return gen_call((func2*)fn, a);
+        arg::fetch(m_emitter, r, arg2);
+        return gen_call(fn, arg1);
     }
 
-    template <typename T1, typename T2, typename T3>
-    inline value func::gen_call(func4* fn, const T1& a, const T2& b,
-                                const T3& c) {
+    template <typename FUNC, typename T1, typename T2, typename T3>
+    inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                                const T3& arg3) {
         reg r = argreg(3);
         m_alloc.flush(r);
-        arg::fetch(m_emitter, r, c);
-        return gen_call((func3*)fn, a, b);
+        arg::fetch(m_emitter, r, arg3);
+        return gen_call(fn, arg1, arg2);
+    }
+
+    template <typename FUNC, typename T1, typename T2, typename T3,
+              typename T4>
+    inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                                const T3& arg3, const T4& arg4) {
+        reg r = argreg(4);
+        m_alloc.flush(r);
+        arg::fetch(m_emitter, r, arg4);
+        return gen_call(fn, arg1, arg2, arg3);
+    }
+
+    template <typename FUNC, typename T1, typename T2, typename T3,
+              typename T4, typename T5>
+    inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
+                                const T3& arg3, const T4& arg4,
+                                const T5& arg5) {
+        reg r = argreg(5);
+        m_alloc.flush(r);
+        arg::fetch(m_emitter, r, arg5);
+        return gen_call(fn, arg1, arg2, arg3, arg4);
     }
 
     static inline i64 invoke(const cbuf& buffer, void* code, void* data) {

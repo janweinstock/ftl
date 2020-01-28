@@ -1131,16 +1131,4 @@ namespace ftl {
             m_emitter.sfence();
     }
 
-    value func::gen_call(func1* fn) {
-        m_alloc.flush_volatile_regs();
-        m_alloc.store_all_regs();
-        m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
-
-        value ret = gen_scratch_i64("retval", (i64)fn, RAX);
-        m_emitter.call(RAX);
-        m_alloc.mark_dirty(RAX);
-
-        return ret;
-    }
-
 }
