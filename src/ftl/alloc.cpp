@@ -170,14 +170,7 @@ namespace ftl {
             m_emitter.movr(val->bits, r, curr);
         } else {
             FTL_ERROR_ON(val->is_scratch(), "attempt to fetch scratch value");
-            if (!val->is_directly_addressable()) {
-                reg base = select();
-                flush(base);
-                m_emitter.movi(64, base, val->addr);
-                m_emitter.movr(val->bits, r, memop(base, 0));
-            } else {
-                m_emitter.movr(val->bits, r, val->mem);
-            }
+            m_emitter.movr(val->bits, r, val->mem());
         }
 
         return r;
@@ -203,15 +196,7 @@ namespace ftl {
         if (val->is_scratch())
             return;
 
-        if (!val->is_directly_addressable()) {
-            reg base = select();
-            flush(base);
-            m_emitter.movi(64, base, val->addr);
-            m_emitter.movr(val->bits, memop(base, 0), r);
-        } else {
-            m_emitter.movr(val->bits, val->mem, r);
-        }
-
+        m_emitter.movr(val->bits, val->mem(), r);
         mark_clean(r);
     }
 
@@ -263,7 +248,7 @@ namespace ftl {
             m_emitter.movi(64, BASE_REGISTER, m_base);
         }
 
-        i32 offset = addr - m_base;
+        i64 offset = addr - m_base;
         value v(*this, name, bits, true, addr, BASE_REGISTER, offset);
         return v;
     }
@@ -290,7 +275,7 @@ namespace ftl {
         FTL_ERROR_ON(val.is_dead(), "double free value %s", val.name());
 
         if (val.is_local()) {
-            int idx = -val.mem.offset / sizeof(u64);
+            int idx = -val.mem().offset / sizeof(u64);
             FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
             m_locals |= (1 << idx);
         }

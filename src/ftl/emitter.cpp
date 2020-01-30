@@ -216,8 +216,10 @@ namespace ftl {
             mode = MODRM_INDIRECT;
         else if (fits_i8(rm.offset))
             mode = MODRM_DISP8;
-        else
+        else if (fits_i32(rm.offset))
             mode = MODRM_DISP32;
+        else
+            FTL_ERROR("operand offset too big to encode: %ld", rm.offset);
 
         len += modrm(mode, r & 7, rm.r & 7);
 

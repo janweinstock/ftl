@@ -34,14 +34,15 @@ namespace ftl {
         alloc& m_allocator;
         string m_name;
         bool   m_dead;
+        rm     m_mem;
 
     public:
         int  bits;
         bool sign;
         u64  addr;
 
-        rm  mem;
         reg r() const;
+        rm  mem() const;
 
         const char* name() const { return m_name.c_str(); }
 
@@ -66,7 +67,7 @@ namespace ftl {
         void flush();
 
         value(alloc& al, const string& name, int bits, bool sign, u64 addr,
-              reg base, i32 offset);
+              reg base, i64 offset);
         value(value&& other);
         ~value();
 
@@ -81,6 +82,10 @@ namespace ftl {
 
     inline bool value::is_dead() const {
         return m_dead || (is_scratch() && r() == NREGS);
+    }
+
+    inline bool value::is_directly_addressable() const {
+        return !is_scratch() && m_mem.is_addressable();
     }
 
     inline bool value::operator == (const value& other) const {

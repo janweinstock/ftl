@@ -29,6 +29,16 @@ namespace ftl {
         return m_allocator.lookup(this);
     }
 
+    rm value::mem() const {
+        if (m_mem.is_addressable())
+            return m_mem;
+
+        reg base = m_allocator.select();
+        m_allocator.flush(base);
+        m_allocator.get_emitter().movi(64, base, addr);
+        return memop(base, 0);
+    }
+
     bool value::is_dirty() const {
         reg curr = r();
         if (!reg_valid(curr))
@@ -44,15 +54,15 @@ namespace ftl {
     }
 
     bool value::is_local() const {
-        return mem.r == m_allocator.STACK_POINTER;
+        return m_mem.r == m_allocator.STACK_POINTER;
     }
 
     bool value::is_global() const {
-        return mem.r == m_allocator.BASE_REGISTER;
+        return m_mem.r == m_allocator.BASE_REGISTER;
     }
 
     bool value::is_scratch() const {
-        return mem.r == NREGS;
+        return m_mem.r == NREGS;
     }
 
     bool value::is_reg() const {
@@ -61,12 +71,6 @@ namespace ftl {
 
     bool value::is_mem() const {
         return m_allocator.lookup(this) == NREGS;
-    }
-
-    bool value::is_directly_addressable() const {
-        if (is_local())
-            return true;
-        return fits_i32(addr - m_allocator.get_base_addr());
     }
 
     reg value::assign(reg r) {
@@ -90,14 +94,14 @@ namespace ftl {
     }
 
     value::value(alloc& al, const string& nm, int bits, bool sign, u64 addr,
-                 reg base, i32 offset):
+                 reg base, i64 offset):
         m_allocator(al),
         m_name(nm),
         m_dead(false),
+        m_mem(base, offset),
         bits(bits),
         sign(sign),
-        addr(addr),
-        mem(base, offset) {
+        addr(addr) {
         if (!valid_width(bits))
             FTL_ERROR("value '%s' has invalid bit width %d", name(), bits);
         m_allocator.register_value(this);
@@ -107,10 +111,10 @@ namespace ftl {
         m_allocator(other.m_allocator),
         m_name(other.m_name),
         m_dead(other.m_dead),
+        m_mem(other.m_mem),
         bits(other.bits),
         sign(other.sign),
-        addr(other.addr),
-        mem(other.mem) {
+        addr(other.addr) {
         m_allocator.register_value(this);
 
         other.mark_dead();
@@ -133,14 +137,7 @@ namespace ftl {
 
         FTL_ERROR_ON(is_scratch(), "attempt to get address of scratch value");
 
-        if (!is_directly_addressable()) {
-            reg base = m_allocator.select();
-            m_allocator.flush(base);
-            m_allocator.get_emitter().movi(64, base, addr);
-            return memop(base, 0);
-        }
-
-        return mem;
+        return mem();
     }
 
 }

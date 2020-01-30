@@ -81,12 +81,13 @@ namespace ftl {
     struct rm {
         bool is_mem;
         reg  r;
-        i32  offset;
+        i64  offset;
 
         bool is_reg() const { return !is_mem; }
+        bool is_addressable() const { return fits_i32(offset); }
 
         rm(reg _r): is_mem(false), r(_r), offset(0) {}
-        rm(reg base, i32 off): is_mem(true), r(base), offset(off) {}
+        rm(reg base, i64 off): is_mem(true), r(base), offset(off) {}
 
         bool operator == (const rm& other) const;
 
