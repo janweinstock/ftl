@@ -383,7 +383,7 @@ namespace ftl {
     inline value func::gen_call(FUNC* fn) {
         m_alloc.flush_volatile_regs();
         m_alloc.store_all_regs();
-        m_emitter.movi(64, argreg(0), (u64)m_alloc.get_base_addr());
+        m_emitter.movr(64, argreg(0), m_alloc.BASE_REGISTER);
 
         value ret = gen_scratch_i64("retval", (i64)fn, RAX);
         m_emitter.call(RAX);
