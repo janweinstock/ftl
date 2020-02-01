@@ -2,35 +2,35 @@ dist: bionic
 sudo: false
 
 language: c++
-
-compiler:
-    - gcc
+compiler: gcc
 
 addons:
-    coverity_scan:
-        project:
-            name: "janweinstock/ftl"
-            description: "An x86 code generator library for dynamic binary translation"
-        notification_email: "jan.weinstock@rwth-aachen.de"
-        build_command: "make"
-        branch_pattern: "coverity"
+  coverity_scan:
+    project:
+      name: "janweinstock/ftl"
+      description: "An x86 code generator library for dynamic binary translation"
+    notification_email: "jan.weinstock@rwth-aachen.de"
+    build_command: "make"
+    branch_pattern: "coverity"
+
+jobs:
+  include:
+    - name: "Debug"
+      env:  BUILD=DEBUG
+
+    - name: "Release"
+      env:  BUILD=RELEASE
+      if:   branch != coverity
 
 env:
-    global:
-        secure: "kehsmV808YU3ffyit8m3eiKLLs1iEHYkjpFqTKUjKrQqtEYtqsmoGHEmwx2gqsv6IYULkczSSJdoIpHSz+xDKj39Xvo+X4Cio1hWE7NGZk+VkpSpIGeTYONkeGFN9DzW9KCRqPbfZgbiphzcFV7yNqMtJXE6wu0l+BXYhWgLBBlAxdhGn/WWlV8aB6+/OGryi/hXDOY813rvWUYN0LE577ENBLd0cIXQPUWgQrNq67T3WPtkl59yBxnH5hBUqC6AZ8CyY+zVpjLmNT6COP44riWaabBBPvSZYE75sR1SIwWXb6CDmcbl2kPxcjA52Khd3/xbPTHQRThCjElat91YHoFvJLgNivgk9x2fV2sFCAcQG8RX/VWx23vSIuwtFnz7MNelwCPqi8StXTUo2RxaS7rFECo2OSqjJdAksoC6NcBM83bwJ7oOOL+ZGMMvFskgxmwlQuq0jTk1zQ3xCjtFFvEvyud0QqQuF2LDZrMQ8DxoDJhfRHGvP7OKtLAeKaH5hUQnA5mQfCENPqeJGiYCxHAv3g5j2NqmSW0Lt97Dk/0gqoGn7J731PsbK20g/C4YR5IeO5xqRyURh8g5PlU00OvN2cMhrEj3nObs8ePX6ZF5momljla29OxruPFO+a4H06M2M484e/3LM40+LMZWpa/q8GyX+r0W9cr3+bvXYxQ="
-    jobs:
-        - BUILD=DEBUG
-        - BUILD=RELEASE
+  global:
+    secure: "kehsmV808YU3ffyit8m3eiKLLs1iEHYkjpFqTKUjKrQqtEYtqsmoGHEmwx2gqsv6IYULkczSSJdoIpHSz+xDKj39Xvo+X4Cio1hWE7NGZk+VkpSpIGeTYONkeGFN9DzW9KCRqPbfZgbiphzcFV7yNqMtJXE6wu0l+BXYhWgLBBlAxdhGn/WWlV8aB6+/OGryi/hXDOY813rvWUYN0LE577ENBLd0cIXQPUWgQrNq67T3WPtkl59yBxnH5hBUqC6AZ8CyY+zVpjLmNT6COP44riWaabBBPvSZYE75sR1SIwWXb6CDmcbl2kPxcjA52Khd3/xbPTHQRThCjElat91YHoFvJLgNivgk9x2fV2sFCAcQG8RX/VWx23vSIuwtFnz7MNelwCPqi8StXTUo2RxaS7rFECo2OSqjJdAksoC6NcBM83bwJ7oOOL+ZGMMvFskgxmwlQuq0jTk1zQ3xCjtFFvEvyud0QqQuF2LDZrMQ8DxoDJhfRHGvP7OKtLAeKaH5hUQnA5mQfCENPqeJGiYCxHAv3g5j2NqmSW0Lt97Dk/0gqoGn7J731PsbK20g/C4YR5IeO5xqRyURh8g5PlU00OvN2cMhrEj3nObs8ePX6ZF5momljla29OxruPFO+a4H06M2M484e/3LM40+LMZWpa/q8GyX+r0W9cr3+bvXYxQ="
 
 before_script:
-    - mkdir -p BUILD/$BUILD/BUILD && cd BUILD/$BUILD/BUILD
-    - |
-        cmake -DCMAKE_BUILD_TYPE=$BUILD \
-              -DCMAKE_INSTALL_PREFIX=.. \
-              -DFTL_BUILD_TESTS=ON      \
-              -DFTL_BUILD_EXAMPLES=ON   \
-              ../../..
+  - mkdir -p BUILD/$BUILD/BUILD && cd BUILD/$BUILD/BUILD
+  - cmake -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=.. \
+          -DFTL_BUILD_TESTS=ON -DFTL_BUILD_EXAMPLES=ON ../../..
 
 script:
-    - make -j 4 && ctest --output-on-failure
+  - make -j 4 && ctest --output-on-failure
 
