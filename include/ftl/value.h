@@ -45,6 +45,7 @@ namespace ftl {
         rm  mem() const;
 
         const char* name() const { return m_name.c_str(); }
+        i32 offset() const { return m_mem.offset; }
 
         bool is_dead() const;
         void mark_dead() { m_dead = true; }

@@ -275,7 +275,7 @@ namespace ftl {
         FTL_ERROR_ON(val.is_dead(), "double free value %s", val.name());
 
         if (val.is_local()) {
-            int idx = -val.mem().offset / sizeof(u64);
+            int idx = -val.offset() / sizeof(u64);
             FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
             m_locals |= (1 << idx);
         }
