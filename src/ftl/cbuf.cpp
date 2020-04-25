@@ -24,16 +24,16 @@ namespace ftl {
         return "ftl::out_of_memory";
     }
 
-    static const u8 NOP = 0x90;
+    //static const u8 NOP = 0x90;
+    static const u8 ILL = 0x06;
 
     u8* cbuf::align(size_t boundary) {
         const size_t mask = boundary - 1;
         const u8* ptr = (u8*)((u64)(m_code_ptr + mask) & ~mask);
         const size_t count = ptr - m_code_ptr;
 
-        // fill the padding with NOPs to help disassemblers
         for (size_t i = 0; i < count; i++)
-            write(NOP);
+            write(ILL);
 
         FTL_ERROR_ON((size_t)m_code_ptr % boundary, "cannot align to %zu", boundary);
         FTL_ERROR_ON(m_code_ptr != ptr, "failed to fill alignment");
@@ -52,7 +52,7 @@ namespace ftl {
         m_code_ptr = m_code_head = (u8*)mmap(NULL, cap, prot, flags, -1, 0);
         m_code_end = m_code_head + m_capacity;
 
-        memset(m_code_head, NOP, m_capacity);
+        memset(m_code_head, ILL, m_capacity);
 
         FTL_ERROR_ON(m_code_head == MAP_FAILED, "mmap: %s", strerror(errno));
     }
@@ -68,10 +68,10 @@ namespace ftl {
             FTL_ERROR("attempt to reset code pointer to outside code memory");
 
         if (addr > m_code_ptr) {
-            memset(m_code_ptr, NOP, addr - m_code_ptr);
+            memset(m_code_ptr, ILL, addr -  m_code_ptr);
             m_code_ptr = addr;
         } else if (addr < m_code_ptr) {
-            memset(addr, NOP, m_code_ptr - addr);
+            memset(addr, ILL, m_code_ptr - addr);
             m_code_ptr = addr;
         }
     }
