@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2019 Jan Henrik Weinstock                                        *
+ * Copyright 2020 Jan Henrik Weinstock                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License");            *
  * you may not use this file except in compliance with the License.           *
@@ -16,24 +16,28 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
+#ifndef FTL_VERSION_H
+#define FTL_VERSION_H
 
-#include "ftl/common.h"
-#include "ftl/error.h"
-#include "ftl/bitops.h"
-#include "ftl/utils.h"
+#define FTL_VERSION_MAJOR   @PROJECT_VERSION_MAJOR@
+#define FTL_VERSION_MINOR   @PROJECT_VERSION_MINOR@
+#define FTL_VERSION_PATCH   @PROJECT_VERSION_PATCH@
 
-#include "ftl/reg.h"
-#include "ftl/call.h"
-#include "ftl/value.h"
-#include "ftl/fixup.h"
-#include "ftl/cbuf.h"
-#include "ftl/emitter.h"
-#include "ftl/label.h"
-#include "ftl/alloc.h"
-#include "ftl/func.h"
+#define FTL_GIT_REV         "@FTL_GIT_REV@"
+#define FTL_GIT_REV_SHORT   "@FTL_GIT_REV_SHORT@"
 
-#include "ftl/version.h"
+#define FTL_VERSION         @FTL_VERSION@
+#define FTL_VERSION_STRING  "@FTL_VERSION_STRING@"
+
+namespace ftl {
+
+    extern const unsigned int version;
+    extern const char* const version_string;
+
+    static inline bool version_check() {
+        return version == FTL_VERSION;
+    }
+
+}
 
 #endif

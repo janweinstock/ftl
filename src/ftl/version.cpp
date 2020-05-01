@@ -1,6 +1,6 @@
 /******************************************************************************
  *                                                                            *
- * Copyright 2019 Jan Henrik Weinstock                                        *
+ * Copyright 2020 Jan Henrik Weinstock                                        *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License");            *
  * you may not use this file except in compliance with the License.           *
@@ -16,24 +16,39 @@
  *                                                                            *
  ******************************************************************************/
 
-#ifndef FTL_H
-#define FTL_H
-
-#include "ftl/common.h"
-#include "ftl/error.h"
-#include "ftl/bitops.h"
-#include "ftl/utils.h"
-
-#include "ftl/reg.h"
-#include "ftl/call.h"
-#include "ftl/value.h"
-#include "ftl/fixup.h"
-#include "ftl/cbuf.h"
-#include "ftl/emitter.h"
-#include "ftl/label.h"
-#include "ftl/alloc.h"
-#include "ftl/func.h"
-
 #include "ftl/version.h"
 
+#ifndef FTL_VERSION_MAJOR
+#error FTL_VERSION_MAJOR undefined
 #endif
+
+#ifndef FTL_VERSION_MINOR
+#error FTL_VERSION_MINOR undefined
+#endif
+
+#ifndef FTL_VERSION_PATCH
+#error FTL_VERSION_PATCH undefined
+#endif
+
+#ifndef FTL_GIT_REV
+#error FTL_GIT_REV undefined
+#endif
+
+#ifndef FTL_GIT_REV_SHORT
+#error FTL_GIT_REV_SHORT undefined
+#endif
+
+#ifndef FTL_VERSION
+#error FTL_VERSION undefined
+#endif
+
+#ifndef FTL_VERSION_STRING
+#error FTL_VERSION_STRING undefined
+#endif
+
+namespace ftl {
+
+    const unsigned int version = FTL_VERSION;
+    const char* const version_string = FTL_VERSION_STRING;
+
+}

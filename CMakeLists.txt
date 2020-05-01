@@ -17,10 +17,16 @@
  ##############################################################################
 
 cmake_minimum_required(VERSION 3.8)
-project(ftl)
+project(ftl VERSION 2020.05.01 LANGUAGES CXX)
 
 option(FTL_BUILD_TESTS "Build unit tests" OFF)
 option(FTL_BUILD_EXAMPLES "Build example programs" OFF)
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+include(GenVersionHeader)
+
+set(inc "${CMAKE_CURRENT_SOURCE_DIR}/include")
+set(gen "${CMAKE_CURRENT_BINARY_DIR}/gen")
 
 set(sources
     "src/ftl/utils.cpp"
@@ -30,15 +36,19 @@ set(sources
     "src/ftl/label.cpp"
     "src/ftl/value.cpp"
     "src/ftl/alloc.cpp"
-    "src/ftl/func.cpp")
+    "src/ftl/func.cpp"
+    "src/ftl/version.cpp")
 
 add_library(ftl ${sources})
 target_compile_features(ftl PUBLIC cxx_std_11)
-target_include_directories(ftl PUBLIC include)
+target_compile_definitions(ftl PUBLIC $<$<CONFIG:DEBUG>:FTL_DEBUG>)
+target_include_directories(ftl PUBLIC ${inc})
+target_include_directories(ftl PUBLIC ${gen})
 set_target_properties(ftl PROPERTIES DEBUG_POSTFIX "d")
 
 install(TARGETS ftl DESTINATION lib)
-install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY ${inc}/ DESTINATION include)
+install(DIRECTORY ${gen}/ DESTINATION include)
 
 if(FTL_BUILD_TESTS)
     enable_testing()
