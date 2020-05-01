@@ -27,23 +27,31 @@ namespace ftl {
     //static const u8 NOP = 0x90;
     static const u8 ILL = 0x06;
 
-    u8* cbuf::align(size_t boundary) {
-        const size_t mask = boundary - 1;
+    u8* cbuf::mark_exit() {
+        FTL_ERROR_ON(m_code_exit, "code exit already marked");
+        m_code_exit = m_code_ptr;
+        return m_code_exit;
+    }
+
+    u8* cbuf::align(size_t alignment) {
+        if (alignment == 0)
+            return m_code_ptr;
+
+        const size_t mask = (1ull << alignment) - 1;
         const u8* ptr = (u8*)((u64)(m_code_ptr + mask) & ~mask);
         const size_t count = ptr - m_code_ptr;
 
         for (size_t i = 0; i < count; i++)
             write(ILL);
 
-        FTL_ERROR_ON((size_t)m_code_ptr % boundary, "cannot align to %zu", boundary);
         FTL_ERROR_ON(m_code_ptr != ptr, "failed to fill alignment");
-
         return m_code_ptr;
     }
 
     cbuf::cbuf(size_t cap):
         m_capacity(cap),
         m_code_head(nullptr),
+        m_code_exit(nullptr),
         m_code_ptr(nullptr),
         m_code_end(nullptr) {
         int prot = PROT_READ | PROT_WRITE | PROT_EXEC;
@@ -74,6 +82,9 @@ namespace ftl {
             memset(addr, ILL, m_code_ptr - addr);
             m_code_ptr = addr;
         }
+
+        if (m_code_ptr < m_code_exit)
+            m_code_exit = nullptr;
     }
 
     void cbuf::reset() {

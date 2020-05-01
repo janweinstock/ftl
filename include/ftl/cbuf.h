@@ -38,6 +38,7 @@ namespace ftl {
         size_t m_capacity;
 
         u8* m_code_head;
+        u8* m_code_exit;
         u8* m_code_ptr;
         u8* m_code_end;
 
@@ -45,9 +46,11 @@ namespace ftl {
 
     public:
         const u8* get_code_entry() const { return m_code_head; }
+        const u8* get_code_exit()  const { return m_code_exit; }
         const u8* get_code_ptr()   const { return m_code_ptr; }
 
         u8* get_code_entry() { return m_code_head; }
+        u8* get_code_exit()  { return m_code_exit; }
         u8* get_code_ptr()   { return m_code_ptr; }
 
         size_t size() const { return m_code_ptr - m_code_head; }
@@ -57,7 +60,8 @@ namespace ftl {
         bool is_empty() const { return m_code_ptr == m_code_head; }
         bool is_full() const { return m_code_ptr >= m_code_end; }
 
-        u8* align(size_t boundary);
+        u8* mark_exit();
+        u8* align(size_t alignment);
 
         cbuf(size_t capacity);
         virtual ~cbuf();
