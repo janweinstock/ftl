@@ -30,7 +30,7 @@ using namespace ftl;
         test_func* name = (test_func*)code.get_code_ptr();                    \
         emitter.name(sizeof(type) * 8, XMM0, XMM1);                           \
         emitter.ret();                                                        \
-        EXPECT_EQ(name(a, b), expected);                                      \
+        EXPECT_DOUBLE_EQ(name(a, b), expected);                               \
     }
 
 MKTEST(addss, float,  1.2f, 2.1f, 1.2f + 2.1f);
@@ -60,9 +60,9 @@ TEST(sse, movss) {
 
     typedef int (entry_func)(void);
     entry_func* fn1 = (entry_func*)code.get_code_ptr();
-    emitter.movi(64, R11, (i64)&a);
-    emitter.movi(64, R12, (i64)&b);
-    emitter.movi(64, R13, (i64)&c);
+    emitter.movi(64, R11, (i64)a);
+    emitter.movi(64, R12, (i64)b);
+    emitter.movi(64, R13, (i64)c);
 
     for (int i = 0; i < 16; i++)
         emitter.movss(64, xmm(XMM0 + i), memop(R11, i * 8));
@@ -77,21 +77,21 @@ TEST(sse, movss) {
 
     fn1();
 
-    EXPECT_EQ(a[ 0] + b[ 0], c[ 0]);
-    EXPECT_EQ(a[ 1] + b[ 1], c[ 1]);
-    EXPECT_EQ(a[ 2] + b[ 2], c[ 2]);
-    EXPECT_EQ(a[ 3] + b[ 3], c[ 3]);
-    EXPECT_EQ(a[ 4] + b[ 4], c[ 4]);
-    EXPECT_EQ(a[ 5] + b[ 5], c[ 5]);
-    EXPECT_EQ(a[ 6] + b[ 6], c[ 6]);
-    EXPECT_EQ(a[ 7] + b[ 7], c[ 7]);
-    EXPECT_EQ(a[ 8] + b[ 8], c[ 8]);
-    EXPECT_EQ(a[ 9] + b[ 9], c[ 9]);
-    EXPECT_EQ(a[10] + b[10], c[10]);
-    EXPECT_EQ(a[11] + b[11], c[11]);
-    EXPECT_EQ(a[12] + b[12], c[12]);
-    EXPECT_EQ(a[13] + b[13], c[13]);
-    EXPECT_EQ(a[14] + b[14], c[14]);
-    EXPECT_EQ(a[15] + b[15], c[15]);
+    EXPECT_DOUBLE_EQ(a[ 0] + b[ 0], c[ 0]);
+    EXPECT_DOUBLE_EQ(a[ 1] + b[ 1], c[ 1]);
+    EXPECT_DOUBLE_EQ(a[ 2] + b[ 2], c[ 2]);
+    EXPECT_DOUBLE_EQ(a[ 3] + b[ 3], c[ 3]);
+    EXPECT_DOUBLE_EQ(a[ 4] + b[ 4], c[ 4]);
+    EXPECT_DOUBLE_EQ(a[ 5] + b[ 5], c[ 5]);
+    EXPECT_DOUBLE_EQ(a[ 6] + b[ 6], c[ 6]);
+    EXPECT_DOUBLE_EQ(a[ 7] + b[ 7], c[ 7]);
+    EXPECT_DOUBLE_EQ(a[ 8] + b[ 8], c[ 8]);
+    EXPECT_DOUBLE_EQ(a[ 9] + b[ 9], c[ 9]);
+    EXPECT_DOUBLE_EQ(a[10] + b[10], c[10]);
+    EXPECT_DOUBLE_EQ(a[11] + b[11], c[11]);
+    EXPECT_DOUBLE_EQ(a[12] + b[12], c[12]);
+    EXPECT_DOUBLE_EQ(a[13] + b[13], c[13]);
+    EXPECT_DOUBLE_EQ(a[14] + b[14], c[14]);
+    EXPECT_DOUBLE_EQ(a[15] + b[15], c[15]);
 }
 
