@@ -19,18 +19,28 @@
 #include "ftl/reg.h"
 
 std::ostream& operator << (std::ostream& os, const ftl::reg& r) {
-    if (r < ftl::NREGS)
+    if (ftl::reg_valid(r))
         os << ftl::reg_names[r];
     else
         os << "???";
     return os;
 }
 
-std::ostream& operator << (std::ostream& os, const ftl::rm& rm) {
-    if (!rm.is_mem)
-        return os << rm.r;
+std::ostream& operator << (std::ostream& os, const ftl::xmm& r) {
+    if (ftl::xmm_valid(r))
+        os << "xmm" << (int)r;
+    else
+        os << "???";
+    return os;
+}
 
-    os << "[" << rm.r;
+std::ostream& operator << (std::ostream& os, const ftl::rm& rm) {
+    if (!rm.is_mem) {
+        if (rm.is_xmm) return os << (ftl::xmm)rm.r;
+        else           return os << (ftl::reg)rm.r;
+    }
+
+    os << "[" << (ftl::reg)rm.r;
     if (rm.offset) {
         if (rm.offset > 0)
             os << "+";

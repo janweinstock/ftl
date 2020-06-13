@@ -45,7 +45,7 @@ namespace ftl {
         NREGS = 16,
     };
 
-    static inline bool reg_valid(reg r) {
+    static inline bool reg_valid(int r) {
         return r < NREGS;
     }
 
@@ -78,16 +78,57 @@ namespace ftl {
         return param_regs[argno];
     }
 
+    enum xmm {
+        XMM0  = 0,
+        XMM1  = 1,
+        XMM2  = 2,
+        XMM3  = 3,
+        XMM4  = 4,
+        XMM5  = 5,
+        XMM6  = 6,
+        XMM7  = 7,
+        XMM8  = 8,
+        XMM9  = 9,
+        XMM10 = 10,
+        XMM11 = 11,
+        XMM12 = 12,
+        XMM13 = 13,
+        XMM14 = 14,
+        XMM15 = 15,
+        NXMM  = 16,
+    };
+
+    static inline bool xmm_valid(int r) {
+        return r < NXMM;
+    }
+
+#ifdef linux
+    const array<xmm, 8> param_xmms = {
+        XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7,
+    };
+#endif
+
+    static inline xmm argxmm(unsigned int argno) {
+        FTL_ERROR_ON(argno >= param_xmms.size(), "argno out of bounds");
+        return param_xmms[argno];
+    }
+
     struct rm {
-        bool is_mem;
-        reg  r;
-        i64  offset;
+        const bool is_mem;
+        const bool is_xmm;
+
+        const int  r;
+        const i64  offset;
 
         bool is_reg() const { return !is_mem; }
         bool is_addressable() const { return fits_i32(offset); }
 
-        rm(reg _r): is_mem(false), r(_r), offset(0) {}
-        rm(reg base, i64 off): is_mem(true), r(base), offset(off) {}
+        rm(reg _r): is_mem(false), is_xmm(false), r(_r), offset(0) {}
+        rm(xmm _r): is_mem(false), is_xmm(true),  r((reg)_r), offset(0) {}
+
+        rm(reg base, i64 off): is_mem(true), is_xmm(false), r(base),
+                offset(off) {
+        }
 
         bool operator == (const rm& other) const;
 
@@ -112,6 +153,7 @@ namespace ftl {
 }
 
 std::ostream& operator << (std::ostream& os, const ftl::reg& r);
+std::ostream& operator << (std::ostream& os, const ftl::xmm& r);
 std::ostream& operator << (std::ostream& os, const ftl::rm& rm);
 
 #endif

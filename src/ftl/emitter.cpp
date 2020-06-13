@@ -23,6 +23,8 @@ namespace ftl {
     enum prefix {
         PREFIX_16BIT  = 0x66,
         PREFIX_LOCK   = 0xf0,
+        PREFIX_DOUBLE = 0xf2,
+        PREFIX_SINGLE = 0xf3,
     };
 
     enum opcode {
@@ -82,6 +84,15 @@ namespace ftl {
         OPCODE2_CMPXCHG = 0xb0,
         OPCODE2_MOVZX   = 0xb6,
         OPCODE2_MOVSX   = 0xbe,
+
+        OPCODE2_MOVSS   = 0x10,
+        OPCODE2_ADDSS   = 0x58,
+        OPCODE2_MULSS   = 0x59,
+        OPCODE2_CVTSS   = 0x5a,
+        OPCODE2_SUBSS   = 0x5c,
+        OPCODE2_MINSS   = 0x5d,
+        OPCODE2_DIVSS   = 0x5e,
+        OPCODE2_MAXSS   = 0x5f,
     };
 
     enum opcode_imm {
@@ -189,11 +200,11 @@ namespace ftl {
         return m_buffer.write(sib);
     }
 
-    size_t emitter::prefix(int bits, reg reg, const rm& rm) {
+    size_t emitter::prefix(int bits, int reg, const rm& rm) {
         return prefix(bits, bits, reg, rm);
     }
 
-    size_t emitter::prefix(int dbits, int sbits, reg reg, const rm& rm) {
+    size_t emitter::prefix(int dbits, int sbits, int reg, const rm& rm) {
         FTL_ERROR_ON(reg >= NREGS, "invalid value for modrm.reg: %d", reg);
         FTL_ERROR_ON(rm.r >= NREGS, "invalid value for modrm.rm: %d", rm.r);
 
@@ -205,7 +216,7 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::modrm(reg r, const rm& rm) {
+    size_t emitter::modrm(int r, const rm& rm) {
         if (!rm.is_mem)
             return modrm(MODRM_DIRECT, r & 7, rm.r & 7);
 
@@ -343,6 +354,23 @@ namespace ftl {
         len += prefix(bits, dest.r, src);
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(OPCODE2_MOVCC + op);
+        len += modrm(dest.r, src);
+
+        return len;
+    }
+
+    size_t emitter::mmxop(int op, int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(dest.is_mem, "destination cannot be memory");
+
+        size_t len = 0;
+        int pfx = (bits == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
+
+        len += m_buffer.write<u8>(pfx);
+        len += prefix(32, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(op);
         len += modrm(dest.r, src);
 
         return len;
@@ -1042,6 +1070,53 @@ namespace ftl {
 
     size_t emitter::cmovg(int bits, const rm& dest, const rm& src) {
         return movcc(BRCOND_G, bits, dest, src);
+    }
+
+    size_t emitter::movss(int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+
+        if (dest.is_mem && src.is_mem)
+            FTL_ERROR("destination and source cannot both be in memory");
+
+        size_t len = 0;
+        int pfx = bits == 32 ? PREFIX_SINGLE : PREFIX_DOUBLE;
+        int op = dest.is_mem ? OPCODE2_MOVSS + 1 : OPCODE2_MOVSS;
+
+        rm oprm(src.is_mem ? src : dest); // operand used for modrm.rm
+        rm op_r(src.is_mem ? dest : src); // operand used for modrm.reg
+
+        len += m_buffer.write<u8>(pfx);
+        len += prefix(32, op_r.r, oprm);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(op);
+        len += modrm(op_r.r, oprm);
+
+        return len;
+    }
+
+    size_t emitter::addss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_ADDSS, bits, dest, src);
+    }
+
+    size_t emitter::subss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_SUBSS, bits, dest, src);
+    }
+
+    size_t emitter::mulss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_MULSS, bits, dest, src);
+    }
+
+    size_t emitter::divss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_DIVSS, bits, dest, src);
+    }
+
+    size_t emitter::minss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_MINSS, bits, dest, src);
+    }
+
+    size_t emitter::maxss(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_MAXSS, bits, dest, src);
     }
 
 }

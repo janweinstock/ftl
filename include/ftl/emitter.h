@@ -40,9 +40,9 @@ namespace ftl {
         size_t modrm(int mod, int reg, int rm);
         size_t sib(int scale, int index, int base);
 
-        size_t prefix(int dbits, int sbits, reg r, const rm& rm);
-        size_t prefix(int bits, reg r, const rm& rm);
-        size_t modrm(reg r, const rm& rm);
+        size_t prefix(int dbits, int sbits, int r, const rm& rm);
+        size_t prefix(int bits, int r, const rm& rm);
+        size_t modrm(int r, const rm& rm);
 
         size_t immop(int op, int bits, const rm& dest, i32 imm);
         size_t aluop(int op, int bits, const rm& dest, const rm& src);
@@ -50,6 +50,7 @@ namespace ftl {
         size_t branch(int op, i32 imm, fixup* fix);
         size_t setcc(int op, const rm& dest);
         size_t movcc(int op, int bits, const rm& dest, const rm& src);
+        size_t mmxop(int op, int bits, const rm& dest, const rm& src);
 
     public:
         emitter(cbuf& buffer);
@@ -191,6 +192,14 @@ namespace ftl {
         size_t cmovge(int bits, const rm& dest, const rm& src);
         size_t cmovle(int bits, const rm& dest, const rm& src);
         size_t cmovg(int bits, const rm& dest, const rm& src);
+
+        size_t movss(int bits, const rm& dest, const rm& src);
+        size_t addss(int bits, const rm& dest, const rm& src);
+        size_t subss(int bits, const rm& dest, const rm& src);
+        size_t mulss(int bits, const rm& dest, const rm& src);
+        size_t divss(int bits, const rm& dest, const rm& src);
+        size_t minss(int bits, const rm& dest, const rm& src);
+        size_t maxss(int bits, const rm& dest, const rm& src);
     };
 
 }
