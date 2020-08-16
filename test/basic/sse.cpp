@@ -33,18 +33,18 @@ using namespace ftl;
         EXPECT_DOUBLE_EQ(name(a, b), expected);                               \
     }
 
-MKTEST(addss, float,  1.2f, 2.1f, 1.2f + 2.1f);
-MKTEST(addss, double, 1.2,  2.1,  1.2  + 2.1 );
-MKTEST(subss, float,  1.2f, 2.1f, 1.2f - 2.1f);
-MKTEST(subss, double, 1.2,  2.1,  1.2  - 2.1 );
-MKTEST(mulss, float,  1.5f, 2.1f, 1.5f * 2.1f);
-MKTEST(mulss, double, 1.5,  2.0,  1.5  * 2.0 );
-MKTEST(divss, float,  1.0f, 2.0f, 1.0f / 2.0f);
-MKTEST(divss, double, 1.0,  2.0,  1.0  / 2.0 );
-MKTEST(minss, float,  1.0f, 2.0f, std::min(1.0f, 2.0f));
-MKTEST(minss, double, 1.0,  2.0,  std::min(1.0,  2.0 ));
-MKTEST(maxss, float,  1.0f, 2.0f, std::max(1.0f, 2.0f));
-MKTEST(maxss, double, 1.0,  2.0,  std::max(1.0,  2.0 ));
+MKTEST(adds, float,  1.2f, 2.1f, 1.2f + 2.1f);
+MKTEST(adds, double, 1.2,  2.1,  1.2  + 2.1 );
+MKTEST(subs, float,  1.2f, 2.1f, 1.2f - 2.1f);
+MKTEST(subs, double, 1.2,  2.1,  1.2  - 2.1 );
+MKTEST(muls, float,  1.5f, 2.1f, 1.5f * 2.1f);
+MKTEST(muls, double, 1.5,  2.0,  1.5  * 2.0 );
+MKTEST(divs, float,  1.0f, 2.0f, 1.0f / 2.0f);
+MKTEST(divs, double, 1.0,  2.0,  1.0  / 2.0 );
+MKTEST(mins, float,  1.0f, 2.0f, std::min(1.0f, 2.0f));
+MKTEST(mins, double, 1.0,  2.0,  std::min(1.0,  2.0 ));
+MKTEST(maxs, float,  1.0f, 2.0f, std::max(1.0f, 2.0f));
+MKTEST(maxs, double, 1.0,  2.0,  std::max(1.0,  2.0 ));
 
 TEST(sse, movss) {
     double a[16], b[16], c[16];
@@ -65,13 +65,13 @@ TEST(sse, movss) {
     emitter.movi(64, R13, (i64)c);
 
     for (int i = 0; i < 16; i++)
-        emitter.movss(64, xmm(XMM0 + i), memop(R11, i * 8));
+        emitter.movs(64, xmm(XMM0 + i), memop(R11, i * 8));
 
     for (int i = 0; i < 16; i++)
-        emitter.addss(64, xmm(XMM0 + i), memop(R12, i * 8));
+        emitter.adds(64, xmm(XMM0 + i), memop(R12, i * 8));
 
     for (int i = 0; i < 16; i++)
-        emitter.movss(64, memop(R13, i * 8), xmm(XMM0 + i));
+        emitter.movs(64, memop(R13, i * 8), xmm(XMM0 + i));
 
     emitter.ret();
 

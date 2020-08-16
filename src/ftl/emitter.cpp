@@ -1072,7 +1072,7 @@ namespace ftl {
         return movcc(BRCOND_G, bits, dest, src);
     }
 
-    size_t emitter::movss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::movs(int bits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
         FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
 
@@ -1095,27 +1095,27 @@ namespace ftl {
         return len;
     }
 
-    size_t emitter::addss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::adds(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_ADDSS, bits, dest, src);
     }
 
-    size_t emitter::subss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::subs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_SUBSS, bits, dest, src);
     }
 
-    size_t emitter::mulss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::muls(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MULSS, bits, dest, src);
     }
 
-    size_t emitter::divss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::divs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_DIVSS, bits, dest, src);
     }
 
-    size_t emitter::minss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::mins(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MINSS, bits, dest, src);
     }
 
-    size_t emitter::maxss(int bits, const rm& dest, const rm& src) {
+    size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
     }
 

@@ -193,13 +193,13 @@ namespace ftl {
         size_t cmovle(int bits, const rm& dest, const rm& src);
         size_t cmovg(int bits, const rm& dest, const rm& src);
 
-        size_t movss(int bits, const rm& dest, const rm& src);
-        size_t addss(int bits, const rm& dest, const rm& src);
-        size_t subss(int bits, const rm& dest, const rm& src);
-        size_t mulss(int bits, const rm& dest, const rm& src);
-        size_t divss(int bits, const rm& dest, const rm& src);
-        size_t minss(int bits, const rm& dest, const rm& src);
-        size_t maxss(int bits, const rm& dest, const rm& src);
+        size_t movs(int bits, const rm& dest, const rm& src);
+        size_t adds(int bits, const rm& dest, const rm& src);
+        size_t subs(int bits, const rm& dest, const rm& src);
+        size_t muls(int bits, const rm& dest, const rm& src);
+        size_t divs(int bits, const rm& dest, const rm& src);
+        size_t mins(int bits, const rm& dest, const rm& src);
+        size_t maxs(int bits, const rm& dest, const rm& src);
     };
 
 }
