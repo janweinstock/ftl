@@ -40,5 +40,5 @@ basic_test(cmov)
 basic_test(fence)
 basic_test(atomic)
 basic_test(scratch)
-basic_test(sse)
+basic_test(fp)
 

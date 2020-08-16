@@ -52,6 +52,9 @@ namespace ftl {
     typedef uint32_t u32;
     typedef uint64_t u64;
 
+    typedef float  f32;
+    typedef double f64;
+
     const size_t KiB = 1024;
     const size_t MiB = 1024 * KiB;
     const size_t GiB = 1024 * MiB;

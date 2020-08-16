@@ -93,6 +93,10 @@ namespace ftl {
         OPCODE2_MINSS   = 0x5d,
         OPCODE2_DIVSS   = 0x5e,
         OPCODE2_MAXSS   = 0x5f,
+
+        OPCODE2_CVTI2S  = 0x2a,
+        OPCODE2_CVTTS2I = 0x2c,
+        OPCODE2_CVTS2I  = 0x2d,
     };
 
     enum opcode_imm {
@@ -1117,6 +1121,68 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
+    }
+
+    size_t emitter::cvts2i(int dbts, int sbts, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dbts < 32, "unsupported integer width: %d", dbts);
+        FTL_ERROR_ON(dbts > 64, "unsupported integer width: %d", dbts);
+        FTL_ERROR_ON(sbts < 32, "unsupported floating point width: %d", sbts);
+        FTL_ERROR_ON(sbts > 64, "unsupported floating point width: %d", sbts);
+        FTL_ERROR_ON(dest.is_mem, "destination cannot be memory");
+        FTL_ERROR_ON(dest.is_xmm, "destination must be an integer register");
+        FTL_ERROR_ON(src.is_reg(), "source cannot be an integer register");
+
+        size_t len = 0;
+        int pfx = (sbts == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
+
+        len += m_buffer.write<u8>(pfx);
+        len += prefix(dbts, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_CVTS2I);
+        len += modrm(dest.r, src);
+
+        return len;
+    }
+
+    size_t emitter::cvti2s(int dbts, int sbts, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dbts < 32, "unsupported floating point width: %d", dbts);
+        FTL_ERROR_ON(dbts > 64, "unsupported floating point width: %d", dbts);
+        FTL_ERROR_ON(sbts < 32, "unsupported integer width: %d", sbts);
+        FTL_ERROR_ON(sbts > 64, "unsupported integer width: %d", sbts);
+        FTL_ERROR_ON(!dest.is_xmm, "destination must be an xmm register");
+        FTL_ERROR_ON(src.is_xmm, "source cannot be an xmm register");
+
+        size_t len = 0;
+        int pfx = (sbts == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
+
+        len += m_buffer.write<u8>(pfx);
+        len += prefix(dbts, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_CVTI2S);
+        len += modrm(dest.r, src);
+
+        return len;
+    }
+
+    size_t emitter::cvtts2i(int dbts, int sbts, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(dbts < 32, "unsupported integer width: %d", dbts);
+        FTL_ERROR_ON(dbts > 64, "unsupported integer width: %d", dbts);
+        FTL_ERROR_ON(sbts < 32, "unsupported floating point width: %d", sbts);
+        FTL_ERROR_ON(sbts > 64, "unsupported floating point width: %d", sbts);
+        FTL_ERROR_ON(dest.is_mem, "destination cannot be memory");
+        FTL_ERROR_ON(dest.is_xmm, "destination must be an integer register");
+        FTL_ERROR_ON(src.is_reg(), "source cannot be an integer register");
+
+        size_t len = 0;
+        int pfx = (sbts == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
+
+        len += m_buffer.write<u8>(pfx);
+        len += prefix(dbts, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_CVTTS2I);
+        len += modrm(dest.r, src);
+
+        return len;
     }
 
 }
