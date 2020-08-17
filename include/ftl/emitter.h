@@ -201,6 +201,7 @@ namespace ftl {
         size_t mins(int bits, const rm& dest, const rm& src);
         size_t maxs(int bits, const rm& dest, const rm& src);
 
+        size_t cvts2s(int dbits, int sbits, const rm& dest, const rm& src);
         size_t cvts2i(int dbits, int sbits, const rm& dest, const rm& src);
         size_t cvti2s(int dbits, int sbits, const rm& dest, const rm& src);
         size_t cvtts2i(int dbits, int sbits, const rm& dest, const rm& src);

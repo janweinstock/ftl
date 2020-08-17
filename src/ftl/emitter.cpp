@@ -366,7 +366,7 @@ namespace ftl {
     size_t emitter::mmxop(int op, int bits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
         FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
-        FTL_ERROR_ON(dest.is_mem, "destination cannot be memory");
+        FTL_ERROR_ON(!dest.is_xmm, "destination must be a FP-register");
 
         size_t len = 0;
         int pfx = (bits == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
@@ -1121,6 +1121,12 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
+    }
+
+    size_t emitter::cvts2s(int dbts, int sbts, const rm& dest, const rm& src) {
+        if (dbts == sbts)
+            return dest != src ? movs(dbts, dest, src) : 0;
+        return mmxop(OPCODE2_CVTSS, sbts, dest, src);
     }
 
     size_t emitter::cvts2i(int dbts, int sbts, const rm& dest, const rm& src) {

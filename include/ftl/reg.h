@@ -131,13 +131,19 @@ namespace ftl {
         }
 
         bool operator == (const rm& other) const;
+        bool operator != (const rm& other) const;
 
     private:
         rm(); // disabled
     };
 
     inline bool rm::operator == (const rm& o) const {
-        return is_mem == o.is_mem && r == o.r && offset == o.offset;
+        return is_mem == o.is_mem && r == o.r && offset == o.offset &&
+               is_xmm == o.is_xmm;
+    }
+
+    inline bool rm::operator != (const rm& o) const {
+        return !operator == (o);
     }
 
     static inline rm regop(reg r) {

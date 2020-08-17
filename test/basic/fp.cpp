@@ -222,3 +222,47 @@ MKTEST_I2F(64, 64, -1, -1.0);
 MKTEST_I2F(64, 64,  2,  2.0);
 MKTEST_I2F(64, 64, -2, -2.0);
 MKTEST_I2F(64, 64, 99, 99.0);
+
+#define EXPECT_EQ32(a, b) EXPECT_FLOAT_EQ(a, b)
+#define EXPECT_EQ64(a, b) EXPECT_DOUBLE_EQ(a, b)
+
+#define MKTEST_F2F(t_bits, s_bits, val)                                       \
+    TEST(fp, UNIQUE(convert_f ## s_bits ##  _to_ ## f ## t_bits ## _)) {      \
+        ftl::cbuf code(4 * ftl::KiB);                                         \
+        ftl::emitter emitter(code);                                           \
+        f ## s_bits f = val;                                                  \
+        typedef f ## t_bits (test_func)(void);                                \
+        test_func* fn = (test_func*)code.get_code_ptr();                      \
+        emitter.movi(64, RAX, (i64)&f);                                       \
+        emitter.cvts2s(t_bits, s_bits, XMM0, memop(RAX, 0));                  \
+        emitter.ret();                                                        \
+        EXPECT_EQ##t_bits(fn(), (f ## t_bits) val);                           \
+    }
+
+MKTEST_F2F(32, 32,  0.0000f);
+MKTEST_F2F(32, 32,  2.0000f);
+MKTEST_F2F(32, 32, -2.0000f);
+MKTEST_F2F(32, 32,  3.1415f);
+MKTEST_F2F(32, 32, -3.1415f);
+MKTEST_F2F(32, 32,  3.9999f);
+
+MKTEST_F2F(32, 64,  0.0000);
+MKTEST_F2F(32, 64,  2.0000);
+MKTEST_F2F(32, 64, -2.0000);
+MKTEST_F2F(32, 64,  3.1415);
+MKTEST_F2F(32, 64, -3.1415);
+MKTEST_F2F(32, 64,  3.9999);
+
+MKTEST_F2F(64, 32,  0.0000f);
+MKTEST_F2F(64, 32,  2.0000f);
+MKTEST_F2F(64, 32, -2.0000f);
+MKTEST_F2F(64, 32,  3.1415f);
+MKTEST_F2F(64, 32, -3.1415f);
+MKTEST_F2F(64, 32,  3.9999f);
+
+MKTEST_F2F(64, 64,  0.0000);
+MKTEST_F2F(64, 64,  2.0000);
+MKTEST_F2F(64, 64, -2.0000);
+MKTEST_F2F(64, 64,  3.1415);
+MKTEST_F2F(64, 64, -3.1415);
+MKTEST_F2F(64, 64,  3.9999);
