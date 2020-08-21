@@ -55,6 +55,7 @@ namespace ftl {
 
     public:
         const char* name() const { return m_name.c_str(); }
+        u8* entry()        const { return m_code; }
 
         cbuf&    get_cbuffer()   { return m_buffer; }
         emitter& get_emitter()   { return m_emitter; }
@@ -383,11 +384,17 @@ namespace ftl {
         m_alloc.store_all_regs();
         m_emitter.movr(64, argreg(0), m_alloc.BASE_REGISTER);
 
-        value ret = gen_scratch_i64("retval", (i64)fn, RAX);
-        m_emitter.call(RAX);
-        m_alloc.mark_dirty(RAX);
-
-        return ret;
+        if (can_call_directly(m_buffer.get_code_ptr(), fn)) {
+            m_emitter.call((u8*)fn);
+            value ret = gen_scratch_i64("retval", RAX);
+            m_alloc.mark_dirty(RAX);
+            return ret;
+        } else {
+            value ret = gen_scratch_i64("retval", (i64)fn, RAX);
+            m_emitter.call(RAX);
+            m_alloc.mark_dirty(RAX);
+            return ret;
+        }
     }
 
     template <typename FUNC, typename T1>

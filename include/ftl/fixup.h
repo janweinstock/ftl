@@ -41,6 +41,12 @@ namespace ftl {
         patch_jump(fix, target);
     }
 
+    template <typename FUNC>
+    static inline bool can_call_directly(u8* origin, FUNC* target) {
+        i64 offset = (u8*)target - origin - 5;
+        return fits_i32(offset);
+    }
+
 }
 
 #endif

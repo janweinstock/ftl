@@ -65,3 +65,33 @@ TEST(call, test3) {
 
     EXPECT_EQ(result, 111);
 }
+
+TEST(call, direct) {
+    cbuf buffer(4 * KiB);
+
+    func fn1("fn1", buffer);
+    fn1.get_emitter().movr(64, RAX, fn1.get_alloc().BASE_REGISTER);
+    fn1.get_emitter().ret();
+
+    func fn2("fn2", buffer);
+    ASSERT_TRUE(can_call_directly(buffer.get_code_ptr(), fn1.entry()));
+
+    value ret = fn2.gen_call(fn1.entry());
+    fn2.gen_inc(ret);
+
+    fixup fix;
+    fn2.get_emitter().call(nullptr, &fix);
+    fn2.gen_ret(ret);
+
+    buffer.skip(1024); // get some distance
+
+    func fn3("fn3", buffer);
+    fn3.get_emitter().decr(64, RAX);
+    fn3.get_emitter().ret();
+
+    ASSERT_TRUE(can_call_directly(fix.code, fn3.entry()));
+    patch_call(fix, fn3.entry());
+
+    i64 result = fn2((void*)42);
+    EXPECT_EQ(result, 42);
+}

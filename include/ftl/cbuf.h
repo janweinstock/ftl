@@ -69,6 +69,8 @@ namespace ftl {
         cbuf() = delete;
         cbuf(const cbuf&) = delete;
 
+        void skip(size_t count);
+
         void reset(u8* addr);
         void reset();
 

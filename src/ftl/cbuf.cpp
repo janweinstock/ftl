@@ -41,8 +41,7 @@ namespace ftl {
         const u8* ptr = (u8*)((u64)(m_code_ptr + mask) & ~mask);
         const size_t count = ptr - m_code_ptr;
 
-        for (size_t i = 0; i < count; i++)
-            write(ILL);
+        skip(count);
 
         FTL_ERROR_ON(m_code_ptr != ptr, "failed to fill alignment");
         return m_code_ptr;
@@ -69,6 +68,11 @@ namespace ftl {
         if (m_code_head) {
             munmap(m_code_head, m_capacity);
         }
+    }
+
+    void cbuf::skip(size_t count) {
+        for (size_t i = 0; i < count; i++)
+            write(ILL);
     }
 
     void cbuf::reset(u8* addr) {
