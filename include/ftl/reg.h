@@ -120,7 +120,7 @@ namespace ftl {
         const int  r;
         const i64  offset;
 
-        bool is_reg() const { return !is_mem; }
+        bool is_reg() const { return !is_mem && !is_xmm; }
         bool is_addressable() const { return fits_i32(offset); }
 
         rm(reg _r): is_mem(false), is_xmm(false), r(_r), offset(0) {}
