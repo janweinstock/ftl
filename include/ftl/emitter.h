@@ -51,6 +51,7 @@ namespace ftl {
         size_t setcc(int op, const rm& dest);
         size_t movcc(int op, int bits, const rm& dest, const rm& src);
         size_t mmxop(int op, int bits, const rm& dest, const rm& src);
+        size_t mmxcmp(int op, int bits, const rm& op1, const rm& op2);
 
     public:
         emitter(cbuf& buffer);
@@ -200,6 +201,9 @@ namespace ftl {
         size_t divs(int bits, const rm& dest, const rm& src);
         size_t mins(int bits, const rm& dest, const rm& src);
         size_t maxs(int bits, const rm& dest, const rm& src);
+
+        size_t comis(int bits, const rm& op1, const rm& op2);
+        size_t ucomis(int bits, const rm& op1, const rm& op2);
 
         size_t cvts2s(int dbits, int sbits, const rm& dest, const rm& src);
         size_t cvts2i(int dbits, int sbits, const rm& dest, const rm& src);

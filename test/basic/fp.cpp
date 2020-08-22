@@ -31,6 +31,9 @@ using namespace ftl;
 #define CONCAT(x, y)  _CONCAT(x,y)
 #define UNIQUE(name)  CONCAT(name, __COUNTER__)
 
+#define EXPECT_EQ32(a, b) EXPECT_FLOAT_EQ(a, b)
+#define EXPECT_EQ64(a, b) EXPECT_DOUBLE_EQ(a, b)
+
 #define MKTEST_ARITH(name, bits, a, b, expected)                              \
     TEST(fp, UNIQUE(name ## _ ## bits)) {                                     \
         ftl::cbuf code(4 * ftl::KiB);                                         \
@@ -223,9 +226,6 @@ MKTEST_I2F(64, 64,  2,  2.0);
 MKTEST_I2F(64, 64, -2, -2.0);
 MKTEST_I2F(64, 64, 99, 99.0);
 
-#define EXPECT_EQ32(a, b) EXPECT_FLOAT_EQ(a, b)
-#define EXPECT_EQ64(a, b) EXPECT_DOUBLE_EQ(a, b)
-
 #define MKTEST_F2F(t_bits, s_bits, val)                                       \
     TEST(fp, UNIQUE(convert_f ## s_bits ##  _to_ ## f ## t_bits ## _)) {      \
         ftl::cbuf code(4 * ftl::KiB);                                         \
@@ -266,3 +266,22 @@ MKTEST_F2F(64, 64, -2.0000);
 MKTEST_F2F(64, 64,  3.1415);
 MKTEST_F2F(64, 64, -3.1415);
 MKTEST_F2F(64, 64,  3.9999);
+
+#define MKTEST_FCMP(bits, a, b)                                               \
+    TEST(fp, UNIQUE(compare ## bits ## _)) {                                  \
+        ftl::cbuf code(4 * ftl::KiB);                                         \
+        ftl::emitter emitter(code);                                           \
+        typedef bool (test_func)(f ## bits, f ## bits);                       \
+        test_func* fn = (test_func*)code.get_code_ptr();                      \
+        emitter.comis(bits, argxmm(0), argxmm(1));                            \
+        emitter.seta(RAX);                                                    \
+        emitter.ret();                                                        \
+        EXPECT_EQ ## bits(fn(a, b), a > b);                                   \
+    }
+
+MKTEST_FCMP(32, -1.0f, 1.0000f)
+MKTEST_FCMP(32,  2.0f, 3.1415f)
+
+
+MKTEST_FCMP(64,  2.0, 3.1415)
+MKTEST_FCMP(64, -1.0, 1.0000)

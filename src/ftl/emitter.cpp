@@ -97,6 +97,9 @@ namespace ftl {
         OPCODE2_CVTI2S  = 0x2a,
         OPCODE2_CVTTS2I = 0x2c,
         OPCODE2_CVTS2I  = 0x2d,
+
+        OPCODE2_UCOMIS  = 0x2e,
+        OPCODE2_COMIS   = 0x2f,
     };
 
     enum opcode_imm {
@@ -376,6 +379,24 @@ namespace ftl {
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(op);
         len += modrm(dest.r, src);
+
+        return len;
+    }
+
+    size_t emitter::mmxcmp(int op, int bits, const rm& op1, const rm& op2) {
+        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(!op1.is_xmm, "first operand must be a FP-register");
+        FTL_ERROR_ON(op2.is_reg(), "second operand cannot be normal register");
+
+        size_t len = 0;
+
+        if (bits == 64)
+            len += m_buffer.write<u8>(PREFIX_16BIT);
+
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(op);
+        len += modrm(op1.r, op2);
 
         return len;
     }
@@ -1121,6 +1142,14 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
+    }
+
+    size_t emitter::comis(int bits, const rm& op1, const rm& op2) {
+        return mmxcmp(OPCODE2_COMIS, bits, op1, op2);
+    }
+
+    size_t emitter::ucomis(int bits, const rm& op1, const rm& op2) {
+        return mmxcmp(OPCODE2_UCOMIS, bits, op1, op2);
     }
 
     size_t emitter::cvts2s(int dbts, int sbts, const rm& dest, const rm& src) {
