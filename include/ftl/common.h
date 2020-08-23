@@ -28,6 +28,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <array>
 #include <sstream>
 #include <iostream>
@@ -65,6 +66,7 @@ namespace ftl {
 
     using std::string;
     using std::vector;
+    using std::set;
     using std::array;
     using std::stringstream;
 

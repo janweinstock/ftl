@@ -26,6 +26,7 @@
 
 #include "ftl/reg.h"
 #include "ftl/value.h"
+#include "ftl/scalar.h"
 #include "ftl/emitter.h"
 
 namespace ftl {
@@ -33,22 +34,27 @@ namespace ftl {
     class alloc
     {
     private:
+        template <typename REG, typename VAL>
         struct reginfo {
-            reg          regid;
-            const value* owner;
-            bool         dirty;
-            mutable u64  count;
+            REG         regid;
+            const VAL*  owner;
+            bool        dirty;
+            mutable u64 count;
         };
 
-        emitter&         m_emitter;
-        reginfo          m_regmap[NREGS];
-        mutable u64      m_usecnt;
+        emitter&             m_emitter;
+        reginfo<reg, value>  m_regmap[NREGS];
+        reginfo<xmm, scalar> m_xmmmap[NXMM];
+        mutable u64          m_usecnt;
 
-        u64              m_locals;
-        u64              m_base;
+        u64 m_locals;
+        u64 m_base;
 
-        vector<value*>   m_values;
-        vector<reg>      m_blacklist;
+        set<value*>  m_values;
+        set<scalar*> m_scalars;
+
+        set<reg> m_blocked_regs;
+        set<xmm> m_blocked_xmms;
 
     public:
         const reg STACK_POINTER = RSP; // base address register for locals
@@ -61,22 +67,36 @@ namespace ftl {
         alloc() = delete;
         alloc(const alloc&) = delete;
 
-        void blacklist(reg r);
-        void unblacklist(reg r);
-        bool is_blacklisted(reg r) const;
+        void block(reg r) { m_blocked_regs.insert(r); }
+        void block(xmm r) { m_blocked_xmms.insert(r); }
 
-        const vector<reg>& get_blacklist() const { return m_blacklist; }
-        vector<reg> get_blacklist() { return m_blacklist; }
+        void unblock(reg r) { m_blocked_regs.erase(r); }
+        void unblock(xmm r) { m_blocked_xmms.erase(r); }
+
+        bool is_blocked(reg r) const { return m_blocked_regs.count(r) > 0; }
+        bool is_blocked(xmm r) const { return m_blocked_xmms.count(r) > 0; }
+
+        const set<reg>& get_blocked_regs() const { return m_blocked_regs; }
+        const set<xmm>& get_blocked_xmms() const { return m_blocked_xmms; }
+
+        set<reg> get_blocked_regs() { return m_blocked_regs; }
+        set<xmm> get_blocked_xmms() { return m_blocked_xmms; }
 
         emitter& get_emitter() const { return m_emitter; }
 
         bool is_empty(reg r) const;
         bool is_dirty(reg r) const;
+        bool is_empty(xmm r) const;
+        bool is_dirty(xmm r) const;
 
         void mark_dirty(reg r);
         void mark_clean(reg r);
+        void mark_dirty(xmm r);
+        void mark_clean(xmm r);
 
         reg  select() const;
+        xmm  select_xmm() const;
+
         reg  lookup(const value* val) const;
         reg  assign(const value* val, reg r = NREGS);
         reg  fetch(const value* val, reg r = NREGS);
@@ -85,11 +105,21 @@ namespace ftl {
         void store(reg r);
         void flush(reg r);
 
+        xmm  lookup(const scalar* val) const;
+        xmm  assign(const scalar* val, xmm r = NXMM);
+        xmm  fetch(const scalar* val, xmm r = NXMM);
+
+        void free(xmm r);
+        void store(xmm r);
+        void flush(xmm r);
+
         u64  get_base_addr() const { return m_base; }
         void set_base_addr(u64 addr);
 
         void register_value(value* v);
         void unregister_value(value* v);
+        void register_scalar(scalar* s);
+        void unregister_scalar(scalar* s);
 
         value new_local_noinit(const string& name, int bits, reg r = NREGS);
         value new_local(const string& name, int bits, i64 val, reg r = NREGS);
@@ -98,6 +128,7 @@ namespace ftl {
         value new_scratch(const string& name, int bits, i64 val, reg r = NREGS);
 
         void free_value(value& val);
+        void free_scalar(scalar& val);
 
         size_t count_dirty_regs() const;
         size_t count_active_regs() const;

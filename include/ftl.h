@@ -27,6 +27,7 @@
 #include "ftl/reg.h"
 #include "ftl/call.h"
 #include "ftl/value.h"
+#include "ftl/scalar.h"
 #include "ftl/fixup.h"
 #include "ftl/cbuf.h"
 #include "ftl/emitter.h"

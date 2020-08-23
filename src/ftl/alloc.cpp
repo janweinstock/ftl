@@ -23,30 +23,18 @@ namespace ftl {
     alloc::alloc(emitter& e):
         m_emitter(e),
         m_regmap(),
+        m_xmmmap(),
         m_usecnt(0),
         m_locals(~0ull),
         m_base(0),
         m_values(),
-        m_blacklist() {
+        m_blocked_regs(),
+        m_blocked_xmms() {
         reset();
     }
 
     alloc::~alloc() {
         // nothing to do
-    }
-
-    void alloc::blacklist(reg r) {
-        if (!is_blacklisted(r))
-            m_blacklist.push_back(r);
-    }
-
-    void alloc::unblacklist(reg r) {
-        if (is_blacklisted(r))
-            stl_remove_erase(m_blacklist, r);
-    }
-
-    bool alloc::is_blacklisted(reg r) const {
-        return stl_contains(m_blacklist, r);
     }
 
     bool alloc::is_empty(reg r) const {
@@ -65,6 +53,22 @@ namespace ftl {
         return m_regmap[r].dirty;
     }
 
+    bool alloc::is_empty(xmm r) const {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+        if (m_xmmmap[r].owner == nullptr)
+            return true;
+        if (m_xmmmap[r].owner->is_dead())
+            return true;
+        return false;
+    }
+
+    bool alloc::is_dirty(xmm r) const {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+        if (is_empty(r))
+            return false;
+        return m_xmmmap[r].dirty;
+    }
+
     void alloc::mark_dirty(reg r) {
         FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
         m_regmap[r].dirty = true;
@@ -73,6 +77,16 @@ namespace ftl {
     void alloc::mark_clean(reg r) {
         FTL_ERROR_ON(!reg_valid(r), "invalid register specified");
         m_regmap[r].dirty = false;
+    }
+
+    void alloc::mark_dirty(xmm r) {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+        m_xmmmap[r].dirty = true;
+    }
+
+    void alloc::mark_clean(xmm r) {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+        m_xmmmap[r].dirty = false;
     }
 
     // Never allocate RSP or RBP, since we need them for addressing local and
@@ -87,7 +101,7 @@ namespace ftl {
         vector<reg> regs;
         std::copy_if(alloc_order.begin(), alloc_order.end(),
                      std::back_inserter(regs), [this](reg r) -> bool {
-            return !is_blacklisted(r);
+            return !is_blocked(r);
         });
 
         // try unused registers first
@@ -111,6 +125,42 @@ namespace ftl {
         }
 
         FTL_ERROR_ON(lru == NREGS, "failed to select a register");
+        return lru;
+    }
+
+    static const array<xmm, 16> alloc_order_xmm = {
+        XMM8, XMM9, XMM10, XMM11, XMM12, XMM13, XMM14, XMM15,
+        XMM7, XMM6, XMM5,  XMM4,  XMM3,  XMM2,  XMM1,  XMM0,
+    };
+
+    xmm alloc::select_xmm() const {
+        vector<xmm> regs;
+        std::copy_if(alloc_order_xmm.begin(), alloc_order_xmm.end(),
+                     std::back_inserter(regs), [this](xmm r) -> bool {
+            return !is_blocked(r);
+        });
+
+        // try unused registers first
+        for (xmm r : regs)
+            if (is_empty(r))
+                return r;
+
+        // next, try registers that do not need to be flushed
+        for (xmm r : regs)
+            if (!is_dirty(r))
+                return r;
+
+        // pick least recently used
+        xmm lru = NXMM;
+        u64 min = ~0ull;
+        for (xmm r : regs) {
+            if (m_xmmmap[r].count < min) {
+                min = m_xmmmap[r].count;
+                lru = r;
+            }
+        }
+
+        FTL_ERROR_ON(lru == NXMM, "failed to select a register");
         return lru;
     }
 
@@ -139,7 +189,7 @@ namespace ftl {
         FTL_ERROR_ON(!reg_valid(r), "invalid register selected: %d", r);
         FTL_ERROR_ON(r == STACK_POINTER, "cannot assign to stack pointer");
         FTL_ERROR_ON(r == BASE_REGISTER, "cannot assign to base register");
-        FTL_ERROR_ON(is_blacklisted(r), "cannot assign to blacklist register");
+        FTL_ERROR_ON(is_blocked(r), "cannot assign to blocked register");
 
         if (m_regmap[r].owner == val)
             return r;
@@ -206,17 +256,120 @@ namespace ftl {
         free(r);
     }
 
+    xmm alloc::lookup(const scalar* val) const {
+        if (val == nullptr)
+            return NXMM;
+
+        for (auto info : m_xmmmap) {
+            if (info.owner == val) {
+                info.count = m_usecnt++;
+                return info.regid;
+            }
+        }
+
+        return NXMM;
+    }
+
+    xmm alloc::assign(const scalar* val, xmm r) {
+        FTL_ERROR_ON(!val, "attempt to assign nullptr scalar");
+
+        if (r == NXMM)
+            r = lookup(val);
+        if (r == NXMM)
+            r = select_xmm();
+
+        FTL_ERROR_ON(!reg_valid(r), "invalid register selected: %d", r);
+        FTL_ERROR_ON(is_blocked(r), "cannot assign to blocked register");
+
+        if (m_xmmmap[r].owner == val)
+            return r;
+
+        flush(r);
+
+        xmm curr = lookup(val);
+        if (curr < NXMM)
+            free(curr);
+
+        m_xmmmap[r].owner = val;
+        m_xmmmap[r].dirty = false;
+        m_xmmmap[r].count = m_usecnt++;
+
+        return r;
+    }
+
+    xmm alloc::fetch(const scalar* val, xmm r) {
+        FTL_ERROR_ON(!val, "attempt to fetch nullptr scalar");
+
+        xmm curr = lookup(val);
+        if ((curr < NXMM) && (curr == r || r == NXMM))
+            return curr;
+
+        r = assign(val, r);
+
+        if (curr < NXMM && curr != r) {
+            m_emitter.movr(val->bits, r, curr);
+        } else {
+            FTL_ERROR_ON(val->is_scratch(), "attempt to fetch scratch scalar");
+            m_emitter.movr(val->bits, r, val->mem());
+        }
+
+        return r;
+    }
+
+    void alloc::free(xmm r) {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+
+        m_xmmmap[r].owner = nullptr;
+        m_xmmmap[r].dirty = false;
+        m_xmmmap[r].count = 0;
+    }
+
+    void alloc::store(xmm r) {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+
+        if (!is_dirty(r))
+            return;
+
+        const scalar* val = m_xmmmap[r].owner;
+        FTL_ERROR_ON(val == nullptr, "store operation on empty register");
+
+        if (val->is_scratch())
+            return;
+
+        m_emitter.movr(val->bits, val->mem(), r);
+        mark_clean(r);
+    }
+
+    void alloc::flush(xmm r) {
+        FTL_ERROR_ON(!xmm_valid(r), "invalid register specified");
+        store(r);
+        free(r);
+    }
+
     void alloc::register_value(value* val) {
         if (stl_contains(m_values, val))
             FTL_ERROR("attempt to register value '%s' twice", val->name());
-        m_values.push_back(val);
+        m_values.insert(val);
     }
 
     void alloc::unregister_value(value* val) {
         if (!stl_contains(m_values, val))
             FTL_ERROR("attempt to unregister unknown value '%s'", val->name());
-        stl_remove_erase(m_values, val);
+        m_values.erase(val);
     }
+
+    void alloc::register_scalar(scalar* val) {
+        if (stl_contains(m_scalars, val))
+            FTL_ERROR("attempt to register scalar '%s' twice", val->name());
+        m_scalars.insert(val);
+    }
+
+    void alloc::unregister_scalar(scalar* val) {
+        if (!stl_contains(m_scalars, val))
+            FTL_ERROR("attempt to unregister unknown scalar '%s'", val->name());
+        m_scalars.erase(val);
+    }
+
 
     value alloc::new_local_noinit(const string& name, int bits, reg r) {
         int idx = ffs(m_locals) - 1;
@@ -282,6 +435,22 @@ namespace ftl {
 
         reg r = lookup(&val);
         if (r < NREGS)
+            free(r);
+
+        val.mark_dead();
+    }
+
+    void alloc::free_scalar(scalar& val) {
+        FTL_ERROR_ON(val.is_dead(), "double free scalar %s", val.name());
+
+        if (val.is_local()) {
+            int idx = -val.offset() / sizeof(u64);
+            FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
+            m_locals |= (1 << idx);
+        }
+
+        xmm r = lookup(&val);
+        if (r < NXMM)
             free(r);
 
         val.mark_dead();

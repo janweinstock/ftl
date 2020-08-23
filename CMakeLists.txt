@@ -35,6 +35,7 @@ set(sources
     "src/ftl/emitter.cpp"
     "src/ftl/label.cpp"
     "src/ftl/value.cpp"
+    "src/ftl/scalar.cpp"
     "src/ftl/alloc.cpp"
     "src/ftl/func.cpp"
     "src/ftl/version.cpp")
