@@ -103,7 +103,7 @@ namespace ftl {
         addr(addr) {
         if (!valid_width(bits))
             FTL_ERROR("scalar '%s' has invalid bit width %d", name(), bits);
-        m_allocator.register_scalar(this);
+        m_allocator.register_value(this);
     }
 
     scalar::scalar(scalar&& other):
@@ -113,7 +113,7 @@ namespace ftl {
         m_mem(other.m_mem),
         bits(other.bits),
         addr(other.addr) {
-        m_allocator.register_scalar(this);
+        m_allocator.register_value(this);
 
         other.mark_dead();
         if (other.is_reg())
@@ -123,7 +123,7 @@ namespace ftl {
     scalar::~scalar() {
         if (!is_dead())
             m_allocator.free_scalar(*this);
-        m_allocator.unregister_scalar(this);
+        m_allocator.unregister_value(this);
     }
 
     scalar::operator const rm() const {

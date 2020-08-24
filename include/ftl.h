@@ -32,6 +32,7 @@
 #include "ftl/cbuf.h"
 #include "ftl/emitter.h"
 #include "ftl/label.h"
+#include "ftl/ralloc.h"
 #include "ftl/alloc.h"
 #include "ftl/func.h"
 
