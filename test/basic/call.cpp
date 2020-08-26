@@ -66,6 +66,24 @@ TEST(call, test3) {
     EXPECT_EQ(result, 111);
 }
 
+i64 test_boolean(void* bptr, bool arg1, bool arg2) {
+    EXPECT_TRUE(arg1);
+    EXPECT_FALSE(arg2);
+    return 0x11;
+}
+
+TEST(call, boolean) {
+    func code("test", 4 * KiB);
+    code.set_data_ptr(&test1_called);
+
+    value ret = code.gen_call(test_boolean, true, false);
+    code.gen_ret(ret);
+
+    i64 result = code();
+
+    EXPECT_EQ(result, 0x11);
+}
+
 TEST(call, direct) {
     cbuf buffer(4 * KiB);
 
@@ -94,4 +112,25 @@ TEST(call, direct) {
 
     i64 result = fn2((void*)42);
     EXPECT_EQ(result, 42);
+}
+
+i64 test_fp(void* bptr, i64 val1, f32 val2, f64 val3) {
+    EXPECT_EQ(val1, 1337);
+    EXPECT_FLOAT_EQ(val2, 1.337f);
+    EXPECT_DOUBLE_EQ(val3, 13.37);
+    return val1;
+}
+
+TEST(call, fp) {
+    func code("test", 4 * KiB);
+
+    value  op1 = code.gen_local_i64("op1", 1337);
+    scalar op2 = code.gen_local_f32("op2", 1.337f);
+    scalar op3 = code.gen_local_f64("op3", 13.37);
+    value ret = code.gen_call(test_fp, op1, op2, op3);
+    code.gen_ret(ret);
+
+    i64 result = code();
+
+    EXPECT_EQ(result, 1337);
 }

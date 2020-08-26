@@ -115,6 +115,26 @@ namespace ftl {
         value gen_scratch_i32(const string& nm, i32 val, reg r = NREGS);
         value gen_scratch_i64(const string& nm, i64 val, reg r = NREGS);
 
+        scalar gen_local_fp (const string& name, int bits, xmm r = NXMM);
+        scalar gen_local_f32(const string& name, xmm r = NXMM);
+        scalar gen_local_f64(const string& name, xmm r = NXMM);
+
+        scalar gen_local_fp (const string& nm, int bits, f64 f, xmm r = NXMM);
+        scalar gen_local_f32(const string& nm, f32 val, xmm r = NXMM);
+        scalar gen_local_f64(const string& nm, f64 val, xmm r = NXMM);
+
+        scalar gen_global_fp (const string& name, int bits, void* addr);
+        scalar gen_global_f32(const string& name, void* addr);
+        scalar gen_global_f64(const string& name, void* addr);
+
+        scalar gen_scratch_fp (const string& name, int bits, xmm r = NXMM);
+        scalar gen_scratch_f32(const string& name, xmm r = NXMM);
+        scalar gen_scratch_f64(const string& name, xmm r = NXMM);
+
+        scalar gen_scratch_fp (const string& nm, int bits, f64 f, xmm r = NXMM);
+        scalar gen_scratch_f32(const string& nm, f32 val, xmm r = NXMM);
+        scalar gen_scratch_f64(const string& nm, f64 val, xmm r = NXMM);
+
         void free_value(value& val);
 
         func gen_function(const string& name);
@@ -374,6 +394,66 @@ namespace ftl {
         return gen_scratch_val(name, 64, val, r);
     }
 
+    inline scalar func::gen_local_fp (const string& name, int bits, xmm r) {
+        return m_alloc.new_local_scalar_noinit(name, bits, r);
+    }
+
+    inline scalar func::gen_local_f32(const string& name, xmm r) {
+        return gen_local_fp(name, 32, r);
+    }
+
+    inline scalar func::gen_local_f64(const string& name, xmm r) {
+        return gen_local_fp(name, 64, r);
+    }
+
+    inline scalar func::gen_local_fp(const string& n, int bits, f64 f, xmm r) {
+        return m_alloc.new_local_scalar(n, bits, f, r);
+    }
+
+    inline scalar func::gen_local_f32(const string& nm, f32 f, xmm r) {
+        return gen_local_fp(nm, 32, f, r);
+    }
+
+    inline scalar func::gen_local_f64(const string& nm, f64 f, xmm r) {
+        return gen_local_fp(nm, 64, f, r);
+    }
+
+    inline scalar func::gen_global_fp(const string& nm, int bits, void* addr) {
+        return m_alloc.new_global_scalar(nm, bits, (u64)addr);
+    }
+
+    inline scalar func::gen_global_f32(const string& name, void* addr) {
+        return gen_global_fp(name, 32, addr);
+    }
+
+    inline scalar func::gen_global_f64(const string& name, void* addr) {
+        return gen_global_fp(name, 64, addr);
+    }
+
+    inline scalar func::gen_scratch_fp (const string& name, int bits, xmm r) {
+        return m_alloc.new_local_scalar_noinit(name, bits, r);
+    }
+
+    inline scalar func::gen_scratch_f32(const string& name, xmm r) {
+        return gen_scratch_fp(name, 32, r);
+    }
+
+    inline scalar func::gen_scratch_f64(const string& name, xmm r) {
+        return gen_scratch_fp(name, 64, r);
+    }
+
+    inline scalar func::gen_scratch_fp(const string& n, int w, f64 f, xmm r) {
+        return m_alloc.new_scratch_scalar(n, w, f, r);
+    }
+
+    inline scalar func::gen_scratch_f32(const string& name, f32 f, xmm r) {
+        return gen_scratch_fp(name, 32, f, r);
+    }
+
+    inline scalar func::gen_scratch_f64(const string& name, f64 f, xmm r) {
+        return gen_scratch_fp(name, 64, f, r);
+    }
+
     inline void func::free_value(value& val) {
         m_alloc.free_value(val);
     }
@@ -399,26 +479,20 @@ namespace ftl {
 
     template <typename FUNC, typename T1>
     inline value func::gen_call(FUNC* fn, const T1& arg1) {
-        reg r = argreg(1);
-        m_alloc.flush(r);
-        arg::fetch(m_emitter, r, arg1);
+        arg<T1>::fetch(m_alloc, arg1);
         return gen_call(fn);
     }
 
     template <typename FUNC, typename T1, typename T2>
     inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2) {
-        reg r = argreg(2);
-        m_alloc.flush(r);
-        arg::fetch(m_emitter, r, arg2);
+        arg<T2>::template fetch<T1>(m_alloc, arg2);
         return gen_call(fn, arg1);
     }
 
     template <typename FUNC, typename T1, typename T2, typename T3>
     inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
                                 const T3& arg3) {
-        reg r = argreg(3);
-        m_alloc.flush(r);
-        arg::fetch(m_emitter, r, arg3);
+        arg<T3>::template fetch<T1,T2>(m_alloc, arg3);
         return gen_call(fn, arg1, arg2);
     }
 
@@ -426,9 +500,7 @@ namespace ftl {
               typename T4>
     inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
                                 const T3& arg3, const T4& arg4) {
-        reg r = argreg(4);
-        m_alloc.flush(r);
-        arg::fetch(m_emitter, r, arg4);
+        arg<T4>::template fetch<T1,T2,T3>(m_alloc, arg4);
         return gen_call(fn, arg1, arg2, arg3);
     }
 
@@ -437,9 +509,7 @@ namespace ftl {
     inline value func::gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
                                 const T3& arg3, const T4& arg4,
                                 const T5& arg5) {
-        reg r = argreg(5);
-        m_alloc.flush(r);
-        arg::fetch(m_emitter, r, arg5);
+        arg<T5>::template fetch<T1,T2,T3,T4>(m_alloc, arg5);
         return gen_call(fn, arg1, arg2, arg3, arg4);
     }
 

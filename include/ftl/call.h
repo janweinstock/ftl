@@ -30,65 +30,191 @@
 
 namespace ftl {
 
-    class arg
-    {
-    public:
-        template <typename T>
-        static void fetch(emitter& e, reg r, T* ptr);
+    template <typename T>
+    struct arg_traits;
 
-        static void fetch(emitter& e, reg r, i8  val);
-        static void fetch(emitter& e, reg r, i16 val);
-        static void fetch(emitter& e, reg r, i32 val);
-        static void fetch(emitter& e, reg r, i64 val);
-
-        static void fetch(emitter& e, reg r, u8  val);
-        static void fetch(emitter& e, reg r, u16 val);
-        static void fetch(emitter& e, reg r, u32 val);
-        static void fetch(emitter& e, reg r, u64 val);
-
-        static void fetch(emitter& e, reg r, const value& val);
+    template <> struct arg_traits<bool> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, bool val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(8, r, val);
+        }
     };
 
+    template <> struct arg_traits<i8> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, i8 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(8, r, val);
+        }
+    };
+
+    template <> struct arg_traits<i16> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, i16 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(16, r, val);
+        }
+    };
+
+    template <> struct arg_traits<i32> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, i32 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(32, r, val);
+        }
+    };
+
+    template <> struct arg_traits<i64> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, i64 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(64, r, val);
+        }
+    };
+
+    template <> struct arg_traits<u8> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, u8 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(8, r, val);
+        }
+    };
+
+    template <> struct arg_traits<u16> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, u16 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(16, r, val);
+        }
+    };
+
+    template <> struct arg_traits<u32> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, u32 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(32, r, val);
+        }
+    };
+
+    template <> struct arg_traits<u64> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, u64 val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(64, r, (i64)val);
+        }
+    };
+
+    template <> struct arg_traits<f32> {
+        typedef xmm target_register_type;
+        static void fetch(alloc& a, unsigned int n, f32 val) {
+            emitter& e = a.get_emitter();
+            xmm r = argxmm(n);
+            a.flush(r);
+            a.flush(RAX);
+            e.movi(32, RAX, *(u32*)&val);
+            e.movs(32, r, RAX);
+        }
+    };
+
+    template <> struct arg_traits<f64> {
+        typedef xmm target_register_type;
+        static void fetch(alloc& a, unsigned int n, f64 val) {
+            emitter& e = a.get_emitter();
+            xmm r = argxmm(n);
+            a.flush(r);
+            a.flush(RAX);
+            e.movi(64, RAX, *(u64*)&val);
+            e.movs(64, r, RAX);
+        }
+    };
+
+    template <> struct arg_traits<value> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, const value& val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movr(val.bits, r, val);
+        }
+    };
+
+    template <> struct arg_traits<scalar> {
+        typedef xmm target_register_type;
+        static void fetch(alloc& a, unsigned int n, const scalar& val) {
+            emitter& e = a.get_emitter();
+            xmm r = argxmm(n);
+            a.flush(r);
+            e.movs(val.bits, r, val);
+        }
+    };
+
+    template <typename T, typename A>
+    inline constexpr unsigned int argno() {
+        typedef typename arg_traits<T>::target_register_type this_reg_type;
+        typedef typename arg_traits<A>::target_register_type other_reg_type;
+        return std::is_same<this_reg_type,other_reg_type>() ? 1 : 0;
+    }
+
+    template <typename T, typename A, typename B>
+    inline constexpr unsigned int argno() {
+        return argno<T,A>() + argno<T,B>();
+    }
+
+    template <typename T, typename A, typename B, typename C>
+    inline constexpr unsigned int argno() {
+        return argno<T,A,B>() + argno<T,C>();
+    }
+
+    template <typename T, typename A, typename B, typename C, typename D>
+    inline constexpr unsigned int argno() {
+        return argno<T,A,B,C>() + argno<T,D>();
+    }
+
     template <typename T>
-    inline void arg::fetch(emitter& e, reg r, T* ptr) {
-        arg::fetch(e, r, reinterpret_cast<uintptr_t>(ptr));
-    }
+    struct arg {
+        static void fetch(alloc& a, const T& val) {
+            arg_traits<T>::fetch(a, 0, val);
+        }
 
-    inline void arg::fetch(emitter& e, reg r, i8 val) {
-        e.movi(64, r, (i64)val);
-    }
+        template <typename A>
+        static void fetch(alloc& a, const T& val) {
+            arg_traits<T>::fetch(a, argno<T,A>(), val);
+        }
 
-    inline void arg::fetch(emitter& e, reg r, i16 val) {
-        e.movi(64, r, (i64)val);
-    }
+        template <typename A, typename B>
+        static void fetch(alloc& a, const T& val) {
+            arg_traits<T>::fetch(a, argno<T,A,B>(), val);
+        }
 
-    inline void arg::fetch(emitter& e, reg r, i32 val) {
-        e.movi(64, r, (i64)val);
-    }
+        template <typename A, typename B, typename C>
+        static void fetch(alloc& a, const T& val) {
+            arg_traits<T>::fetch(a, argno<T,A,B,C>(), val);
+        }
 
-    inline void arg::fetch(emitter& e, reg r, i64 val) {
-        e.movi(64, r, val);
-    }
-
-    inline void arg::fetch(emitter& e, reg r, u8 val) {
-        e.movi(64, r, (i64)val);
-    }
-
-    inline void arg::fetch(emitter& e, reg r, u16 val) {
-        e.movi(64, r, (i64)val);
-    }
-
-    inline void arg::fetch(emitter& e, reg r, u32 val) {
-        e.movi(64, r, (i64)val);
-    }
-
-    inline void arg::fetch(emitter& e, reg r, u64 val) {
-        e.movi(64, r, (i64)val);
-    }
-
-    inline void arg::fetch(emitter& e, reg r, const value& val) {
-        e.movr(val.bits, r, val);
-    }
+        template <typename A, typename B, typename C, typename D>
+        static void fetch(alloc& a, const T& val) {
+            arg_traits<T>::fetch(a, argno<T,A,B,C,D>(), val);
+        }
+    };
 
 }
 

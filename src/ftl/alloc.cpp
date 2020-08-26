@@ -221,6 +221,81 @@ namespace ftl {
         return v;
     }
 
+    scalar alloc::new_local_scalar_noinit(const string& nm, int bits, xmm r) {
+        int idx = ffs(m_locals) - 1;
+        FTL_ERROR_ON(idx < 0, "out of stack frame memory");
+        m_locals &= ~(1ull << idx);
+
+        if (r == NXMM)
+            r = m_xmms.select();
+
+        scalar s(*this, nm, bits, 0, STACK_POINTER, -idx * sizeof(u64));
+
+        flush(r);
+        assign(&s, r);
+
+        return s;
+    }
+
+    scalar alloc::new_local_scalar(const string& nm, int bits, f64 f, xmm r) {
+        scalar s = new_local_scalar_noinit(nm, bits, r);
+        r = s.r();
+
+        reg dummy = m_regs.select();
+        flush(dummy);
+
+        if (bits == 32) {
+            f32 fconv32 = (f32)f;
+            m_emitter.movi(32, dummy, *(u32*)&fconv32);
+        } else {
+            m_emitter.movi(64, dummy, *(u64*)&f);
+        }
+
+        m_emitter.movx(bits, r, dummy);
+        mark_dirty(r);
+        return s;
+    }
+
+    scalar alloc::new_global_scalar(const string& name, int bits, u64 addr) {
+        if (m_base == 0) {
+            m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
+            m_emitter.movi(64, BASE_REGISTER, m_base);
+        }
+
+        i64 offset = addr - m_base;
+        scalar s(*this, name, bits, addr, BASE_REGISTER, offset);
+        return s;
+    }
+
+    scalar alloc::new_scratch_scalar_noinit(const string& n, int bits, xmm r) {
+        if (r == NXMM)
+            r = m_xmms.select();
+        flush(r);
+
+        scalar s(*this, n, bits, ~0ull, NREGS, 0);
+        assign(&s, r);
+        return s;
+    }
+
+    scalar alloc::new_scratch_scalar(const string& n, int bits, f64 f, xmm r) {
+        scalar s = new_scratch_scalar_noinit(n, bits, r);
+        r = s.r();
+
+        reg dummy = m_regs.select();
+        flush(dummy);
+
+        if (bits == 32) {
+            f32 fconv32 = (f32)f;
+            m_emitter.movi(32, dummy, *(u32*)&fconv32);
+        } else {
+            m_emitter.movi(64, dummy, *(u64*)&f);
+        }
+
+        m_emitter.movx(bits, r, dummy);
+        mark_dirty(r);
+        return s;
+    }
+
     void alloc::free_value(value& val) {
         FTL_ERROR_ON(val.is_dead(), "double free value %s", val.name());
 

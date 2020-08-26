@@ -108,7 +108,13 @@ namespace ftl {
         value new_local(const string& name, int bits, i64 val, reg r = NREGS);
         value new_global(const string& name, int bits, u64 addr);
         value new_scratch_noinit(const string& name, int bits, reg r = NREGS);
-        value new_scratch(const string& name, int bits, i64 val, reg r = NREGS);
+        value new_scratch(const string& nm, int bits, i64 val, reg r = NREGS);
+
+        scalar new_local_scalar_noinit(const string& nm, int w, xmm r = NXMM);
+        scalar new_local_scalar(const string& nm, int w, f64 f, xmm r = NXMM);
+        scalar new_global_scalar(const string& nm, int w, u64 addr);
+        scalar new_scratch_scalar_noinit(const string& n, int w, xmm r = NXMM);
+        scalar new_scratch_scalar(const string& n, int w, f64 f, xmm r = NXMM);
 
         void free_value(value& val);
         void free_scalar(scalar& val);

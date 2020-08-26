@@ -94,6 +94,9 @@ namespace ftl {
         OPCODE2_DIVSS   = 0x5e,
         OPCODE2_MAXSS   = 0x5f,
 
+        OPCODE2_MOVX1   = 0x6e,
+        OPCODE2_MOVX2   = 0x7e,
+
         OPCODE2_CVTI2S  = 0x2a,
         OPCODE2_CVTTS2I = 0x2c,
         OPCODE2_CVTS2I  = 0x2d,
@@ -1100,6 +1103,8 @@ namespace ftl {
     size_t emitter::movs(int bits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
         FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(dest.is_reg(), "destination cannot be integer register");
+        FTL_ERROR_ON(src.is_reg(), "source cannot be integer register");
 
         if (dest.is_mem && src.is_mem)
             FTL_ERROR("destination and source cannot both be in memory");
@@ -1108,8 +1113,8 @@ namespace ftl {
         int pfx = bits == 32 ? PREFIX_SINGLE : PREFIX_DOUBLE;
         int op = dest.is_mem ? OPCODE2_MOVSS + 1 : OPCODE2_MOVSS;
 
-        rm oprm(src.is_mem ? src : dest); // operand used for modrm.rm
-        rm op_r(src.is_mem ? dest : src); // operand used for modrm.reg
+        rm oprm(dest.is_mem ? dest : src); // operand used for modrm.rm
+        rm op_r(dest.is_mem ? src : dest); // operand used for modrm.reg
 
         len += m_buffer.write<u8>(pfx);
         len += prefix(32, op_r.r, oprm);
@@ -1142,6 +1147,21 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
+    }
+
+    size_t emitter::movx(int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(dest.is_xmm == src.is_xmm, "operand types must differ");
+
+        size_t len = 0;
+        len += m_buffer.write<u8>(PREFIX_16BIT);
+        len += prefix(bits, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(dest.is_xmm ? OPCODE2_MOVX1 : OPCODE2_MOVX2);
+        len += modrm(dest.is_xmm ? dest.r : src.r, dest.is_xmm ? src : dest);
+
+        return len;
     }
 
     size_t emitter::comis(int bits, const rm& op1, const rm& op2) {

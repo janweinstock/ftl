@@ -35,7 +35,7 @@ using namespace ftl;
 #define EXPECT_EQ64(a, b) EXPECT_DOUBLE_EQ(a, b)
 
 #define MKTEST_ARITH(name, bits, a, b, expected)                              \
-    TEST(fp, UNIQUE(name ## _ ## bits)) {                                     \
+    TEST(fp, UNIQUE(name ## _ ## bits ## _)) {                                \
         ftl::cbuf code(4 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         typedef f ## bits type;                                               \
@@ -60,8 +60,8 @@ MKTEST_ARITH(maxs, 32, 1.0f, 2.0f, std::max(1.0f, 2.0f));
 MKTEST_ARITH(maxs, 64, 1.0,  2.0,  std::max(1.0,  2.0 ));
 
 TEST(fp, movss) {
-    double a[16], b[16], c[16];
-    for (int i = 0; i < 16; i++) {
+    double a[8], b[8], c[8];
+    for (int i = 0; i < 8; i++) {
         a[i] = i;
         b[i] = i * i;
         c[i] = 0;
@@ -76,35 +76,30 @@ TEST(fp, movss) {
     emitter.movi(64, R12, (i64)b);
     emitter.movi(64, R13, (i64)c);
 
-    for (int i = 0; i < 16; i++)
+    for (int i = 0; i < 8; i++) // xmm0 = a
         emitter.movs(64, xmm(XMM0 + i), memop(R11, i * 8));
 
-    for (int i = 0; i < 16; i++)
-        emitter.adds(64, xmm(XMM0 + i), memop(R12, i * 8));
+    for (int i = 0; i < 8; i++) // xmm8 = xmm0
+        emitter.movs(64, xmm(XMM8 + i), xmm(XMM0 + i));
 
-    for (int i = 0; i < 16; i++)
-        emitter.movs(64, memop(R13, i * 8), xmm(XMM0 + i));
+    for (int i = 0; i < 8; i++) // xmm8 += b
+        emitter.adds(64, xmm(XMM8 + i), memop(R12, i * 8));
+
+    for (int i = 0; i < 8; i++) // c = xmm8
+        emitter.movs(64, memop(R13, i * 8), xmm(XMM8 + i));
 
     emitter.ret();
 
     fn1();
 
-    EXPECT_DOUBLE_EQ(a[ 0] + b[ 0], c[ 0]);
-    EXPECT_DOUBLE_EQ(a[ 1] + b[ 1], c[ 1]);
-    EXPECT_DOUBLE_EQ(a[ 2] + b[ 2], c[ 2]);
-    EXPECT_DOUBLE_EQ(a[ 3] + b[ 3], c[ 3]);
-    EXPECT_DOUBLE_EQ(a[ 4] + b[ 4], c[ 4]);
-    EXPECT_DOUBLE_EQ(a[ 5] + b[ 5], c[ 5]);
-    EXPECT_DOUBLE_EQ(a[ 6] + b[ 6], c[ 6]);
-    EXPECT_DOUBLE_EQ(a[ 7] + b[ 7], c[ 7]);
-    EXPECT_DOUBLE_EQ(a[ 8] + b[ 8], c[ 8]);
-    EXPECT_DOUBLE_EQ(a[ 9] + b[ 9], c[ 9]);
-    EXPECT_DOUBLE_EQ(a[10] + b[10], c[10]);
-    EXPECT_DOUBLE_EQ(a[11] + b[11], c[11]);
-    EXPECT_DOUBLE_EQ(a[12] + b[12], c[12]);
-    EXPECT_DOUBLE_EQ(a[13] + b[13], c[13]);
-    EXPECT_DOUBLE_EQ(a[14] + b[14], c[14]);
-    EXPECT_DOUBLE_EQ(a[15] + b[15], c[15]);
+    EXPECT_DOUBLE_EQ(a[0] + b[0], c[0]);
+    EXPECT_DOUBLE_EQ(a[1] + b[1], c[1]);
+    EXPECT_DOUBLE_EQ(a[2] + b[2], c[2]);
+    EXPECT_DOUBLE_EQ(a[3] + b[3], c[3]);
+    EXPECT_DOUBLE_EQ(a[4] + b[4], c[4]);
+    EXPECT_DOUBLE_EQ(a[5] + b[5], c[5]);
+    EXPECT_DOUBLE_EQ(a[6] + b[6], c[6]);
+    EXPECT_DOUBLE_EQ(a[7] + b[7], c[7]);
 }
 
 #define MKTEST_F2I(f_bits, i_bits, val, expected)                             \
