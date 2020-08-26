@@ -41,4 +41,5 @@ basic_test(fence)
 basic_test(atomic)
 basic_test(scratch)
 basic_test(fp)
+basic_test(scalar)
 

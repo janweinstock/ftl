@@ -264,6 +264,18 @@ namespace ftl {
         void gen_cmpxchg(value& dest, value& src, value& cmpv);
         void gen_fence(bool sync_loads = true, bool sync_stores = true);
 
+        void gen_mov(scalar& dest, const value&  src);
+        void gen_mov(value&  dest, const scalar& src);
+
+        void gen_mov(scalar& dest, const scalar& src);
+        void gen_add(scalar& dest, const scalar& src);
+        void gen_sub(scalar& dest, const scalar& src);
+        void gen_mul(scalar& dest, const scalar& src);
+        void gen_div(scalar& dest, const scalar& src);
+        void gen_min(scalar& dest, const scalar& src);
+        void gen_max(scalar& dest, const scalar& src);
+        void gen_cmp(scalar& dest, const scalar& src);
+
         template <typename FUNC>
         value gen_call(FUNC* fn);
 

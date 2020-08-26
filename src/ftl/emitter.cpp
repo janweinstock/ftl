@@ -1125,6 +1125,21 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::movx(int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
+        FTL_ERROR_ON(dest.is_xmm == src.is_xmm, "operand types must differ");
+
+        size_t len = 0;
+        len += m_buffer.write<u8>(PREFIX_16BIT);
+        len += prefix(bits, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(dest.is_xmm ? OPCODE2_MOVX1 : OPCODE2_MOVX2);
+        len += modrm(dest.is_xmm ? dest.r : src.r, dest.is_xmm ? src : dest);
+
+        return len;
+    }
+
     size_t emitter::adds(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_ADDSS, bits, dest, src);
     }
@@ -1147,21 +1162,6 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
-    }
-
-    size_t emitter::movx(int bits, const rm& dest, const rm& src) {
-        FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
-        FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
-        FTL_ERROR_ON(dest.is_xmm == src.is_xmm, "operand types must differ");
-
-        size_t len = 0;
-        len += m_buffer.write<u8>(PREFIX_16BIT);
-        len += prefix(bits, dest.r, src);
-        len += m_buffer.write<u8>(OPCODE_ESCAPE);
-        len += m_buffer.write<u8>(dest.is_xmm ? OPCODE2_MOVX1 : OPCODE2_MOVX2);
-        len += modrm(dest.is_xmm ? dest.r : src.r, dest.is_xmm ? src : dest);
-
-        return len;
     }
 
     size_t emitter::comis(int bits, const rm& op1, const rm& op2) {

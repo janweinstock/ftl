@@ -195,13 +195,13 @@ namespace ftl {
         size_t cmovg(int bits, const rm& dest, const rm& src);
 
         size_t movs(int bits, const rm& dest, const rm& src);
+        size_t movx(int bits, const rm& dest, const rm& src);
         size_t adds(int bits, const rm& dest, const rm& src);
         size_t subs(int bits, const rm& dest, const rm& src);
         size_t muls(int bits, const rm& dest, const rm& src);
         size_t divs(int bits, const rm& dest, const rm& src);
         size_t mins(int bits, const rm& dest, const rm& src);
         size_t maxs(int bits, const rm& dest, const rm& src);
-        size_t movx(int bits, const rm& dest, const rm& src);
 
         size_t comis(int bits, const rm& op1, const rm& op2);
         size_t ucomis(int bits, const rm& op1, const rm& op2);

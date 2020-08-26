@@ -1130,4 +1130,150 @@ namespace ftl {
             m_emitter.sfence();
     }
 
+    void func::gen_mov(scalar& dest, const value& src) {
+        if (dest.is_mem())
+            dest.assign();
+
+        m_emitter.movx(dest.bits, dest, src);
+    }
+
+    void func::gen_mov(value& dest, const scalar& src) {
+        FTL_ERROR_ON(dest.bits < 32, "integer value too narrow");
+
+        if (dest.is_mem())
+            dest.assign();
+
+        if (dest.bits == src.bits) {
+            m_emitter.movx(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("temp.movs", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.movx(dest.bits, dest, temp);
+    }
+
+    void func::gen_mov(scalar& dest, const scalar& src) {
+        if (dest == src)
+            return;
+
+        if (dest.is_mem())
+            dest.assign();
+
+        if (dest.bits == src.bits)
+            m_emitter.movs(dest.bits, dest, src);
+        else
+            m_emitter.cvts2s(dest.bits, src.bits, dest, src);
+    }
+
+    void func::gen_add(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.adds(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("add.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.adds(dest.bits, dest, temp);
+    }
+
+    void func::gen_sub(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.subs(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("sub.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.subs(dest.bits, dest, temp);
+    }
+
+    void func::gen_mul(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.muls(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("mul.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.muls(dest.bits, dest, temp);
+    }
+
+    void func::gen_div(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.divs(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("div.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.divs(dest.bits, dest, temp);
+    }
+
+    void func::gen_min(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.mins(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("min.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.mins(dest.bits, dest, temp);
+    }
+
+    void func::gen_max(scalar& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.fetch();
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.maxs(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("max.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.maxs(dest.bits, dest, temp);
+    }
+
+    void func::gen_cmp(scalar& op1, const scalar& op2) {
+        if (op1.is_mem())
+            op1.fetch();
+
+        if (op1.bits == op2.bits) {
+            m_emitter.comis(op1.bits, op1, op2);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("convert.temp", op1.bits);
+        m_emitter.cvts2s(temp.bits, op2.bits, temp, op2);
+        m_emitter.comis(op1.bits, op1, temp);
+    }
+
 }
