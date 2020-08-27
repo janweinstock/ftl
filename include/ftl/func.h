@@ -274,6 +274,7 @@ namespace ftl {
         void gen_div(scalar& dest, const scalar& src);
         void gen_min(scalar& dest, const scalar& src);
         void gen_max(scalar& dest, const scalar& src);
+        void gen_sqrt(scalar& dest, const scalar& src);
         void gen_cmp(scalar& dest, const scalar& src);
 
         template <typename FUNC>

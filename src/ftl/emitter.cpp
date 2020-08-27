@@ -86,6 +86,7 @@ namespace ftl {
         OPCODE2_MOVSX   = 0xbe,
 
         OPCODE2_MOVSS   = 0x10,
+        OPCODE2_SQRTSS  = 0x51,
         OPCODE2_ADDSS   = 0x58,
         OPCODE2_MULSS   = 0x59,
         OPCODE2_CVTSS   = 0x5a,
@@ -1162,6 +1163,10 @@ namespace ftl {
 
     size_t emitter::maxs(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_MAXSS, bits, dest, src);
+    }
+
+    size_t emitter::sqrt(int bits, const rm& dest, const rm& src) {
+        return mmxop(OPCODE2_SQRTSS, bits, dest, src);
     }
 
     size_t emitter::comis(int bits, const rm& op1, const rm& op2) {

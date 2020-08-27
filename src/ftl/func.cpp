@@ -1262,6 +1262,26 @@ namespace ftl {
         m_emitter.maxs(dest.bits, dest, temp);
     }
 
+    void func::gen_sqrt(scalar& dest, const scalar& src) {
+        if (dest.is_mem()) {
+            if (dest == src)
+                dest.fetch();
+            else
+                dest.assign();
+        }
+
+        dest.mark_dirty();
+
+        if (dest.bits == src.bits) {
+            m_emitter.sqrt(dest.bits, dest, src);
+            return;
+        }
+
+        scalar temp = gen_scratch_fp("sqrt.temp", dest.bits);
+        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
+        m_emitter.sqrt(dest.bits, dest, temp);
+    }
+
     void func::gen_cmp(scalar& op1, const scalar& op2) {
         if (op1.is_mem())
             op1.fetch();

@@ -51,14 +51,15 @@ using namespace ftl;
     }
 
 #define MKTEST(op, a, b, c, d)                                                \
-        _MKTEST(op, 64, 64, a,    b,    c,    d   )                              \
+        _MKTEST(op, 64, 64, a,    b,    c,    d   )                           \
         _MKTEST(op, 64, 32, a,    b##f, c,    d##f)                           \
-        _MKTEST(op, 32, 64, a##f,    b, c##f, d   )                              \
+        _MKTEST(op, 32, 64, a##f,    b, c##f, d   )                           \
         _MKTEST(op, 32, 32, a##f, b##f, c##f, d##f)
 
-MKTEST(add, 4.0, 2.0, 6.0,  6.0)
-MKTEST(sub, 4.0, 2.0, 2.0, -2.0)
-MKTEST(mul, 4.0, 2.0, 8.0,  8.0)
-MKTEST(div, 4.0, 2.0, 2.0,  0.5)
-MKTEST(max, 4.0, 2.0, 4.0,  4.0)
-MKTEST(min, 4.0, 2.0, 2.0,  2.0)
+MKTEST(add,  4.0, 2.0, 6.0,  6.0)
+MKTEST(sub,  4.0, 2.0, 2.0, -2.0)
+MKTEST(mul,  4.0, 2.0, 8.0,  8.0)
+MKTEST(div,  4.0, 2.0, 2.0,  0.5)
+MKTEST(max,  4.0, 2.0, 4.0,  4.0)
+MKTEST(min,  4.0, 2.0, 2.0,  2.0)
+MKTEST(sqrt, 9.0, 4.0, 2.0,  3.0)
