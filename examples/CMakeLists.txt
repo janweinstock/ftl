@@ -25,3 +25,8 @@ add_executable(prime prime.cpp)
 target_link_libraries(prime ftl)
 install(TARGETS prime DESTINATION examples)
 install(FILES prime.cpp DESTINATION examples)
+
+add_executable(gauss gauss.cpp)
+target_link_libraries(gauss ftl)
+install(TARGETS gauss DESTINATION examples)
+install(FILES gauss.cpp DESTINATION examples)
