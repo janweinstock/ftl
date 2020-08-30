@@ -104,6 +104,18 @@ namespace ftl {
         return __builtin_ctzl(val); // works only if val is power of two!
     }
 
+    static inline u32 f32_raw(f32 val) {
+        union { f32 f; u32 u; } helper;
+        helper.f = val;
+        return helper.u;
+    }
+
+    static inline u64 f64_raw(f64 val) {
+        union { f64 f; u64 u; } helper;
+        helper.f = val;
+        return helper.u;
+    }
+
 }
 
 #endif

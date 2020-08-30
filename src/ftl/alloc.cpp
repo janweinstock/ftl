@@ -244,14 +244,10 @@ namespace ftl {
         reg dummy = m_regs.select();
         flush(dummy);
 
-        if (bits == 32) {
-            f32 fconv32 = (f32)f;
-            m_emitter.movi(32, dummy, *(u32*)&fconv32);
-        } else {
-            m_emitter.movi(64, dummy, *(u64*)&f);
-        }
-
+        u64 raw = (bits == 32) ? f32_raw(f) : f64_raw(f);
+        m_emitter.movi(bits, dummy, raw);
         m_emitter.movx(bits, r, dummy);
+
         mark_dirty(r);
         return s;
     }
@@ -284,14 +280,10 @@ namespace ftl {
         reg dummy = m_regs.select();
         flush(dummy);
 
-        if (bits == 32) {
-            f32 fconv32 = (f32)f;
-            m_emitter.movi(32, dummy, *(u32*)&fconv32);
-        } else {
-            m_emitter.movi(64, dummy, *(u64*)&f);
-        }
-
+        u64 raw = (bits == 32) ? f32_raw(f) : f64_raw(f);
+        m_emitter.movi(bits, dummy, raw);
         m_emitter.movx(bits, r, dummy);
+
         mark_dirty(r);
         return s;
     }

@@ -130,7 +130,7 @@ namespace ftl {
             xmm r = argxmm(n);
             a.flush(r);
             a.flush(RAX);
-            e.movi(32, RAX, *(u32*)&val);
+            e.movi(32, RAX, f32_raw(val));
             e.movs(32, r, RAX);
         }
     };
@@ -142,8 +142,19 @@ namespace ftl {
             xmm r = argxmm(n);
             a.flush(r);
             a.flush(RAX);
-            e.movi(64, RAX, *(u64*)&val);
+            e.movi(64, RAX, f64_raw(val));
             e.movs(64, r, RAX);
+        }
+    };
+
+    template <typename T>
+    struct arg_traits<T*> {
+        typedef reg target_register_type;
+        static void fetch(alloc& a, unsigned int n, T* val) {
+            emitter& e = a.get_emitter();
+            reg r = argreg(n + 1);
+            a.flush(r);
+            e.movi(64, r, (uintptr_t)val);
         }
     };
 

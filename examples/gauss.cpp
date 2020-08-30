@@ -24,8 +24,7 @@ using namespace ftl;
 
 // helper to move immediate value into XMM register
 void helper_movs(emitter& e, reg temp, xmm dest, double val) {
-    u64 conv = *(u64*)&val;
-    e.movi(64, temp, conv);
+    e.movi(64, temp, f64_raw(val));
     e.movx(64, dest, temp);
 }
 
