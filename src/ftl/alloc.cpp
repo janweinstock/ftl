@@ -176,7 +176,7 @@ namespace ftl {
         if (r == NREGS)
             r = select();
 
-        value v(*this, name, bits, true, 0, STACK_POINTER, -idx * sizeof(u64));
+        value v(*this, name, bits, true, 0, STACK_POINTER, idx * sizeof(u64));
 
         flush(r);
         assign(&v, r);
@@ -229,7 +229,7 @@ namespace ftl {
         if (r == NXMM)
             r = m_xmms.select();
 
-        scalar s(*this, nm, bits, 0, STACK_POINTER, -idx * sizeof(u64));
+        scalar s(*this, nm, bits, 0, STACK_POINTER, idx * sizeof(u64));
 
         flush(r);
         assign(&s, r);
@@ -292,7 +292,7 @@ namespace ftl {
         FTL_ERROR_ON(val.is_dead(), "double free value %s", val.name());
 
         if (val.is_local()) {
-            int idx = -val.offset() / sizeof(u64);
+            int idx = val.offset() / sizeof(u64);
             FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
             m_locals |= (1 << idx);
         }
@@ -308,7 +308,7 @@ namespace ftl {
         FTL_ERROR_ON(val.is_dead(), "double free scalar %s", val.name());
 
         if (val.is_local()) {
-            int idx = -val.offset() / sizeof(u64);
+            int idx = val.offset() / sizeof(u64);
             FTL_ERROR_ON(idx < 0 || idx > 64, "corrupt stack offset");
             m_locals |= (1 << idx);
         }
