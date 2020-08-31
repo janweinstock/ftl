@@ -185,14 +185,14 @@ MKTEST_F2I_TRUNC(64, 64, -3.1415, -3);
 MKTEST_F2I_TRUNC(64, 64,  3.9999,  3);
 
 #define MKTEST_I2F(f_bits, i_bits, val, expected)                             \
-    TEST(fp, UNIQUE(convert_f ## f_bits ##  _to_ ## i ## i_bits ## _)) {      \
+    TEST(fp, UNIQUE(convert_i ## i_bits ##  _to_ ## f ## f_bits ## _)) {      \
         ftl::cbuf code(4 * ftl::KiB);                                         \
         ftl::emitter emitter(code);                                           \
         i ## i_bits i = val;                                                  \
         typedef f ## f_bits (test_func)(void);                                \
         test_func* fn = (test_func*)code.get_code_ptr();                      \
         emitter.movi(64, RAX, (i64)&i);                                       \
-        emitter.cvti2s(i_bits, f_bits, XMM0, memop(RAX, 0));                  \
+        emitter.cvti2s(f_bits, i_bits, XMM0, memop(RAX, 0));                  \
         emitter.ret();                                                        \
         EXPECT_DOUBLE_EQ(fn(), (f ## f_bits) expected);                       \
     }

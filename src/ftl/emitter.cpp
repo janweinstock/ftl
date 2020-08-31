@@ -1213,10 +1213,10 @@ namespace ftl {
         FTL_ERROR_ON(src.is_xmm, "source cannot be an xmm register");
 
         size_t len = 0;
-        int pfx = (sbts == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
+        int pfx = (dbts == 32) ? PREFIX_SINGLE : PREFIX_DOUBLE;
 
         len += m_buffer.write<u8>(pfx);
-        len += prefix(dbts, dest.r, src);
+        len += prefix(sbts, dest.r, src);
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(OPCODE2_CVTI2S);
         len += modrm(dest.r, src);
