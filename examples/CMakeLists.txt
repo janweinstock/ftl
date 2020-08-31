@@ -30,3 +30,8 @@ add_executable(gauss gauss.cpp)
 target_link_libraries(gauss ftl)
 install(TARGETS gauss DESTINATION examples)
 install(FILES gauss.cpp DESTINATION examples)
+
+add_executable(simplefp simplefp.cpp)
+target_link_libraries(simplefp ftl)
+install(TARGETS simplefp DESTINATION examples)
+install(FILES simplefp.cpp DESTINATION examples)
