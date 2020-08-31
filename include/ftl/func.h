@@ -276,6 +276,8 @@ namespace ftl {
         void gen_max(scalar& dest, const scalar& src);
         void gen_sqrt(scalar& dest, const scalar& src);
         void gen_cmp(scalar& dest, const scalar& src);
+        void gen_cvt(scalar& dest, const value& src);
+        void gen_cvt(value& dest, const scalar& src);
 
         template <typename FUNC>
         value gen_call(FUNC* fn);
@@ -444,7 +446,7 @@ namespace ftl {
     }
 
     inline scalar func::gen_scratch_fp (const string& name, int bits, xmm r) {
-        return m_alloc.new_local_scalar_noinit(name, bits, r);
+        return m_alloc.new_scratch_scalar_noinit(name, bits, r);
     }
 
     inline scalar func::gen_scratch_f32(const string& name, xmm r) {

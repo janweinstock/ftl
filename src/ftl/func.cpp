@@ -1296,4 +1296,20 @@ namespace ftl {
         m_emitter.comis(op1.bits, op1, temp);
     }
 
+    void func::gen_cvt(scalar& dest, const value& src) {
+        if (dest.is_mem())
+            dest.assign();
+
+        m_emitter.cvti2s(dest.bits, src.bits, dest, src);
+        dest.mark_dirty();
+    }
+
+    void func::gen_cvt(value& dest, const scalar& src) {
+        if (dest.is_mem())
+            dest.assign();
+
+        m_emitter.cvts2i(dest.bits, src.bits, dest, src);
+        dest.mark_dirty();
+    }
+
 }
