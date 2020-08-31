@@ -61,8 +61,8 @@ int main() {
     emitter.subs(64, XMM2, XMM8); // t = t - t2
     emitter.muls(64, XMM3, XMM4); // p = 2.0 * p
 
-    emitter.decr(32, RCX);
-    emitter.tstr(32, RCX, RCX); // repeat if n > 0
+    emitter.decr(32, RDI);
+    emitter.tstr(32, RDI, RDI); // repeat if n > 0
     emitter.jnz(-1, &loop);
     patch_jump(loop, entry);
 
