@@ -1134,6 +1134,7 @@ namespace ftl {
         if (dest.is_mem())
             dest.assign();
 
+        dest.mark_dirty();
         m_emitter.movx(dest.bits, dest, src);
     }
 
@@ -1142,6 +1143,7 @@ namespace ftl {
 
         if (dest.is_mem())
             dest.assign();
+        dest.mark_dirty();
 
         if (dest.bits == src.bits) {
             m_emitter.movx(dest.bits, dest, src);
@@ -1159,6 +1161,7 @@ namespace ftl {
 
         if (dest.is_mem())
             dest.assign();
+        dest.mark_dirty();
 
         if (dest.bits == src.bits)
             m_emitter.movs(dest.bits, dest, src);
@@ -1169,7 +1172,6 @@ namespace ftl {
     void func::gen_add(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
@@ -1185,7 +1187,6 @@ namespace ftl {
     void func::gen_sub(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
@@ -1201,7 +1202,6 @@ namespace ftl {
     void func::gen_mul(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
@@ -1217,7 +1217,6 @@ namespace ftl {
     void func::gen_div(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
@@ -1233,7 +1232,6 @@ namespace ftl {
     void func::gen_min(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
@@ -1249,7 +1247,6 @@ namespace ftl {
     void func::gen_max(scalar& dest, const scalar& src) {
         if (dest.is_mem())
             dest.fetch();
-
         dest.mark_dirty();
 
         if (dest.bits == src.bits) {
