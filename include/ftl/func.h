@@ -264,8 +264,8 @@ namespace ftl {
         void gen_cmpxchg(value& dest, value& src, value& cmpv);
         void gen_fence(bool sync_loads = true, bool sync_stores = true);
 
-        void gen_mov(scalar& dest, const value&  src);
-        void gen_mov(value&  dest, const scalar& src);
+        void gen_mov(scalar& dest, const value& src);
+        void gen_mov(value& dest, scalar& src);
 
         void gen_mov(scalar& dest, const scalar& src);
         void gen_add(scalar& dest, const scalar& src);

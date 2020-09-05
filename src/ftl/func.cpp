@@ -1131,28 +1131,29 @@ namespace ftl {
     }
 
     void func::gen_mov(scalar& dest, const value& src) {
+        FTL_ERROR_ON(src.bits < 32, "integer value too narrow");
+
         if (dest.is_mem())
             dest.assign();
-
         dest.mark_dirty();
-        m_emitter.movx(dest.bits, dest, src);
+
+        int bits = min(dest.bits, src.bits);
+        m_emitter.movx(bits, dest, src);
     }
 
-    void func::gen_mov(value& dest, const scalar& src) {
+    void func::gen_mov(value& dest, scalar& src) {
         FTL_ERROR_ON(dest.bits < 32, "integer value too narrow");
 
-        if (dest.is_mem())
-            dest.assign();
+        src.fetch(); // fp value must be in a register
         dest.mark_dirty();
 
-        if (dest.bits == src.bits) {
-            m_emitter.movx(dest.bits, dest, src);
-            return;
+        int bits = min(dest.bits, src.bits);
+        if (dest.bits > src.bits) {
+            dest.assign();
+            gen_mov(dest, 0);
         }
 
-        scalar temp = gen_scratch_fp("temp.movs", dest.bits);
-        m_emitter.cvts2s(temp.bits, src.bits, temp, src);
-        m_emitter.movx(dest.bits, dest, temp);
+        m_emitter.movx(bits, dest, src);
     }
 
     void func::gen_mov(scalar& dest, const scalar& src) {

@@ -1129,14 +1129,18 @@ namespace ftl {
     size_t emitter::movx(int bits, const rm& dest, const rm& src) {
         FTL_ERROR_ON(bits < 32, "unsupported floating point width: %d", bits);
         FTL_ERROR_ON(bits > 64, "unsupported floating point width: %d", bits);
-        FTL_ERROR_ON(dest.is_xmm == src.is_xmm, "operand types must differ");
+        FTL_ERROR_ON(!dest.is_xmm && !src.is_xmm,
+                     "one operand must be a floating point register");
+
+        const rm& xmm_op = dest.is_xmm ? dest : src;
+        const rm& int_op = dest.is_xmm ? src : dest;
 
         size_t len = 0;
         len += m_buffer.write<u8>(PREFIX_16BIT);
-        len += prefix(bits, dest.r, src);
+        len += prefix(bits, xmm_op.r, int_op);
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(dest.is_xmm ? OPCODE2_MOVX1 : OPCODE2_MOVX2);
-        len += modrm(dest.is_xmm ? dest.r : src.r, dest.is_xmm ? src : dest);
+        len += modrm(xmm_op.r, int_op);
 
         return len;
     }
