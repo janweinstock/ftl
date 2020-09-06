@@ -1073,6 +1073,49 @@ namespace ftl {
         dest.mark_dirty();
     }
 
+    void func::gen_bt(value& dest, value& src) {
+        src.fetch();
+        // dest is not modified!
+        m_emitter.btr(dest.bits, dest, src);
+    }
+
+    void func::gen_bts(value& dest, value& src) {
+        src.fetch();
+        dest.mark_dirty();
+        m_emitter.btsr(dest.bits, dest, src);
+    }
+
+    void func::gen_btr(value& dest, value& src) {
+        src.fetch();
+        dest.mark_dirty();
+        m_emitter.btrr(dest.bits, dest, src);
+    }
+
+    void func::gen_btc(value& dest, value& src) {
+        src.fetch();
+        dest.mark_dirty();
+        m_emitter.btcr(dest.bits, dest, src);
+    }
+
+    void func::gen_bt(value& dest, u8 idx) {
+        m_emitter.bti(dest.bits, dest, idx & (dest.bits - 1));
+    }
+
+    void func::gen_bts(value& dest, u8 idx) {
+        dest.mark_dirty();
+        m_emitter.btsi(dest.bits, dest, idx & (dest.bits - 1));
+    }
+
+    void func::gen_btr(value& dest, u8 idx) {
+        dest.mark_dirty();
+        m_emitter.btri(dest.bits, dest, idx & (dest.bits - 1));
+    }
+
+    void func::gen_btc(value& dest, u8 idx) {
+        dest.mark_dirty();
+        m_emitter.btci(dest.bits, dest, idx & (dest.bits - 1));
+    }
+
     void func::gen_zxt(value& dest, value& src) {
         gen_zxt(dest, src, dest.bits, src.bits);
     }

@@ -84,6 +84,11 @@ namespace ftl {
         OPCODE2_CMPXCHG = 0xb0,
         OPCODE2_MOVZX   = 0xb6,
         OPCODE2_MOVSX   = 0xbe,
+        OPCODE2_BITIMM  = 0xba,
+        OPCODE2_BT      = 0xa3,
+        OPCODE2_BTS     = 0xab,
+        OPCODE2_BTR     = 0xb3,
+        OPCODE2_BTC     = 0xbb,
 
         OPCODE2_MOVSS   = 0x10,
         OPCODE2_SQRTSS  = 0x51,
@@ -135,6 +140,13 @@ namespace ftl {
         OPCODE_UNARY_IMUL = 5,
         OPCODE_UNARY_DIV  = 6,
         OPCODE_UNARY_IDIV = 7,
+    };
+
+    enum opcode_bit {
+        OPCODE_BIT_TEST  = 4,
+        OPCODE_BIT_SET   = 5,
+        OPCODE_BIT_RESET = 6,
+        OPCODE_BIT_COMP  = 7,
     };
 
     enum branch_condition {
@@ -405,6 +417,33 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::bitop(int op, int bits, const rm& dest, u8 imm) {
+        FTL_ERROR_ON(bits < 16, "8bit operation not supported");
+        FTL_ERROR_ON((int)imm >= bits, "bit index out of bounds");
+
+        size_t len = 0;
+        len += prefix(bits, 0, dest);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_BITIMM);
+        len += modrm(op, dest);
+        len += m_buffer.write(imm);
+
+        return len;
+    }
+
+    size_t emitter::bitop(int op, int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(bits < 16, "8bit operation not supported");
+        FTL_ERROR_ON(!src.is_reg(), "src2 must be an integer register");
+
+        size_t len = 0;
+        len += prefix(bits, src.r, dest);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(op);
+        len += modrm(src.r, dest);
+
+        return len;
+    }
+
     emitter::emitter(cbuf& code):
         m_buffer(code) {
     }
@@ -538,6 +577,22 @@ namespace ftl {
         return len;
     }
 
+    size_t emitter::bti(int bits, const rm& dest, u8 imm) {
+        return bitop(OPCODE_BIT_TEST, bits, dest, imm);
+    }
+
+    size_t emitter::btsi(int bits, const rm& dest, u8 imm) {
+        return bitop(OPCODE_BIT_SET, bits, dest, imm);
+    }
+
+    size_t emitter::btri(int bits, const rm& dest, u8 imm) {
+        return bitop(OPCODE_BIT_RESET, bits, dest, imm);
+    }
+
+    size_t emitter::btci(int bits, const rm& dest, u8 imm) {
+        return bitop(OPCODE_BIT_COMP, bits, dest, imm);
+    }
+
     size_t emitter::movr(int bits, const rm& dest, const rm& src) {
         if (dest.is_reg() && src.is_reg() && dest.r == src.r)
             return 0;
@@ -603,6 +658,22 @@ namespace ftl {
         len += modrm(dest.r, src);
 
         return len;
+    }
+
+    size_t emitter::btr(int bits, const rm& dest, const rm& src) {
+        return bitop(OPCODE2_BT, bits, dest, src);
+    }
+
+    size_t emitter::btsr(int bits, const rm& dest,const rm& src) {
+        return bitop(OPCODE2_BTS, bits, dest, src);
+    }
+
+    size_t emitter::btrr(int bits, const rm& dest, const rm& src) {
+        return bitop(OPCODE2_BTR, bits, dest, src);
+    }
+
+    size_t emitter::btcr(int bits, const rm& dest, const rm& src) {
+        return bitop(OPCODE2_BTC, bits, dest, src);
     }
 
     size_t emitter::incr(int bits, const rm& op) {

@@ -52,6 +52,8 @@ namespace ftl {
         size_t movcc(int op, int bits, const rm& dest, const rm& src);
         size_t mmxop(int op, int bits, const rm& dest, const rm& src);
         size_t mmxcmp(int op, int bits, const rm& op1, const rm& op2);
+        size_t bitop(int op, int bits, const rm& dest, u8 imm);
+        size_t bitop(int op, int bits, const rm& dest, const rm& src);
 
     public:
         emitter(cbuf& buffer);
@@ -78,6 +80,10 @@ namespace ftl {
         size_t xori(int bits, const rm& dest, i32 imm);
         size_t cmpi(int bits, const rm& dest, i32 imm);
         size_t tsti(int bits, const rm& dest, i32 imm);
+        size_t bti (int bits, const rm& dest, u8 imm);
+        size_t btsi(int bits, const rm& dest, u8 imm);
+        size_t btri(int bits, const rm& dest, u8 imm);
+        size_t btci(int bits, const rm& dest, u8 imm);
 
         size_t movr(int bits, const rm& dest, const rm& src);
         size_t addr(int bits, const rm& dest, const rm& src);
@@ -91,6 +97,10 @@ namespace ftl {
         size_t tstr(int bits, const rm& dest, const rm& src);
         size_t xchg(int bits, const rm& dest, const rm& src);
         size_t lear(int bits, const rm& dest, const rm& src);
+        size_t btr (int bits, const rm& dest, const rm& src);
+        size_t btsr(int bits, const rm& dest, const rm& src);
+        size_t btrr(int bits, const rm& dest, const rm& src);
+        size_t btcr(int bits, const rm& dest, const rm& src);
 
         size_t incr(int bits, const rm& op);
         size_t decr(int bits, const rm& op);

@@ -256,6 +256,16 @@ namespace ftl {
         void gen_rol(value& dest, u8 shift);
         void gen_ror(value& dest, u8 shift);
 
+        void gen_bt (value& dest, value& src);
+        void gen_bts(value& dest, value& src);
+        void gen_btr(value& dest, value& src);
+        void gen_btc(value& dest, value& src);
+
+        void gen_bt (value& dest, u8 idx);
+        void gen_bts(value& dest, u8 idx);
+        void gen_btr(value& dest, u8 idx);
+        void gen_btc(value& dest, u8 idx);
+
         void gen_zxt(value& dest, value& src);
         void gen_zxt(value& dest, value& src, int dbits, int sbits);
         void gen_sxt(value& dest, value& src);
