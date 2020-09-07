@@ -410,6 +410,7 @@ namespace ftl {
         if (bits == 64)
             len += m_buffer.write<u8>(PREFIX_16BIT);
 
+        len += prefix(bits, op1.r, op2);
         len += m_buffer.write<u8>(OPCODE_ESCAPE);
         len += m_buffer.write<u8>(op);
         len += modrm(op1.r, op2);
