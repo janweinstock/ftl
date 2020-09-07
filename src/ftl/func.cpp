@@ -1323,18 +1323,20 @@ namespace ftl {
         m_emitter.sqrt(dest.bits, dest, temp);
     }
 
-    void func::gen_cmp(scalar& op1, const scalar& op2) {
+    void func::gen_cmp(scalar& op1, const scalar& op2, bool signal_qnan) {
         if (op1.is_mem())
             op1.fetch();
 
+        auto handler = signal_qnan ? &emitter::comis : &emitter::ucomis;
+
         if (op1.bits == op2.bits) {
-            m_emitter.comis(op1.bits, op1, op2);
+            (m_emitter.*handler)(op1.bits, op1, op2);
             return;
         }
 
         scalar temp = gen_scratch_fp("convert.temp", op1.bits);
         m_emitter.cvts2s(temp.bits, op2.bits, temp, op2);
-        m_emitter.comis(op1.bits, op1, temp);
+        (m_emitter.*handler)(op1.bits, op1, temp);
     }
 
     void func::gen_cvt(scalar& dest, const value& src) {
