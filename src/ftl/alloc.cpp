@@ -43,7 +43,7 @@ namespace ftl {
 
         FTL_ERROR_ON(!reg_valid(r), "invalid register selected: %d", r);
         FTL_ERROR_ON(r == STACK_POINTER, "cannot assign to stack pointer");
-        FTL_ERROR_ON(r == BASE_REGISTER, "cannot assign to base register");
+        FTL_ERROR_ON(r == BASE_POINTER, "cannot assign to base pointer");
         FTL_ERROR_ON(is_blocked(r), "cannot assign to blocked register %s",
                      reg_names[r]);
 
@@ -195,11 +195,11 @@ namespace ftl {
     value alloc::new_global(const string& name, int bits, u64 addr) {
         if (m_base == 0) {
             m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
-            m_emitter.movi(64, BASE_REGISTER, m_base);
+            m_emitter.movi(64, BASE_POINTER, m_base);
         }
 
         i64 offset = addr - m_base;
-        value v(*this, name, bits, true, addr, BASE_REGISTER, offset);
+        value v(*this, name, bits, true, addr, BASE_POINTER, offset);
         return v;
     }
 
@@ -255,11 +255,11 @@ namespace ftl {
     scalar alloc::new_global_scalar(const string& name, int bits, u64 addr) {
         if (m_base == 0) {
             m_base = FTL_PAGE_ROUND(addr + FTL_PAGE_SIZE);
-            m_emitter.movi(64, BASE_REGISTER, m_base);
+            m_emitter.movi(64, BASE_POINTER, m_base);
         }
 
         i64 offset = addr - m_base;
-        scalar s(*this, name, bits, addr, BASE_REGISTER, offset);
+        scalar s(*this, name, bits, addr, BASE_POINTER, offset);
         return s;
     }
 

@@ -488,7 +488,7 @@ namespace ftl {
     inline value func::gen_call(FUNC* fn) {
         m_alloc.flush_volatile_regs();
         m_alloc.store_all_regs();
-        m_emitter.movr(64, argreg(0), m_alloc.BASE_REGISTER);
+        m_emitter.movr(64, argreg(0), BASE_POINTER);
 
         if (can_call_directly(m_buffer.get_code_ptr(), fn)) {
             m_emitter.call((u8*)fn);

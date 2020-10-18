@@ -43,6 +43,9 @@ namespace ftl {
         R14   = 14,
         R15   = 15,
         NREGS = 16,
+
+        STACK_POINTER = RSP, // base address register for locals
+        BASE_POINTER  = RBP, // base address register for globals
     };
 
     static inline bool reg_valid(int r) {

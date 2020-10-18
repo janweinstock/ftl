@@ -26,15 +26,15 @@ namespace ftl {
 
         i32 frame_size = 64 * sizeof(u64);
 
-        m_emitter.subi(64, m_alloc.STACK_POINTER, frame_size);
-        m_emitter.movr(64, m_alloc.BASE_REGISTER, argreg(1));
+        m_emitter.subi(64, STACK_POINTER, frame_size);
+        m_emitter.movr(64, BASE_POINTER, argreg(1));
         m_emitter.jmpr(argreg(0));
         m_buffer.align(4);
 
         m_buffer.mark_exit();
         m_exit.place(false);
 
-        m_emitter.addi(64, m_alloc.STACK_POINTER, frame_size);
+        m_emitter.addi(64, STACK_POINTER, frame_size);
         for (size_t i = FTL_ARRAY_SIZE(callee_saved_regs); i != 0; i--)
             m_emitter.pop(callee_saved_regs[i-1]);
 

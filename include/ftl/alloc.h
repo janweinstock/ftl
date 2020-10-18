@@ -43,9 +43,6 @@ namespace ftl {
         u64         m_base;
 
     public:
-        const reg STACK_POINTER = RSP; // base address register for locals
-        const reg BASE_REGISTER = RBX; // base address register for globals
-
         alloc(emitter& e);
         alloc(alloc&&) = default;
         ~alloc();

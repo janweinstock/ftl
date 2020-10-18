@@ -141,13 +141,9 @@ namespace ftl {
 
     template <>
     inline reg ralloc<reg>::select() const {
-        // Never allocate RSP or RBP, since we need them for addressing local
-        // and memory variables. Allocate RAX last, since we need it to return
-        // values from function calls. RDX gets spoiled in MUL/DIV operations.
-        // Prefer registers which are callee saved and not used for function
-        // arguments.
         static const vector<reg> alloc_order = {
-            RBP, R12, R13, R14, R15, R8, R9, R10, R11, RCX, RDX, RSI, RDI, RAX,
+            RBX, RCX, RDX, RAX, RDI, RSI,  R8,  R9,
+            R10, R11, R14, R15, R12, R13, RSP, RBP,
         };
 
         return select(alloc_order);
@@ -222,6 +218,17 @@ namespace ftl {
         m_emitter(e) {
         reset();
     }
+
+    template <>
+    inline ralloc<reg>::ralloc(emitter& e):
+        m_regmap(),
+        m_usecnt(0),
+        m_emitter(e) {
+        reset();
+        block(BASE_POINTER);
+        block(STACK_POINTER);
+    }
+
 
     template <typename REG>
     inline void ralloc<REG>::reset() {

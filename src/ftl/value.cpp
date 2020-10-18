@@ -54,11 +54,11 @@ namespace ftl {
     }
 
     bool value::is_local() const {
-        return m_mem.r == m_allocator.STACK_POINTER;
+        return m_mem.r == STACK_POINTER;
     }
 
     bool value::is_global() const {
-        return m_mem.r == m_allocator.BASE_REGISTER;
+        return m_mem.r == BASE_POINTER;
     }
 
     bool value::is_scratch() const {

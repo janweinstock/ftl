@@ -88,7 +88,7 @@ TEST(call, direct) {
     cbuf buffer(4 * KiB);
 
     func fn1("fn1", buffer);
-    fn1.get_emitter().movr(64, RAX, fn1.get_alloc().BASE_REGISTER);
+    fn1.get_emitter().movr(64, RAX, BASE_POINTER);
     fn1.get_emitter().ret();
 
     func fn2("fn2", buffer);
