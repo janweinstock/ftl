@@ -248,7 +248,7 @@ namespace ftl {
         size_t len = 0;
         modrm_bits mode;
 
-        if (rm.offset == 0 && ((rm.r & 5) != 5))
+        if (rm.offset == 0 && ((rm.r & 7) != 5)) // rbp and r13 become rip
             mode = MODRM_INDIRECT;
         else if (fits_i8(rm.offset))
             mode = MODRM_DISP8;
