@@ -213,6 +213,7 @@ namespace ftl {
         size_t mins(int bits, const rm& dest, const rm& src);
         size_t maxs(int bits, const rm& dest, const rm& src);
         size_t sqrt(int bits, const rm& dest, const rm& src);
+        size_t pxor(int bits, const rm& dest, const rm& src);
 
         size_t comis(int bits, const rm& op1, const rm& op2);
         size_t ucomis(int bits, const rm& op1, const rm& op2);

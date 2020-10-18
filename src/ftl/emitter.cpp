@@ -109,6 +109,8 @@ namespace ftl {
 
         OPCODE2_UCOMIS  = 0x2e,
         OPCODE2_COMIS   = 0x2f,
+
+        OPCODE2_PXOR    = 0xef,
     };
 
     enum opcode_imm {
@@ -1243,6 +1245,21 @@ namespace ftl {
 
     size_t emitter::sqrt(int bits, const rm& dest, const rm& src) {
         return mmxop(OPCODE2_SQRTSS, bits, dest, src);
+    }
+
+    size_t emitter::pxor(int bits, const rm& dest, const rm& src) {
+        FTL_ERROR_ON(!dest.is_xmm, "destination must be a FP-register");
+        (void)bits;
+
+        size_t len = 0;
+
+        len += m_buffer.write<u8>(PREFIX_16BIT);
+        len += prefix(32, dest.r, src);
+        len += m_buffer.write<u8>(OPCODE_ESCAPE);
+        len += m_buffer.write<u8>(OPCODE2_PXOR);
+        len += modrm(dest.r, src);
+
+        return len;
     }
 
     size_t emitter::comis(int bits, const rm& op1, const rm& op2) {

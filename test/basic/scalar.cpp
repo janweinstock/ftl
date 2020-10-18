@@ -63,3 +63,16 @@ MKTEST(div,  4.0, 2.0, 2.0,  0.5)
 MKTEST(max,  4.0, 2.0, 4.0,  4.0)
 MKTEST(min,  4.0, 2.0, 2.0,  2.0)
 MKTEST(sqrt, 9.0, 4.0, 2.0,  3.0)
+
+TEST(scalar, pxor) {
+    cbuf buf(4096);
+    emitter emit(buf);
+
+    typedef double (*fn_t)(double, double);
+    fn_t fn = (fn_t)buf.get_code_entry();
+    emit.pxor(64, XMM0, XMM0);
+    emit.ret();
+
+    double ret = fn(4.0, 2.0);
+    EXPECT_DOUBLE_EQ(ret, 0.0);
+}

@@ -285,6 +285,7 @@ namespace ftl {
         void gen_min(scalar& dest, const scalar& src);
         void gen_max(scalar& dest, const scalar& src);
         void gen_sqrt(scalar& dest, const scalar& src);
+        void gen_pxor(scalar& dest, const scalar& src);
         void gen_cmp(scalar& op1, const scalar& op2, bool signal_qnan = false);
         void gen_cvt(scalar& dest, const value& src);
         void gen_cvt(value& dest, const scalar& src);

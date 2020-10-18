@@ -1323,6 +1323,18 @@ namespace ftl {
         m_emitter.sqrt(dest.bits, dest, temp);
     }
 
+    void func::gen_pxor(scalar& dest, const scalar& src) {
+        if (dest.is_mem()) {
+            if (dest == src)
+                dest.assign();
+            else
+                dest.fetch();
+        }
+
+        dest.mark_dirty();
+        m_emitter.pxor(dest.bits, dest, src);
+    }
+
     void func::gen_cmp(scalar& op1, const scalar& op2, bool signal_qnan) {
         if (op1.is_mem())
             op1.fetch();
