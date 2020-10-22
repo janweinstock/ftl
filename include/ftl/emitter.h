@@ -96,7 +96,10 @@ namespace ftl {
         size_t cmpr(int bits, const rm& dest, const rm& src);
         size_t tstr(int bits, const rm& dest, const rm& src);
         size_t xchg(int bits, const rm& dest, const rm& src);
+
         size_t lear(int bits, const rm& dest, const rm& src);
+        size_t lear(int bits, const rm& dest, const rm& src, i32 val);
+
         size_t btr (int bits, const rm& dest, const rm& src);
         size_t btsr(int bits, const rm& dest, const rm& src);
         size_t btrr(int bits, const rm& dest, const rm& src);

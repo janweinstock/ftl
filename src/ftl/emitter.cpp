@@ -651,9 +651,12 @@ namespace ftl {
     }
 
     size_t emitter::lear(int bits, const rm& dest, const rm& src) {
-        FTL_ERROR_ON(dest.is_mem, "destination must be register");
-        FTL_ERROR_ON(!src.is_mem, "source must be memory");
+        FTL_ERROR_ON(!dest.is_reg(), "destination must be a register");
+        FTL_ERROR_ON(!src.is_mem, "source must be a memory operand");
         FTL_ERROR_ON(bits <= 16, "8bit lea not supported");
+
+        if (src.offset == 0)
+            return movr(bits, dest, (reg)src.r);
 
         size_t len = 0;
         len += prefix(bits, dest.r, src);
@@ -661,6 +664,11 @@ namespace ftl {
         len += modrm(dest.r, src);
 
         return len;
+    }
+
+    size_t emitter::lear(int bits, const rm& dest, const rm& src, i32 val) {
+        FTL_ERROR_ON(!src.is_reg(), "source must be an integer register");
+        return lear(bits, dest, memop((reg)src.r, val));
     }
 
     size_t emitter::btr(int bits, const rm& dest, const rm& src) {

@@ -223,6 +223,8 @@ namespace ftl {
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
 
+        void gen_lea(value& dest, value& src, i32 val);
+
         void gen_imul(value& hi, value& lo, const value& src);
         void gen_umul(value& hi, value& lo, const value& src);
         void gen_imul(value& dest, const value& src);

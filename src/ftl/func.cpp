@@ -810,6 +810,15 @@ namespace ftl {
         m_emitter.tsti(dest.bits, dest, val);
     }
 
+    void func::gen_lea(value& dest, value& src, i32 val) {
+        src.fetch();
+        if (dest != src)
+            dest.assign();
+
+        m_emitter.lear(dest.bits, dest, src.r(), val);
+        dest.mark_dirty();
+    }
+
     void func::gen_imul(value& hi, value& dest, const value& src) {
         m_alloc.fetch(&dest, RAX);
         m_alloc.flush(RDX);
