@@ -521,10 +521,19 @@ namespace ftl {
     }
 
     size_t emitter::addi(int bits, const rm& dest, i32 imm) {
+        if (imm == 0)
+            return 0;
+
+        if (imm < 0)
+            return immop(OPCODE_IMM_SUB, bits, dest, -imm);
+
         return immop(OPCODE_IMM_ADD, bits, dest, imm);
     }
 
     size_t emitter::ori(int bits, const rm& dest, i32 imm) {
+        if (imm == 0)
+            return 0;
+
         return immop(OPCODE_IMM_OR, bits, dest, imm);
     }
 
@@ -537,14 +546,26 @@ namespace ftl {
     }
 
     size_t emitter::andi(int bits, const rm& dest, i32 imm) {
+        if (imm == -1)
+            return 0;
+
         return immop(OPCODE_IMM_AND, bits, dest, imm);
     }
 
     size_t emitter::subi(int bits, const rm& dest, i32 imm) {
+        if (imm == 0)
+            return 0;
+
+        if (imm < 0)
+            return immop(OPCODE_IMM_ADD, bits, dest, -imm);
+
         return immop(OPCODE_IMM_SUB, bits, dest, imm);
     }
 
     size_t emitter::xori(int bits, const rm& dest, i32 imm) {
+        if (imm == 0)
+            return 0;
+
         return immop(OPCODE_IMM_XOR, bits, dest, imm);
     }
 
