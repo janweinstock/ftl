@@ -212,6 +212,14 @@ namespace ftl {
         void gen_tst(value& dest, const value& src);
         void gen_xchg(value& dest, value& src);
 
+        void gen_add(value& dest, const value& src1, const value& src2);
+        void gen_or (value& dest, const value& src1, const value& src2);
+        void gen_adc(value& dest, const value& src1, const value& src2);
+        void gen_sbb(value& dest, const value& src1, const value& src2);
+        void gen_and(value& dest, const value& src1, const value& src2);
+        void gen_sub(value& dest, const value& src1, const value& src2);
+        void gen_xor(value& dest, const value& src1, const value& src2);
+
         void gen_mov(value& dest, i64 val);
         void gen_add(value& dest, i32 val);
         void gen_or (value& dest, i32 val);
@@ -223,7 +231,14 @@ namespace ftl {
         void gen_cmp(value& dest, i32 val);
         void gen_tst(value& dest, i32 val);
 
-        void gen_lea(value& dest, value& src, i32 val);
+        void gen_lea(value& dest,       value& src, i32 val);
+        void gen_add(value& dest, const value& src, i32 val);
+        void gen_or (value& dest, const value& src, i32 val);
+        void gen_adc(value& dest, const value& src, i32 val);
+        void gen_sbb(value& dest, const value& src, i32 val);
+        void gen_and(value& dest, const value& src, i32 val);
+        void gen_sub(value& dest, const value& src, i32 val);
+        void gen_xor(value& dest, const value& src, i32 val);
 
         void gen_imul(value& hi, value& lo, const value& src);
         void gen_umul(value& hi, value& lo, const value& src);

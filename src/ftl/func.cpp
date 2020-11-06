@@ -733,6 +733,87 @@ namespace ftl {
         src.mark_dirty();
     }
 
+    void func::gen_add(value& dest, const value& src1, const value& src2) {
+        if (dest == src1) {
+            gen_add(dest, src2);
+        } else if (dest == src2) {
+            gen_add(dest, src1);
+        } else {
+            gen_mov(dest, src1);
+            gen_add(dest, src2);
+        }
+    }
+
+    void func::gen_or(value& dest, const value& src1, const value& src2) {
+        if (dest == src1) {
+            gen_or(dest, src2);
+        } else if (dest == src2) {
+            gen_or(dest, src1);
+        } else {
+            gen_mov(dest, src1);
+            gen_or(dest, src2);
+        }
+    }
+
+    void func::gen_adc(value& dest, const value& src1, const value& src2) {
+        if (dest == src1) {
+            gen_adc(dest, src2);
+        } else if (dest == src2) {
+            gen_adc(dest, src1);
+        } else {
+            gen_mov(dest, src1);
+            gen_adc(dest, src2);
+        }
+    }
+
+    void func::gen_sbb(value& dest, const value& src1, const value& src2) {
+        if (dest != src2) {
+            gen_mov(dest, src1);
+            gen_sbb(dest, src2);
+        } else {
+            ftl::value res = gen_scratch_i64("sub.res");
+            gen_mov(res, src1);
+            gen_sub(res, src2);
+            gen_sbb(dest, res);
+        }
+    }
+
+    void func::gen_and(value& dest, const value& src1, const value& src2) {
+        if (dest == src1) {
+            gen_and(dest, src2);
+        } else if (dest == src2) {
+            gen_and(dest, src1);
+        } else {
+            gen_mov(dest, src1);
+            gen_and(dest, src2);
+        }
+    }
+
+    void func::gen_sub(value& dest, const value& src1, const value& src2) {
+        if (src1 == src2) {
+            gen_mov(dest, 0);
+        } else if (dest != src2) {
+            gen_mov(dest, src1);
+            gen_sub(dest, src2);
+        } else {
+            ftl::value res = gen_scratch_i64("sub.res");
+            gen_mov(res, src1);
+            gen_sub(res, src2);
+            gen_mov(dest, res);
+        }
+    }
+
+    void func::gen_xor(value& dest, const value& src1, const value& src2) {
+        if (dest == src1) {
+            gen_xor(dest, src2);
+        } else if (dest == src2) {
+            gen_xor(dest, src1);
+        } else {
+            gen_mov(dest, src1);
+            gen_xor(dest, src2);
+        }
+    }
+
     void func::gen_mov(value& dest, i64 val) {
         int immlen = max(encode_size(val), dest.bits);
         if (dest.is_mem() && immlen > 32)
@@ -798,16 +879,29 @@ namespace ftl {
     }
 
     void func::gen_xor(value& dest, i32 val) {
+        if (val == 0)
+            return;
+
         m_emitter.xori(dest.bits, dest, val);
         dest.mark_dirty();
     }
 
     void func::gen_cmp(value& dest, i32 val) {
-        m_emitter.cmpi(dest.bits, dest, val);
+        if (val == 0) {
+            dest.fetch();
+            gen_tst(dest, dest);
+        } else {
+            m_emitter.cmpi(dest.bits, dest, val);
+        }
     }
 
     void func::gen_tst(value& dest, i32 val) {
-        m_emitter.tsti(dest.bits, dest, val);
+        if (val == 0) {
+            dest.fetch();
+            gen_tst(dest, dest);
+        } else {
+            m_emitter.tsti(dest.bits, dest, val);
+        }
     }
 
     void func::gen_lea(value& dest, value& src, i32 val) {
@@ -817,6 +911,48 @@ namespace ftl {
 
         m_emitter.lear(dest.bits, dest, src.r(), val);
         dest.mark_dirty();
+    }
+
+    void func::gen_add(value& dest, const value& src, i32 val) {
+        if (src.is_reg()) {
+            if (dest != src)
+                dest.assign();
+            dest.mark_dirty();
+            m_emitter.lear(dest.bits, dest, src.r(), val);
+        } else {
+            gen_mov(dest, src);
+            gen_add(dest, val);
+        }
+    }
+
+    void func::gen_or(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_or(dest, val);
+    }
+
+    void func::gen_adc(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_adc(dest, val);
+    }
+
+    void func::gen_sbb(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_sbb(dest, val);
+    }
+
+    void func::gen_and(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_and(dest, val);
+    }
+
+    void func::gen_sub(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_sub(dest, val);
+    }
+
+    void func::gen_xor(value& dest, const value& src, i32 val) {
+        gen_mov(dest, src);
+        gen_xor(dest, val);
     }
 
     void func::gen_imul(value& hi, value& dest, const value& src) {
