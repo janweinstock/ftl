@@ -76,11 +76,26 @@ namespace ftl {
             u64 code_idx;
         };
 
+        struct perf_jit_move {
+            perf_jit_common common;
+
+            u32 pid;
+            u32 tid;
+            u64 vma;
+
+            u64 old_code_addr;
+            u64 new_code_addr;
+
+            u64 code_size;
+            u64 code_idx;
+        };
+
     public:
         jitdump();
         virtual ~jitdump();
 
         u64 load(const string& name, void* code, size_t size);
+        u64 move(u64 id, void* prev, void* next, size_t size);
 
         u64 load(const func& fn);
     };

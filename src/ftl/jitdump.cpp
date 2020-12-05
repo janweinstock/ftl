@@ -88,7 +88,7 @@ namespace ftl {
         load.common.time_stamp = timestamp_ns();
         load.pid = getpid();
         load.tid = pthread_self();
-        load.vma = 0;
+        load.vma = (uintptr_t)code;
         load.code_addr = (uintptr_t)code;
         load.code_size = code_size;
         load.code_idx = m_code_count++;
@@ -101,6 +101,30 @@ namespace ftl {
             FTL_ERROR("cannot write code: %s (%d)", strerror(errno), errno);
 
         return load.code_idx;
+    }
+
+    u64 jitdump::move(u64 id, void* prev, void* next, size_t size) {
+        if (!m_jitdump || !m_mapdump)
+            return -1;
+
+        perf_jit_move move;
+        memset(&move, 0, sizeof(move));
+
+        move.common.event = JIT_EVENT_MOVE;
+        move.common.size = sizeof(move);
+        move.common.time_stamp = timestamp_ns();
+        move.pid = getpid();
+        move.tid = pthread_self();
+        move.vma = (uintptr_t)next;
+        move.old_code_addr = (uintptr_t)prev;
+        move.new_code_addr = (uintptr_t)next;
+        move.code_size = size;
+        move.code_idx = id;
+
+        if (fwrite(&move, sizeof(move), 1, m_jitdump) != 1)
+            FTL_ERROR("cannot write data: %s (%d)", strerror(errno), errno);
+
+        return id;
     }
 
 }
