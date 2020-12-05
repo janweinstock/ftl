@@ -37,6 +37,7 @@ TEST(call, test1) {
 
     value ret = code.gen_call(test1);
     code.gen_ret(ret);
+    code.finish();
 
     u64 result = code();
 
@@ -60,6 +61,7 @@ TEST(call, test3) {
     value op3 = code.gen_local_i64("op3", 100, argreg(3));
     value ret = code.gen_call(test3, op1, op2, op3);
     code.gen_ret(ret);
+    code.finish();
 
     i64 result = code();
 
@@ -78,6 +80,7 @@ TEST(call, boolean) {
 
     value ret = code.gen_call(test_boolean, true, false);
     code.gen_ret(ret);
+    code.finish();
 
     i64 result = code();
 
@@ -90,6 +93,7 @@ TEST(call, direct) {
     func fn1("fn1", buffer);
     fn1.get_emitter().movr(64, RAX, BASE_POINTER);
     fn1.get_emitter().ret();
+    fn1.finish();
 
     func fn2("fn2", buffer);
     ASSERT_TRUE(can_call_directly(buffer.get_code_ptr(), fn1.entry()));
@@ -100,12 +104,14 @@ TEST(call, direct) {
     fixup fix;
     fn2.get_emitter().call(nullptr, &fix);
     fn2.gen_ret(ret);
+    fn2.finish();
 
     buffer.skip(1024); // get some distance
 
     func fn3("fn3", buffer);
     fn3.get_emitter().decr(64, RAX);
     fn3.get_emitter().ret();
+    fn3.finish();
 
     ASSERT_TRUE(can_call_directly(fix.code, fn3.entry()));
     patch_call(fix, fn3.entry());
@@ -129,6 +135,7 @@ TEST(call, fp) {
     scalar op3 = code.gen_local_f64("op3", 13.37);
     value ret = code.gen_call(test_fp, op1, op2, op3);
     code.gen_ret(ret);
+    code.finish();
 
     i64 result = code();
 

@@ -33,6 +33,7 @@ using namespace ftl;
         code.gen_##op(r, b);                                                  \
         r.flush();                                                            \
         code.gen_ret();                                                       \
+        code.finish();                                                        \
         code();                                                               \
         EXPECT_EQ(res, (op1 cop op2) ? op2 : ~0);                             \
     }

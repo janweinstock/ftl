@@ -53,6 +53,7 @@ TEST(loops, simple) {
 
     code.free_value(s);
     code.free_value(i);
+    code.finish();
 
     code();
 

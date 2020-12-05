@@ -35,6 +35,7 @@ using namespace ftl;
         code.free_value(src);                                                 \
         code.gen_setz(succ);                                                  \
         code.gen_ret(succ);                                                   \
+        code.finish();                                                       \
         i64 ret = code.exec();                                                \
         EXPECT_EQ(global, dval == cval ? sval : dval);                        \
         EXPECT_EQ(ret, dval == cval);                                         \

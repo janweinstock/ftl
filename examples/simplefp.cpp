@@ -45,6 +45,7 @@ int main() {
     simplefp.gen_tst(lcount, lcount);
     simplefp.gen_ja(lentry);
     simplefp.gen_ret();
+    simplefp.finish();
 
     simplefp();
 

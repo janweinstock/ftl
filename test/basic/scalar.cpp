@@ -45,6 +45,7 @@ using namespace ftl;
         fn.gen_ ## op (_x, _y);                                               \
         fn.gen_ ## op (_y, _z);                                               \
         fn.gen_ret();                                                         \
+        fn.finish();                                                          \
         fn();                                                                 \
         EXPECT_EQ ## bits1 (x, c);                                            \
         EXPECT_EQ ## bits2 (y, d);                                            \

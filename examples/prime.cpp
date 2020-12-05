@@ -56,6 +56,7 @@ static func gen_isprime() {
     code.free_value(r);
     code.free_value(i);
     code.free_value(n);
+    code.finish();
 
     return code;
 }

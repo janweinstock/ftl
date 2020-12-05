@@ -47,6 +47,7 @@ namespace ftl {
 
         u8*     m_head;
         u8*     m_code;
+        u8*     m_last;
 
         label   m_entry;
         label   m_exit;
@@ -56,6 +57,12 @@ namespace ftl {
     public:
         const char* name() const { return m_name.c_str(); }
         u8* entry()        const { return m_code; }
+        u8* final()        const { return m_last; }
+
+        size_t size() const;
+        u8* finish();
+
+        bool is_finished() const { return m_last != nullptr; }
 
         cbuf&    get_cbuffer()   { return m_buffer; }
         emitter& get_emitter()   { return m_emitter; }
@@ -330,6 +337,15 @@ namespace ftl {
         value gen_call(FUNC* fn, const T1& arg1, const T2& arg2,
                        const T3& arg3, const T4& arg4, const T5& arg5);
     };
+
+    inline size_t func::size() const {
+        FTL_ERROR_ON(!is_finished(), "function '%s' not finished", name());
+        return m_last - m_code;
+    }
+
+    inline u8* func::finish() {
+        return m_last = m_buffer.get_code_ptr();
+    }
 
     inline label func::gen_label(const string& name) {
         return label(name, m_buffer, m_alloc);

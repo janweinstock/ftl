@@ -32,6 +32,7 @@ TEST(cgen, simple) {
     test.gen_add(a, b);
     test.gen_sub(b, c);
     test.gen_ret(a);
+    test.finish();
 
     int ret = test();
 
@@ -53,6 +54,7 @@ TEST(cgen, jump) {
     maxfn.gen_ret(va);
     less.place();
     maxfn.gen_ret(vb);
+    maxfn.finish();
 
     int ret = maxfn();
     int ref = max(a, b);
@@ -73,12 +75,14 @@ TEST(cgen, func) {
     value vb = addfn.gen_local_i32("vb", b);
     addfn.gen_add(va, vb);
     addfn.gen_ret(va);
+    addfn.finish();
 
     func subfn("subfn", buffer);
     value vc = subfn.gen_local_i32("vc", c);
     value vd = subfn.gen_local_i32("vd", d);
     subfn.gen_sub(vc, vd);
     subfn.gen_ret(vc);
+    subfn.finish();
 
     int add = addfn();
     int sub = subfn();
@@ -113,6 +117,7 @@ TEST(cgen, muldiv) {
     test_val.gen_imod(vz, vb);
     test_val.gen_call(test_muldiv, vx, vy, vz);
     test_val.gen_ret();
+    test_val.finish();
 
     func test_imm("test_imm", buffer);
     value vx2 = test_imm.gen_local_i32("vx2", a);
@@ -123,6 +128,7 @@ TEST(cgen, muldiv) {
     test_imm.gen_imod(vz2, b);
     test_imm.gen_call(test_muldiv, vx2, vy2, vz2);
     test_imm.gen_ret();
+    test_imm.finish();
 
     test_val();
     test_imm();
@@ -154,6 +160,7 @@ TEST(cgen, umuldiv) {
     test_val.gen_umod(vz, vb);
     test_val.gen_call(test_umuldiv, vx, vy, vz);
     test_val.gen_ret();
+    test_val.finish();
 
     func test_imm("test_imm", buffer);
     value vx2 = test_imm.gen_local_i32("vx2", a);
@@ -164,6 +171,7 @@ TEST(cgen, umuldiv) {
     test_imm.gen_umod(vz2, b);
     test_imm.gen_call(test_umuldiv, vx2, vy2, vz2);
     test_imm.gen_ret();
+    test_imm.finish();
 
     test_val();
     test_imm();
@@ -183,6 +191,7 @@ TEST(cgen, notneg) {
     test.gen_neg(vb);
     test.gen_call(test_notneg, va, vb);
     test.gen_ret();
+    test.finish();
 
     test();
 }
@@ -204,6 +213,7 @@ TEST(cgen, shift) {
     test.gen_sha(c, 2);
     test.gen_call(test_shift, a, b, c);
     test.gen_ret();
+    test.finish();
 
     test();
 }
@@ -224,6 +234,7 @@ TEST(cgen, rot) {
     code.gen_ror(b, 3);
     code.gen_call(test_rot, a, b);
     code.gen_ret();
+    code.finish();
 
     code();
 }
@@ -237,6 +248,7 @@ TEST(cgen, inc) {
     code.gen_inc(a);
     code.gen_inc(b);
     code.gen_ret(a);
+    code.finish();
 
     EXPECT_EQ(code(), 43);
     EXPECT_EQ(global, 43);
@@ -251,6 +263,7 @@ TEST(cgen, dec) {
     code.gen_dec(a);
     code.gen_dec(b);
     code.gen_ret(a);
+    code.finish();
 
     EXPECT_EQ(code(), 41);
     EXPECT_EQ(global, 41);
@@ -266,6 +279,7 @@ TEST(cgen, xchg) {
 
     code.gen_xchg(a, b);
     code.gen_ret();
+    code.finish();
 
     code();
 
@@ -286,6 +300,7 @@ TEST(code, mov32_64) {
     code.free_value(a);
     code.free_value(b);
     code.gen_ret();
+    code.finish();
 
     i64 res = code();
 
@@ -311,6 +326,7 @@ TEST(code, far_variables) {
     code.gen_mov(b, t);
 
     code.gen_ret();
+    code.finish();
 
     code.free_value(a);
     code.free_value(b);

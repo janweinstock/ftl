@@ -28,6 +28,7 @@ TEST(scratch, simple) {
     value temp = code.gen_scratch_i64("temp", 40);
     code.gen_add(temp, 2);
     code.gen_ret(temp);
+    code.finish();
 
     EXPECT_TRUE(temp.is_dead());
 

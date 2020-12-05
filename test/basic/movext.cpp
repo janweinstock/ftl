@@ -102,13 +102,14 @@ TEST(code, signext8) {
     i8 v1 = -1;
     i64 v2 = 0;
 
-    func cgen("signext8", 4 * KiB);
-    value val1 = cgen.gen_global_i8("v1", &v1);
-    value val2 = cgen.gen_global_i64("v2", &v2);
-    cgen.gen_sxt(val2, val1);
-    cgen.gen_ret(val2);
+    func code("signext8", 4 * KiB);
+    value val1 = code.gen_global_i8("v1", &v1);
+    value val2 = code.gen_global_i64("v2", &v2);
+    code.gen_sxt(val2, val1);
+    code.gen_ret(val2);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), -1ll);
+    EXPECT_EQ(code.exec(), -1ll);
     EXPECT_EQ(v2, -1ll);
 }
 
@@ -116,13 +117,14 @@ TEST(code, signext16) {
     i16 v1 = -1;
     i64 v2 = 0;
 
-    func cgen("signext16", 4 * KiB);
-    value val1 = cgen.gen_global_i16("v1", &v1);
-    value val2 = cgen.gen_global_i64("v2", &v2);
-    cgen.gen_sxt(val2, val1);
-    cgen.gen_ret(val2);
+    func code("signext16", 4 * KiB);
+    value val1 = code.gen_global_i16("v1", &v1);
+    value val2 = code.gen_global_i64("v2", &v2);
+    code.gen_sxt(val2, val1);
+    code.gen_ret(val2);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), -1ll);
+    EXPECT_EQ(code.exec(), -1ll);
     EXPECT_EQ(v2, -1ll);
 }
 
@@ -130,48 +132,52 @@ TEST(code, signext32) {
     i32 v1 = -1;
     i64 v2 = 0;
 
-    func cgen("signext", 4 * KiB);
-    value val1 = cgen.gen_global_i32("v1", &v1);
-    value val2 = cgen.gen_global_i64("v2", &v2);
-    cgen.gen_sxt(val2, val1);
-    cgen.gen_ret(val2);
+    func code("signext", 4 * KiB);
+    value val1 = code.gen_global_i32("v1", &v1);
+    value val2 = code.gen_global_i64("v2", &v2);
+    code.gen_sxt(val2, val1);
+    code.gen_ret(val2);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), -1ll);
+    EXPECT_EQ(code.exec(), -1ll);
     EXPECT_EQ(v2, -1ll);
 }
 
 TEST(code, signext_same8) {
     i64 v1 = 0x80;
 
-    func cgen("signext_same8", 4 * KiB);
-    value val1 = cgen.gen_global_i64("v1", &v1);
-    cgen.gen_sxt(val1, val1, 64, 8);
-    cgen.gen_ret(val1);
+    func code("signext_same8", 4 * KiB);
+    value val1 = code.gen_global_i64("v1", &v1);
+    code.gen_sxt(val1, val1, 64, 8);
+    code.gen_ret(val1);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), std::numeric_limits<i8>::lowest());
+    EXPECT_EQ(code.exec(), std::numeric_limits<i8>::lowest());
     EXPECT_EQ(v1, std::numeric_limits<i8>::lowest());
 }
 
 TEST(code, signext_same16) {
     i64 v1 = 0x8000;
-    func cgen("signext_same16", 4 * KiB);
-    value val1 = cgen.gen_global_i64("v1", &v1);
-    cgen.gen_sxt(val1, val1, 64, 16);
-    cgen.gen_ret(val1);
+    func code("signext_same16", 4 * KiB);
+    value val1 = code.gen_global_i64("v1", &v1);
+    code.gen_sxt(val1, val1, 64, 16);
+    code.gen_ret(val1);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), std::numeric_limits<i16>::lowest());
+    EXPECT_EQ(code.exec(), std::numeric_limits<i16>::lowest());
     EXPECT_EQ(v1, std::numeric_limits<i16>::lowest());
 }
 
 TEST(code, signext_same32) {
     i64 v1 = 0x80000000;
 
-    func cgen("signext_same32", 4 * KiB);
-    value val1 = cgen.gen_global_i64("v1", &v1);
-    cgen.gen_sxt(val1, val1, 64, 32);
-    cgen.gen_ret(val1);
+    func code("signext_same32", 4 * KiB);
+    value val1 = code.gen_global_i64("v1", &v1);
+    code.gen_sxt(val1, val1, 64, 32);
+    code.gen_ret(val1);
+    code.finish();
 
-    EXPECT_EQ(cgen.exec(), std::numeric_limits<i32>::lowest());
+    EXPECT_EQ(code.exec(), std::numeric_limits<i32>::lowest());
     EXPECT_EQ(v1, std::numeric_limits<i32>::lowest());
 }
 
@@ -184,6 +190,7 @@ TEST(code, zeroext8) {
     value val2 = code.gen_global_i64("v2", &v2);
     code.gen_zxt(val2, val1);
     code.gen_ret(val2);
+    code.finish();
 
     code.exec();
 
@@ -199,6 +206,7 @@ TEST(code, zeroext16) {
     value val2 = code.gen_global_i64("v2", &v2);
     code.gen_zxt(val2, val1);
     code.gen_ret(val2);
+    code.finish();
 
     code.exec();
 
@@ -214,6 +222,7 @@ TEST(code, zeroext32) {
     value val2 = code.gen_global_i64("v2", &v2);
     code.gen_zxt(val2, val1);
     code.gen_ret(val2);
+    code.finish();
 
     code.exec();
 
@@ -227,6 +236,7 @@ TEST(code, zeroext_same8) {
     value val = code.gen_global_i64("v", &v);
     code.gen_zxt(val, val, 64, 8);
     code.gen_ret(val);
+    code.finish();
 
     code.exec();
 
@@ -240,6 +250,7 @@ TEST(code, zeroext_same16) {
     value val = code.gen_global_i64("v", &v);
     code.gen_zxt(val, val, 64, 16);
     code.gen_ret(val);
+    code.finish();
 
     code.exec();
 
@@ -253,6 +264,7 @@ TEST(code, zeroext_same32) {
     value val = code.gen_global_i64("v", &v);
     code.gen_zxt(val, val, 64, 32);
     code.gen_ret(val);
+    code.finish();
 
     code.exec();
 

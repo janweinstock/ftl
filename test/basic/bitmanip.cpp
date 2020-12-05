@@ -39,6 +39,7 @@ using namespace ftl;
         code.gen_bts(val, _idx);                                              \
         code.gen_setb(res);                                                   \
         code.gen_ret(res);                                                    \
+        code.finish();                                                        \
         i64 bit = code();                                                     \
         EXPECT_EQ(global, _val | (1ul << _idx));                              \
         EXPECT_EQ(bit, (_val >> _idx) & 1);                                   \
@@ -54,6 +55,7 @@ using namespace ftl;
         code.gen_bts(val, rxx);                                               \
         code.gen_setb(res);                                                   \
         code.gen_ret(res);                                                    \
+        code.finish();                                                        \
         i64 bit = code();                                                     \
         EXPECT_EQ(global, _val | (1ul << _idx));                              \
         EXPECT_EQ(bit, (_val >> _idx) & 1);                                   \
@@ -79,6 +81,7 @@ MKTEST_SET(64, 0x7ffffffffffffffful, 63);
         code.gen_btr(val, _idx);                                              \
         code.gen_setb(res);                                                   \
         code.gen_ret(res);                                                    \
+        code.finish();                                                        \
         i64 bit = code();                                                     \
         EXPECT_EQ(global, _val & ~(1ul << _idx));                             \
         EXPECT_EQ(bit, (_val >> _idx) & 1);                                   \
@@ -94,6 +97,7 @@ MKTEST_SET(64, 0x7ffffffffffffffful, 63);
         code.gen_btr(val, rxx);                                               \
         code.gen_setb(res);                                                   \
         code.gen_ret(res);                                                    \
+        code.finish();                                                        \
         i64 bit = code();                                                     \
         EXPECT_EQ(global, _val & ~(1ul << _idx));                             \
         EXPECT_EQ(bit, (_val >> _idx) & 1);                                   \

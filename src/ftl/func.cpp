@@ -52,6 +52,7 @@ namespace ftl {
         m_alloc(m_emitter),
         m_head(m_buffer.get_code_entry()),
         m_code(m_buffer.get_code_ptr()),
+        m_last(nullptr),
         m_entry(nm + ".entry", m_buffer, m_alloc, m_buffer.get_code_entry()),
         m_exit(nm + ".exit", m_buffer, m_alloc, m_buffer.get_code_exit()) {
         if (m_buffer.is_empty())
@@ -66,6 +67,7 @@ namespace ftl {
         m_alloc(m_emitter),
         m_head(m_buffer.get_code_entry()),
         m_code(m_buffer.get_code_ptr()),
+        m_last(nullptr),
         m_entry(nm + ".entry", m_buffer, m_alloc, m_buffer.get_code_entry()),
         m_exit(nm + ".exit", m_buffer, m_alloc, m_buffer.get_code_exit()) {
         if (m_buffer.is_empty())
@@ -82,6 +84,7 @@ namespace ftl {
         m_alloc(std::move(other.m_alloc)),
         m_head(other.m_head),
         m_code(other.m_code),
+        m_last(other.m_last),
         m_entry(std::move(other.m_entry)),
         m_exit(std::move(other.m_exit)) {
         other.m_bufptr = nullptr;
@@ -97,6 +100,7 @@ namespace ftl {
     }
 
     i64 func::exec(void* data) {
+        FTL_ERROR_ON(!is_finished(), "function '%s' not finished", name());
         return invoke(m_buffer, m_code, data);
     }
 
