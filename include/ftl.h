@@ -35,6 +35,7 @@
 #include "ftl/ralloc.h"
 #include "ftl/alloc.h"
 #include "ftl/func.h"
+#include "ftl/jitdump.h"
 
 #include "ftl/version.h"
 

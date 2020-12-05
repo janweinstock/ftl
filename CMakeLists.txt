@@ -38,6 +38,7 @@ set(sources
     "src/ftl/scalar.cpp"
     "src/ftl/alloc.cpp"
     "src/ftl/func.cpp"
+    "src/ftl/jitdump.cpp"
     "src/ftl/version.cpp")
 
 add_library(ftl ${sources})
