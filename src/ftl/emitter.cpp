@@ -449,6 +449,9 @@ namespace ftl {
 
     emitter::emitter(cbuf& code):
         m_buffer(code) {
+#ifndef __x86_64__
+#error Unsupported target architecture
+#endif
     }
 
     emitter::~emitter() {

@@ -56,10 +56,15 @@ namespace ftl {
         header.magic = JIT_HEADER_MAGIC;
         header.version = JIT_HEADER_VERSION;
         header.size = sizeof(header);
-        header.elf_mach = 0x3e; // x86_64
         header.pid = getpid();
         header.time_stamp = timestamp_ns();
         header.flags = 0;
+
+#ifdef __x86_64__
+        header.elf_mach = 0x3e; // EM_X86_64
+#else
+#error Unsupported target architecture
+#endif
 
         if (fwrite(&header, sizeof(header), 1, m_jitdump) != 1)
             FTL_ERROR("cannot write JIT header: %s", strerror(errno));
