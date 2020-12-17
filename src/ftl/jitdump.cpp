@@ -27,11 +27,17 @@ namespace ftl {
         return (u64)tp.tv_sec * 1000000000ul + tp.tv_nsec;
     }
 
+    static u32 thread_id() {
+        const std::hash<std::thread::id> hasher;
+        return (u32)hasher(std::this_thread::get_id());
+    }
+
     jitdump::jitdump():
+        m_mutex(),
+        m_counter(0),
         m_mapdump(nullptr),
         m_jitdump(nullptr),
-        m_mapper(nullptr),
-        m_code_count(0) {
+        m_mapper(nullptr) {
 
         std::string tmp = "/tmp/";
         std::string pid_str = std::to_string(getpid());
@@ -83,8 +89,6 @@ namespace ftl {
         if (!m_jitdump || !m_mapdump)
             return -1;
 
-        fprintf(m_mapdump, "%lx %zx %s\n", (u64)code, code_size, name.c_str());
-
         perf_jit_load load;
         memset(&load, 0, sizeof(load));
 
@@ -92,11 +96,14 @@ namespace ftl {
         load.common.size = sizeof(load) + name.length() + 1 + code_size;
         load.common.time_stamp = timestamp_ns();
         load.pid = getpid();
-        load.tid = pthread_self();
+        load.tid = thread_id();
         load.vma = (uintptr_t)code;
         load.code_addr = (uintptr_t)code;
         load.code_size = code_size;
-        load.code_idx = m_code_count++;
+        load.code_idx = m_counter++;
+
+        const lock_guard<mutex> lock(m_mutex);
+        fprintf(m_mapdump, "%lx %zx %s\n", (u64)code, code_size, name.c_str());
 
         if (fwrite(&load, sizeof(load), 1, m_jitdump) != 1)
             FTL_ERROR("cannot write data: %s (%d)", strerror(errno), errno);
@@ -119,17 +126,23 @@ namespace ftl {
         move.common.size = sizeof(move);
         move.common.time_stamp = timestamp_ns();
         move.pid = getpid();
-        move.tid = pthread_self();
+        move.tid = thread_id();
         move.vma = (uintptr_t)next;
         move.old_code_addr = (uintptr_t)prev;
         move.new_code_addr = (uintptr_t)next;
         move.code_size = size;
         move.code_idx = id;
 
+        const lock_guard<mutex> lock(m_mutex);
         if (fwrite(&move, sizeof(move), 1, m_jitdump) != 1)
             FTL_ERROR("cannot write data: %s (%d)", strerror(errno), errno);
 
         return id;
+    }
+
+    jitdump& jitdump::instance() {
+        static jitdump s;
+        return s;
     }
 
 }

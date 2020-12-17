@@ -25,14 +25,14 @@
 
 namespace ftl {
 
-    class jitdump
+    class jitdump // singleton
     {
     private:
-        FILE* m_mapdump;
-        FILE* m_jitdump;
-
-        void* m_mapper;
-        u64 m_code_count;
+        mutex       m_mutex;
+        atomic<u64> m_counter;
+        FILE*       m_mapdump;
+        FILE*       m_jitdump;
+        void*       m_mapper;
 
         enum : u32 {
             JIT_HEADER_MAGIC = 0x4a695444,
@@ -90,14 +90,19 @@ namespace ftl {
             u64 code_idx;
         };
 
-    public:
         jitdump();
-        virtual ~jitdump();
+        ~jitdump();
 
+        jitdump(const jitdump&) = delete;
+        jitdump& operator = (const jitdump&) = delete;
+
+    public:
         u64 load(const string& name, void* code, size_t size);
         u64 move(u64 id, void* prev, void* next, size_t size);
 
         u64 load(const func& fn);
+
+        static jitdump& instance();
     };
 
     inline u64 jitdump::load(const func& fn) {

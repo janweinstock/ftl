@@ -35,6 +35,9 @@
 #include <algorithm>
 #include <exception>
 #include <type_traits>
+#include <atomic>
+#include <thread>
+#include <mutex>
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -69,6 +72,10 @@ namespace ftl {
     using std::set;
     using std::array;
     using std::stringstream;
+
+    using std::atomic;
+    using std::mutex;
+    using std::lock_guard;
 
     const size_t FTL_PAGE_SIZE = 4096;
 
