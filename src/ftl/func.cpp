@@ -918,9 +918,15 @@ namespace ftl {
     }
 
     void func::gen_add(value& dest, const value& src, i32 val) {
+        if (dest == src) {
+            gen_add(dest, val);
+            return;
+        }
+
+        if (dest.is_mem())
+            dest.assign();
+
         if (src.is_reg()) {
-            if (dest != src)
-                dest.assign();
             dest.mark_dirty();
             m_emitter.lear(dest.bits, dest, src.r(), val);
         } else {
