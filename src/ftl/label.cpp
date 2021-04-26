@@ -44,6 +44,7 @@ namespace ftl {
         m_buffer(other.m_buffer),
         m_alloc(other.m_alloc),
         m_name(other.m_name) {
+        other.m_fixups.clear();
     }
 
     label::~label() {
