@@ -281,6 +281,7 @@ namespace ftl {
     template <typename REG>
     inline REG ralloc<REG>::select(const vector<REG>& order) const {
         vector<REG> regs;
+        regs.reserve(order.size());
         std::copy_if(order.begin(), order.end(), std::back_inserter(regs),
                      [this](REG r) -> bool {
             return !is_blocked(r);
